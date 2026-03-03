@@ -47,11 +47,11 @@ Plans:
   2. Given 7+ days of stored data, the system computes rolling 7-day trend statistics (HRV avg, sleep avg, resting HR trend direction) correctly
   3. The assembled prompt contains today's metrics, 7-day rolling context, health profile, and sports science grounding in structured XML-tagged sections
   4. The prompt stays within a defined token budget and uses pre-computed statistics rather than raw data arrays
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md — Health profile Pydantic models, YAML loader, reference config, and 7-day rolling trend computation
+- [ ] 02-02-PLAN.md — Prompt assembler with XML-tagged sections, sports science grounding, DailyProtocol schema, and token budget
 
 ### Phase 3: Analysis Engine
 **Goal**: Claude API produces a validated, structured Daily Protocol covering training, recovery, sleep, nutrition, and supplementation with safety guardrails
@@ -119,7 +119,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Data Ingestion and Storage | 2/3 | Gap closure | - |
-| 2. Health Profile and Prompt Assembly | 0/2 | Not started | - |
+| 2. Health Profile and Prompt Assembly | 0/2 | Planned | - |
 | 3. Analysis Engine | 0/2 | Not started | - |
 | 4. Protocol Rendering and Email Delivery | 0/2 | Not started | - |
 | 5. Pipeline Automation | 0/1 | Not started | - |
