@@ -55,6 +55,7 @@ class TestRunIngestion:
         monkeypatch.setenv("GARMIN_PASSWORD", "testpass")
         monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
         monkeypatch.setenv("SUPABASE_KEY", "testkey")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
 
         from biointelligence.config import Settings
 

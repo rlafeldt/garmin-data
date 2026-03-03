@@ -26,6 +26,10 @@ class Settings(BaseSettings):
     # Health Profile
     health_profile_path: str = "health_profile.yaml"
 
+    # Anthropic
+    anthropic_api_key: str
+    claude_model: str = "claude-haiku-4-5-20250514"
+
 
 @lru_cache
 def get_settings() -> Settings:

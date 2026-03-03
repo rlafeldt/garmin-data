@@ -23,6 +23,7 @@ class TestSettings:
         monkeypatch.setenv("GARMIN_TOKEN_DIR", "/tmp/tokens")
         monkeypatch.setenv("TARGET_TIMEZONE", "America/New_York")
         monkeypatch.setenv("LOG_JSON", "true")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
 
         settings = Settings(_env_file=None)
 
@@ -40,6 +41,7 @@ class TestSettings:
         monkeypatch.setenv("GARMIN_PASSWORD", "secret123")
         monkeypatch.setenv("SUPABASE_URL", "https://abc.supabase.co")
         monkeypatch.setenv("SUPABASE_KEY", "key123")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
         monkeypatch.delenv("TARGET_TIMEZONE", raising=False)
         monkeypatch.delenv("GARMIN_TOKEN_DIR", raising=False)
         monkeypatch.delenv("LOG_JSON", raising=False)
@@ -73,6 +75,7 @@ class TestGetAuthenticatedClient:
         monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
         monkeypatch.setenv("SUPABASE_KEY", "testkey")
         monkeypatch.setenv("GARMIN_TOKEN_DIR", "/tmp/test-garmin-tokens")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
         return Settings()
 
     @patch("biointelligence.garmin.client.Garmin")

@@ -21,6 +21,7 @@ class TestGetSupabaseClient:
         monkeypatch.setenv("GARMIN_PASSWORD", "secret")
         monkeypatch.setenv("SUPABASE_URL", "https://abc.supabase.co")
         monkeypatch.setenv("SUPABASE_KEY", "test-key-123")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
 
         from biointelligence.config import Settings
 
