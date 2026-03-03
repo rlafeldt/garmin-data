@@ -12,7 +12,7 @@ BioIntelligence transforms raw Garmin biometric data into a personalized Daily P
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Data Ingestion and Storage** - Pull Garmin biometrics daily, validate completeness, and persist to Supabase with idempotent upserts
+- [ ] **Phase 1: Data Ingestion and Storage** - Pull Garmin biometrics daily, validate completeness, and persist to Supabase with idempotent upserts
 - [ ] **Phase 2: Health Profile and Prompt Assembly** - Load personal health profile, compute rolling trends, and assemble structured Claude prompts
 - [ ] **Phase 3: Analysis Engine** - Claude API integration producing validated Daily Protocol JSON across all 5 domains with safety guardrails
 - [ ] **Phase 4: Protocol Rendering and Email Delivery** - Render Daily Protocol as email and deliver each morning via Resend
@@ -31,11 +31,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. When Garmin returns empty or incomplete data, the system detects it and logs a warning rather than storing null records
   4. Garmin authentication persists across runs without manual re-login (token refresh works)
   5. Querying Supabase for a stored date returns all expected metric categories with correct values
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
 - [x] 01-01-PLAN.md — Project scaffold, Garmin auth client, metric extractors, Pydantic models, completeness scoring
 - [x] 01-02-PLAN.md — Supabase storage layer, pipeline orchestrator, CLI entry point, end-to-end verification
+- [ ] 01-03-PLAN.md — Gap closure: fix Settings test isolation from .env file (2 failing tests)
 
 ### Phase 2: Health Profile and Prompt Assembly
 **Goal**: Personal health profile is loaded from config, rolling trend statistics are computed from stored data, and a structured prompt is assembled ready for Claude
@@ -117,7 +118,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Ingestion and Storage | 2/2 | Complete | 2026-03-03 |
+| 1. Data Ingestion and Storage | 2/3 | Gap closure | - |
 | 2. Health Profile and Prompt Assembly | 0/2 | Not started | - |
 | 3. Analysis Engine | 0/2 | Not started | - |
 | 4. Protocol Rendering and Email Delivery | 0/2 | Not started | - |
