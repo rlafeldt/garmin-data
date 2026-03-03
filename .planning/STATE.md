@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-03T17:15:27Z"
-last_activity: 2026-03-03 -- Plan 01-01 executed (project scaffold + Garmin extraction layer)
+stopped_at: Completed 01-02-PLAN.md (Phase 1 complete)
+last_updated: "2026-03-03T18:10:57.640Z"
+last_activity: 2026-03-03 -- Plan 01-02 executed (Supabase storage, pipeline, CLI, e2e verification)
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 10
-  completed_plans: 1
-  percent: 10
+  completed_plans: 2
+  percent: 20
 ---
 
 # Project State
@@ -21,32 +21,32 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-03)
 
 **Core value:** Every morning, receive a single coherent Daily Protocol that tells you exactly what to do today based on your Garmin data, health profile, and recent trends.
-**Current focus:** Phase 1: Data Ingestion and Storage
+**Current focus:** Phase 1 complete. Ready for Phase 2: Health Profile and Prompt Assembly
 
 ## Current Position
 
-Phase: 1 of 6 (Data Ingestion and Storage)
-Plan: 1 of 2 in current phase
-Status: Executing
-Last activity: 2026-03-03 -- Plan 01-01 executed (project scaffold + Garmin extraction layer)
+Phase: 1 of 6 (Data Ingestion and Storage) -- COMPLETE
+Plan: 2 of 2 in current phase (all plans done)
+Status: Phase complete
+Last activity: 2026-03-03 -- Plan 01-02 executed (Supabase storage, pipeline, CLI, e2e verification)
 
-Progress: [█░░░░░░░░░] 10%
+Progress: [██░░░░░░░░] 20%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 1
-- Average duration: 7min
-- Total execution time: 0.1 hours
+- Total plans completed: 2
+- Average duration: 11min
+- Total execution time: 0.4 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 1 - Data Ingestion and Storage | 1/2 | 7min | 7min |
+| 1 - Data Ingestion and Storage | 2/2 | 22min | 11min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (7min)
+- Last 5 plans: 01-01 (7min), 01-02 (15min)
 - Trend: Starting
 
 *Updated after each plan completion*
@@ -65,6 +65,10 @@ Recent decisions affecting current work:
 - 01-01: Stress durations converted from seconds to minutes in normalization
 - 01-01: Heart rate prefers stats endpoint, falls back to heart_rates endpoint
 - 01-01: Used X | None syntax (modern Python) per ruff UP045
+- 01-02: Activities use delete-then-insert by date for idempotency (no natural unique key)
+- 01-02: Daily metrics use upsert with on_conflict='date'
+- 01-02: Pipeline is single run_ingestion function composing all steps
+- 01-02: CLI defaults to yesterday in Europe/Berlin timezone
 
 ### Pending Todos
 
@@ -78,6 +82,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-03T17:15:27Z
-Stopped at: Completed 01-01-PLAN.md
-Resume file: .planning/phases/01-data-ingestion-and-storage/01-01-SUMMARY.md
+Last session: 2026-03-03T18:10:56.559Z
+Stopped at: Completed 01-02-PLAN.md (Phase 1 complete)
+Resume file: None

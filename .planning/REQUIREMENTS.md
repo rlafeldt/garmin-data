@@ -15,7 +15,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **DATA-04**: System pulls stress data including all-day stress score, stress duration breakdown, and relaxation time
 - [x] **DATA-05**: System pulls general metrics including steps, intensity minutes, and calories burned
 - [x] **DATA-06**: System validates data completeness and detects silent empty responses from Garmin API
-- [ ] **DATA-07**: System stores daily biometric data in Supabase with wide denormalized schema and upsert-by-date idempotency
+- [x] **DATA-07**: System stores daily biometric data in Supabase with wide denormalized schema and upsert-by-date idempotency
 - [x] **DATA-08**: System handles Garmin auth token persistence and refresh without manual intervention
 
 ### Health Profile
@@ -128,7 +128,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-04 | Phase 1: Data Ingestion and Storage | Complete |
 | DATA-05 | Phase 1: Data Ingestion and Storage | Complete |
 | DATA-06 | Phase 1: Data Ingestion and Storage | Complete |
-| DATA-07 | Phase 1: Data Ingestion and Storage | Pending |
+| DATA-07 | Phase 1: Data Ingestion and Storage | Complete |
 | DATA-08 | Phase 1: Data Ingestion and Storage | Complete |
 | PROF-01 | Phase 2: Health Profile and Prompt Assembly | Pending |
 | PROF-02 | Phase 2: Health Profile and Prompt Assembly | Pending |
