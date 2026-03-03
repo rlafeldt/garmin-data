@@ -25,25 +25,25 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Analysis — Training & Recovery
 
-- [ ] **TRNG-01**: System assesses daily readiness by interpreting Body Battery, HRV status, resting heart rate trend, and sleep quality holistically
-- [ ] **TRNG-02**: System interprets training load with acute-to-chronic load ratio analysis and flags overreaching before it becomes overtraining
-- [ ] **TRNG-03**: System recommends today's training intensity zone, training type (e.g., easy aerobic, tempo, rest day), and duration range based on readiness and load state
-- [ ] **TRNG-04**: System surfaces stress patterns and connects elevated stress to training and sleep recommendations
+- [x] **TRNG-01**: System assesses daily readiness by interpreting Body Battery, HRV status, resting heart rate trend, and sleep quality holistically
+- [x] **TRNG-02**: System interprets training load with acute-to-chronic load ratio analysis and flags overreaching before it becomes overtraining
+- [x] **TRNG-03**: System recommends today's training intensity zone, training type (e.g., easy aerobic, tempo, rest day), and duration range based on readiness and load state
+- [x] **TRNG-04**: System surfaces stress patterns and connects elevated stress to training and sleep recommendations
 
 ### Analysis — Sleep
 
-- [ ] **SLEP-01**: System analyzes sleep architecture (deep sleep sufficiency, REM adequacy, awake time) and identifies sleep quality issues
-- [ ] **SLEP-02**: System provides specific actionable sleep optimization advice tied to prior-day variables (training intensity, stress levels, schedule consistency)
+- [x] **SLEP-01**: System analyzes sleep architecture (deep sleep sufficiency, REM adequacy, awake time) and identifies sleep quality issues
+- [x] **SLEP-02**: System provides specific actionable sleep optimization advice tied to prior-day variables (training intensity, stress levels, schedule consistency)
 
 ### Analysis — Nutrition
 
-- [ ] **NUTR-01**: System suggests daily caloric targets, macro ratios, and meal timing based on training volume, recovery demands, body composition goals, and dietary preferences from health profile
-- [ ] **NUTR-02**: System recommends daily hydration targets based on training load and recovery state
+- [x] **NUTR-01**: System suggests daily caloric targets, macro ratios, and meal timing based on training volume, recovery demands, body composition goals, and dietary preferences from health profile
+- [x] **NUTR-02**: System recommends daily hydration targets based on training load and recovery state
 
 ### Analysis — Supplementation
 
-- [ ] **SUPP-01**: System recommends specific supplement timing and dosing tied to current biometric state, health profile, and lab values (e.g., magnesium glycinate on high-stress days, vitamin D calibrated to blood levels)
-- [ ] **SUPP-02**: System provides conservative supplement advice with explicit reasoning and states assumptions when lab values are unavailable
+- [x] **SUPP-01**: System recommends specific supplement timing and dosing tied to current biometric state, health profile, and lab values (e.g., magnesium glycinate on high-stress days, vitamin D calibrated to blood levels)
+- [x] **SUPP-02**: System provides conservative supplement advice with explicit reasoning and states assumptions when lab values are unavailable
 
 ### Protocol & Delivery
 
@@ -62,8 +62,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Safety & Quality
 
 - [ ] **SAFE-01**: Daily Protocol reports data freshness and alerts when data is missing or stale
-- [ ] **SAFE-02**: System flags concerning health patterns and recommends consulting a healthcare professional rather than diagnosing conditions
-- [ ] **SAFE-03**: System acknowledges uncertainty — when data is ambiguous or conflicting, it states assumptions explicitly rather than forcing confident recommendations
+- [x] **SAFE-02**: System flags concerning health patterns and recommends consulting a healthcare professional rather than diagnosing conditions
+- [x] **SAFE-03**: System acknowledges uncertainty — when data is ambiguous or conflicting, it states assumptions explicitly rather than forcing confident recommendations
 
 ### Pipeline Automation
 
@@ -134,18 +134,18 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROF-02 | Phase 2: Health Profile and Prompt Assembly | Complete |
 | TRND-01 | Phase 2: Health Profile and Prompt Assembly | Complete |
 | TRND-04 | Phase 2: Health Profile and Prompt Assembly | Complete |
-| TRNG-01 | Phase 3: Analysis Engine | Pending |
-| TRNG-02 | Phase 3: Analysis Engine | Pending |
-| TRNG-03 | Phase 3: Analysis Engine | Pending |
-| TRNG-04 | Phase 3: Analysis Engine | Pending |
-| SLEP-01 | Phase 3: Analysis Engine | Pending |
-| SLEP-02 | Phase 3: Analysis Engine | Pending |
-| NUTR-01 | Phase 3: Analysis Engine | Pending |
-| NUTR-02 | Phase 3: Analysis Engine | Pending |
-| SUPP-01 | Phase 3: Analysis Engine | Pending |
-| SUPP-02 | Phase 3: Analysis Engine | Pending |
-| SAFE-02 | Phase 3: Analysis Engine | Pending |
-| SAFE-03 | Phase 3: Analysis Engine | Pending |
+| TRNG-01 | Phase 3: Analysis Engine | Complete |
+| TRNG-02 | Phase 3: Analysis Engine | Complete |
+| TRNG-03 | Phase 3: Analysis Engine | Complete |
+| TRNG-04 | Phase 3: Analysis Engine | Complete |
+| SLEP-01 | Phase 3: Analysis Engine | Complete |
+| SLEP-02 | Phase 3: Analysis Engine | Complete |
+| NUTR-01 | Phase 3: Analysis Engine | Complete |
+| NUTR-02 | Phase 3: Analysis Engine | Complete |
+| SUPP-01 | Phase 3: Analysis Engine | Complete |
+| SUPP-02 | Phase 3: Analysis Engine | Complete |
+| SAFE-02 | Phase 3: Analysis Engine | Complete |
+| SAFE-03 | Phase 3: Analysis Engine | Complete |
 | PROT-01 | Phase 4: Protocol Rendering and Email Delivery | Pending |
 | PROT-02 | Phase 4: Protocol Rendering and Email Delivery | Pending |
 | PROT-03 | Phase 4: Protocol Rendering and Email Delivery | Pending |
