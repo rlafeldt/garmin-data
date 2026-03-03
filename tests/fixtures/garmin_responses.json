@@ -1,0 +1,134 @@
+{
+  "full": {
+    "stats": {
+      "totalSteps": 12345,
+      "totalKilocalories": 2500,
+      "activeKilocalories": 800,
+      "moderateIntensityMinutes": 30,
+      "vigorousIntensityMinutes": 20,
+      "restingHeartRate": 52,
+      "maxHeartRate": 165,
+      "averageHeartRate": 68,
+      "minAvgHeartRate": 52
+    },
+    "heart_rates": {
+      "restingHeartRate": 52,
+      "maxHeartRate": 165,
+      "minHeartRate": 45
+    },
+    "sleep": {
+      "dailySleepDTO": {
+        "sleepTimeSeconds": 28800,
+        "deepSleepSeconds": 7200,
+        "lightSleepSeconds": 14400,
+        "remSleepSeconds": 5400,
+        "awakeSleepSeconds": 1800,
+        "sleepScores": {
+          "overallScore": 82
+        }
+      }
+    },
+    "hrv": {
+      "hrvSummary": {
+        "weeklyAvg": 55.3,
+        "lastNightAvg": 58.2,
+        "lastNight5MinHigh": 72.1,
+        "status": "BALANCED"
+      }
+    },
+    "body_battery": [
+      {"bodyBatteryLevel": 85, "bodyBatteryStatus": "CHARGED"},
+      {"bodyBatteryLevel": 45, "bodyBatteryStatus": "DRAINING"},
+      {"bodyBatteryLevel": 90, "bodyBatteryStatus": "CHARGED"}
+    ],
+    "stress": {
+      "overallStressLevel": 35,
+      "highStressDuration": 3600,
+      "lowStressDuration": 14400,
+      "restStressDuration": 28800
+    },
+    "spo2": {
+      "averageSpO2": 96.5,
+      "lowestSpO2": 92.0
+    },
+    "respiration": {
+      "avgWakingRespirationValue": 15.5,
+      "avgSleepRespirationValue": 14.2
+    },
+    "training_status": {
+      "trainingStatusFeedback": "PRODUCTIVE",
+      "load": 856.5
+    },
+    "training_readiness": {
+      "score": 72,
+      "level": "MODERATE"
+    },
+    "max_metrics": {
+      "generic": {
+        "vo2MaxPreciseValue": 52.3
+      },
+      "cycling": {
+        "vo2MaxPreciseValue": 49.1
+      }
+    },
+    "activities": [
+      {
+        "activityType": {"typeKey": "cycling"},
+        "activityName": "Morning Ride",
+        "duration": 3600.0,
+        "distance": 25000.0,
+        "averageHR": 142,
+        "maxHR": 175,
+        "calories": 650,
+        "aerobicTrainingEffect": 3.5,
+        "anaerobicTrainingEffect": 1.2,
+        "vO2MaxValue": 52.0
+      },
+      {
+        "activityType": {"typeKey": "strength_training"},
+        "activityName": "Gym Session",
+        "duration": 2700.0,
+        "distance": 0.0,
+        "averageHR": 125,
+        "maxHR": 158,
+        "calories": 380,
+        "aerobicTrainingEffect": 2.8,
+        "anaerobicTrainingEffect": 3.1,
+        "vO2MaxValue": null
+      }
+    ]
+  },
+  "partial": {
+    "stats": {
+      "totalSteps": 5000,
+      "totalKilocalories": 1800,
+      "activeKilocalories": 300,
+      "restingHeartRate": 55
+    },
+    "heart_rates": null,
+    "sleep": null,
+    "hrv": null,
+    "body_battery": null,
+    "stress": null,
+    "spo2": null,
+    "respiration": null,
+    "training_status": null,
+    "training_readiness": null,
+    "max_metrics": null,
+    "activities": []
+  },
+  "no_wear": {
+    "stats": null,
+    "heart_rates": null,
+    "sleep": null,
+    "hrv": null,
+    "body_battery": null,
+    "stress": null,
+    "spo2": null,
+    "respiration": null,
+    "training_status": null,
+    "training_readiness": null,
+    "max_metrics": null,
+    "activities": []
+  }
+}
