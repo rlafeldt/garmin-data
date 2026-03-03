@@ -130,3 +130,105 @@ class TestGetAuthenticatedClient:
 
         with pytest.raises(GarminConnectAuthenticationError, match="Invalid credentials"):
             get_authenticated_client(settings)
+
+
+class TestSupabaseTokenAuth:
+    """Tests for Supabase-backed token authentication (CI mode)."""
+
+    @pytest.fixture()
+    def settings(self, monkeypatch):
+        """Create a Settings instance with test values."""
+        monkeypatch.setenv("GARMIN_EMAIL", "test@garmin.com")
+        monkeypatch.setenv("GARMIN_PASSWORD", "testpass")
+        monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
+        monkeypatch.setenv("SUPABASE_KEY", "testkey")
+        monkeypatch.setenv("GARMIN_TOKEN_DIR", "/tmp/test-garmin-tokens")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+        return Settings(_env_file=None)
+
+    @patch("biointelligence.garmin.client.save_tokens_to_supabase")
+    @patch("biointelligence.garmin.client.load_tokens_from_supabase")
+    @patch("biointelligence.garmin.client.Garmin")
+    def test_loads_tokens_from_supabase(
+        self, mock_garmin_class, mock_load, mock_save, settings
+    ):
+        """When supabase_client provided and tokens exist, uses token string login."""
+        fake_token = "x" * 600  # base64 token string > 512 chars
+        mock_load.return_value = fake_token
+        mock_client = MagicMock()
+        mock_garmin_class.return_value = mock_client
+        mock_supabase = MagicMock()
+
+        result = get_authenticated_client(settings, supabase_client=mock_supabase)
+
+        mock_load.assert_called_once_with(mock_supabase)
+        mock_garmin_class.assert_called_once_with()
+        mock_client.login.assert_called_once_with(fake_token)
+        assert result is mock_client
+
+    @patch("biointelligence.garmin.client.save_tokens_to_supabase")
+    @patch("biointelligence.garmin.client.load_tokens_from_supabase")
+    @patch("biointelligence.garmin.client.Garmin")
+    def test_saves_tokens_after_supabase_auth(
+        self, mock_garmin_class, mock_load, mock_save, settings
+    ):
+        """After Supabase token login, refreshed tokens are saved back."""
+        mock_load.return_value = "y" * 600
+        mock_client = MagicMock()
+        mock_garmin_class.return_value = mock_client
+        mock_supabase = MagicMock()
+
+        get_authenticated_client(settings, supabase_client=mock_supabase)
+
+        mock_save.assert_called_once_with(mock_supabase, mock_client)
+
+    @patch("biointelligence.garmin.client.save_tokens_to_supabase")
+    @patch("biointelligence.garmin.client.load_tokens_from_supabase")
+    @patch("biointelligence.garmin.client.Garmin")
+    def test_falls_back_to_email_when_no_supabase_tokens(
+        self, mock_garmin_class, mock_load, mock_save, settings
+    ):
+        """When supabase_client provided but no tokens, falls back to email/password."""
+        mock_load.return_value = None
+        mock_client = MagicMock()
+        mock_garmin_class.return_value = mock_client
+        mock_supabase = MagicMock()
+
+        result = get_authenticated_client(settings, supabase_client=mock_supabase)
+
+        mock_garmin_class.assert_called_once_with(
+            settings.garmin_email, settings.garmin_password
+        )
+        mock_client.login.assert_called_once_with()
+        assert result is mock_client
+
+    @patch("biointelligence.garmin.client.save_tokens_to_supabase")
+    @patch("biointelligence.garmin.client.load_tokens_from_supabase")
+    @patch("biointelligence.garmin.client.Garmin")
+    def test_saves_tokens_to_supabase_after_email_login(
+        self, mock_garmin_class, mock_load, mock_save, settings
+    ):
+        """After email/password fallback in CI mode, saves tokens to Supabase."""
+        mock_load.return_value = None
+        mock_client = MagicMock()
+        mock_garmin_class.return_value = mock_client
+        mock_supabase = MagicMock()
+
+        get_authenticated_client(settings, supabase_client=mock_supabase)
+
+        mock_save.assert_called_once_with(mock_supabase, mock_client)
+
+    @patch("biointelligence.garmin.client.Garmin")
+    def test_none_supabase_client_uses_filesystem(
+        self, mock_garmin_class, settings, tmp_path
+    ):
+        """When supabase_client is None, existing filesystem behavior is preserved."""
+        settings.garmin_token_dir = str(tmp_path)
+        mock_client = MagicMock()
+        mock_garmin_class.return_value = mock_client
+
+        result = get_authenticated_client(settings, supabase_client=None)
+
+        mock_garmin_class.assert_called_once_with()
+        mock_client.login.assert_called_once_with(str(tmp_path))
+        assert result is mock_client
