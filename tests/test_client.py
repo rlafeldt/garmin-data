@@ -24,7 +24,7 @@ class TestSettings:
         monkeypatch.setenv("TARGET_TIMEZONE", "America/New_York")
         monkeypatch.setenv("LOG_JSON", "true")
 
-        settings = Settings()
+        settings = Settings(_env_file=None)
 
         assert settings.garmin_email == "test@example.com"
         assert settings.garmin_password == "secret123"
@@ -40,8 +40,11 @@ class TestSettings:
         monkeypatch.setenv("GARMIN_PASSWORD", "secret123")
         monkeypatch.setenv("SUPABASE_URL", "https://abc.supabase.co")
         monkeypatch.setenv("SUPABASE_KEY", "key123")
+        monkeypatch.delenv("TARGET_TIMEZONE", raising=False)
+        monkeypatch.delenv("GARMIN_TOKEN_DIR", raising=False)
+        monkeypatch.delenv("LOG_JSON", raising=False)
 
-        settings = Settings()
+        settings = Settings(_env_file=None)
 
         assert settings.garmin_token_dir == "~/.garminconnect"
         assert settings.target_timezone == "Europe/Berlin"
@@ -56,7 +59,7 @@ class TestSettings:
         monkeypatch.delenv("SUPABASE_KEY", raising=False)
 
         with pytest.raises(ValidationError):
-            Settings()
+            Settings(_env_file=None)
 
 
 class TestGetAuthenticatedClient:
