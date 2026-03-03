@@ -1,0 +1,85 @@
+biometrics:
+  age: 35
+  sex: male
+  weight_kg: 82.0
+  height_cm: 183.0
+  body_fat_pct: 15.5
+
+training:
+  phase: build          # base / build / peak / recovery
+  weekly_volume_hours: 8.0
+  preferred_types:
+    - cycling
+    - strength_training
+  race_goals:
+    - event: "Gran Fondo"
+      date: "2026-06-15"
+      priority: A
+  injury_history:
+    - area: left_knee
+      status: resolved
+      notes: "IT band, resolved 2025"
+
+medical:
+  conditions: []
+  medications: []
+  allergies: []
+
+metabolic:
+  resting_metabolic_rate: 1850
+  glucose_response: normal
+
+diet:
+  preference: balanced
+  restrictions: []
+  meal_timing: "3 meals + pre/post workout"
+
+supplements:
+  - name: magnesium_glycinate
+    dose: "400mg"
+    form: glycinate
+    timing: evening
+    condition: "increase to 600mg on high-stress days"
+  - name: vitamin_d3
+    dose: "4000IU"
+    form: liquid
+    timing: morning
+    condition: null
+  - name: omega_3
+    dose: "2g EPA/DHA"
+    form: triglyceride
+    timing: "with meals"
+    condition: null
+  - name: creatine
+    dose: "5g"
+    form: monohydrate
+    timing: "post-workout"
+    condition: null
+
+sleep_context:
+  chronotype: intermediate
+  target_bedtime: "22:30"
+  target_wake: "06:30"
+  environment_notes: "cool room, blackout curtains"
+
+lab_values:
+  vitamin_d:
+    value: 42
+    unit: "ng/mL"
+    date: "2025-11"
+    range: "30-100"
+  ferritin:
+    value: 85
+    unit: "ng/mL"
+    date: "2025-11"
+    range: "30-300"
+  testosterone_total:
+    value: 650
+    unit: "ng/dL"
+    date: "2025-11"
+    range: "300-1000"
+  hba1c:
+    value: 5.2
+    unit: "%"
+    date: "2025-11"
+    range: "4.0-5.6"

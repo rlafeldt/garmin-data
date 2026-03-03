@@ -23,6 +23,9 @@ class Settings(BaseSettings):
     target_timezone: str = "Europe/Berlin"
     log_json: bool = False
 
+    # Health Profile
+    health_profile_path: str = "health_profile.yaml"
+
 
 @lru_cache
 def get_settings() -> Settings:
