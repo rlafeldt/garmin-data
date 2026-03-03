@@ -10,7 +10,11 @@ from datetime import date, datetime, timedelta
 import structlog
 
 from biointelligence.logging import configure_logging
-from biointelligence.pipeline import run_analysis, run_delivery, run_ingestion
+from biointelligence.pipeline import (
+    run_analysis,
+    run_full_pipeline,
+    run_ingestion,
+)
 
 log = structlog.get_logger()
 
@@ -83,6 +87,27 @@ def main(argv: list[str] | None = None) -> int:
 
     log.info("cli_start", date=target_date.isoformat())
 
+    # Full pipeline mode: --deliver uses run_full_pipeline with run logging
+    # and failure notification built in
+    if args.deliver:
+        pipeline_result = run_full_pipeline(target_date)
+
+        if pipeline_result.success:
+            print(
+                f"Pipeline complete for {pipeline_result.date}: "
+                f"duration={pipeline_result.duration_seconds:.1f}s"
+            )
+            return 0
+
+        log.error(
+            "pipeline_failed",
+            date=target_date.isoformat(),
+            failed_stage=pipeline_result.failed_stage,
+            error=pipeline_result.error,
+        )
+        return 1
+
+    # Standard mode: ingestion (+ optional --analyze)
     try:
         result = run_ingestion(target_date)
     except Exception:
@@ -116,26 +141,6 @@ def main(argv: list[str] | None = None) -> int:
             f"model={analysis_result.model}, "
             f"tokens={analysis_result.input_tokens}in/{analysis_result.output_tokens}out"
         )
-
-        if args.deliver:
-            try:
-                delivery_result = run_delivery(analysis_result)
-            except Exception:
-                log.exception("delivery_failed", date=target_date.isoformat())
-                return 1
-
-            if not delivery_result.success:
-                log.error(
-                    "delivery_unsuccessful",
-                    date=target_date.isoformat(),
-                    error=delivery_result.error,
-                )
-                return 1
-
-            print(
-                f"Delivery complete for {target_date}: "
-                f"email_id={delivery_result.email_id}"
-            )
 
     return 0
 

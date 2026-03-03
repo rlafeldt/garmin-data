@@ -919,103 +919,64 @@ class TestRunDelivery:
 
 
 class TestMainCliDeliver:
-    """Tests for CLI --deliver flag."""
+    """Tests for CLI --deliver flag (now uses run_full_pipeline)."""
 
-    @patch("biointelligence.main.run_delivery")
-    @patch("biointelligence.main.run_analysis")
-    @patch("biointelligence.main.run_ingestion")
+    @patch("biointelligence.main.run_full_pipeline")
     @patch("biointelligence.main.configure_logging")
-    def test_deliver_flag_triggers_run_delivery(
-        self, mock_logging, mock_ingestion, mock_run_analysis, mock_run_delivery
+    def test_deliver_flag_triggers_run_full_pipeline(
+        self, mock_logging, mock_run_full
     ):
-        """CLI --deliver flag triggers run_delivery after successful analysis."""
+        """CLI --deliver flag triggers run_full_pipeline."""
         from biointelligence.main import main
 
-        mock_ingestion.return_value = MagicMock(
+        mock_run_full.return_value = MagicMock(
             success=True,
             date=datetime.date(2026, 3, 2),
-            activity_count=1,
-            completeness=MagicMock(score=0.9, is_no_wear=False),
-        )
-        mock_run_analysis.return_value = MagicMock(
-            success=True,
-            model="claude-haiku-4-5-20250514",
-            input_tokens=3200,
-            output_tokens=1800,
-        )
-        mock_run_delivery.return_value = MagicMock(
-            success=True,
-            email_id="email-789",
-            date=datetime.date(2026, 3, 2),
+            failed_stage=None,
+            duration_seconds=45.0,
+            error=None,
         )
 
         exit_code = main(["--date", "2026-03-02", "--deliver"])
 
-        mock_ingestion.assert_called_once()
-        mock_run_analysis.assert_called_once()
-        mock_run_delivery.assert_called_once()
+        mock_run_full.assert_called_once()
         assert exit_code == 0
 
-    @patch("biointelligence.main.run_delivery")
-    @patch("biointelligence.main.run_analysis")
-    @patch("biointelligence.main.run_ingestion")
+    @patch("biointelligence.main.run_full_pipeline")
     @patch("biointelligence.main.configure_logging")
-    def test_deliver_without_analyze_auto_enables_analysis(
-        self, mock_logging, mock_ingestion, mock_run_analysis, mock_run_delivery
+    def test_deliver_without_analyze_uses_full_pipeline(
+        self, mock_logging, mock_run_full
     ):
-        """CLI --deliver without --analyze auto-enables analysis (delivery requires analysis)."""
+        """CLI --deliver without --analyze uses run_full_pipeline directly."""
         from biointelligence.main import main
 
-        mock_ingestion.return_value = MagicMock(
+        mock_run_full.return_value = MagicMock(
             success=True,
             date=datetime.date(2026, 3, 2),
-            activity_count=1,
-            completeness=MagicMock(score=0.9, is_no_wear=False),
-        )
-        mock_run_analysis.return_value = MagicMock(
-            success=True,
-            model="claude-haiku-4-5-20250514",
-            input_tokens=3200,
-            output_tokens=1800,
-        )
-        mock_run_delivery.return_value = MagicMock(
-            success=True,
-            email_id="email-auto",
-            date=datetime.date(2026, 3, 2),
+            failed_stage=None,
+            duration_seconds=30.0,
+            error=None,
         )
 
         # Only --deliver, no --analyze
         exit_code = main(["--date", "2026-03-02", "--deliver"])
 
-        # Analysis should be called even without --analyze flag
-        mock_run_analysis.assert_called_once()
-        mock_run_delivery.assert_called_once()
+        mock_run_full.assert_called_once()
         assert exit_code == 0
 
-    @patch("biointelligence.main.run_delivery")
-    @patch("biointelligence.main.run_analysis")
-    @patch("biointelligence.main.run_ingestion")
+    @patch("biointelligence.main.run_full_pipeline")
     @patch("biointelligence.main.configure_logging")
-    def test_deliver_returns_1_on_delivery_failure(
-        self, mock_logging, mock_ingestion, mock_run_analysis, mock_run_delivery
+    def test_deliver_returns_1_on_pipeline_failure(
+        self, mock_logging, mock_run_full
     ):
-        """CLI --deliver returns exit 1 when delivery fails."""
+        """CLI --deliver returns exit 1 when run_full_pipeline fails."""
         from biointelligence.main import main
 
-        mock_ingestion.return_value = MagicMock(
-            success=True,
-            date=datetime.date(2026, 3, 2),
-            activity_count=1,
-            completeness=MagicMock(score=0.9, is_no_wear=False),
-        )
-        mock_run_analysis.return_value = MagicMock(
-            success=True,
-            model="claude-haiku-4-5-20250514",
-            input_tokens=3200,
-            output_tokens=1800,
-        )
-        mock_run_delivery.return_value = MagicMock(
+        mock_run_full.return_value = MagicMock(
             success=False,
+            date=datetime.date(2026, 3, 2),
+            failed_stage="delivery",
+            duration_seconds=12.0,
             error="Resend API error",
         )
 
@@ -1025,10 +986,10 @@ class TestMainCliDeliver:
 
     @patch("biointelligence.main.run_ingestion")
     @patch("biointelligence.main.configure_logging")
-    def test_no_deliver_flag_does_not_call_delivery(
+    def test_no_deliver_flag_does_not_call_full_pipeline(
         self, mock_logging, mock_ingestion
     ):
-        """CLI without --deliver does not call run_delivery."""
+        """CLI without --deliver does not call run_full_pipeline."""
         from biointelligence.main import main
 
         mock_ingestion.return_value = MagicMock(
@@ -1038,10 +999,10 @@ class TestMainCliDeliver:
             completeness=MagicMock(score=0.9, is_no_wear=False),
         )
 
-        with patch("biointelligence.main.run_delivery") as mock_run_delivery:
+        with patch("biointelligence.main.run_full_pipeline") as mock_run_full:
             exit_code = main(["--date", "2026-03-02"])
 
-            mock_run_delivery.assert_not_called()
+            mock_run_full.assert_not_called()
             assert exit_code == 0
 
 
@@ -1142,7 +1103,7 @@ class TestRunFullPipeline:
 
         assert result.success is True
         assert result.failed_stage is None
-        assert result.duration_seconds > 0
+        assert result.duration_seconds >= 0
 
         # Run log should have been called with status="success"
         mock_log_run.assert_called_once()
@@ -1337,7 +1298,9 @@ class TestRunFullPipeline:
 
         # Analysis will fail to cut short
         with patch("biointelligence.pipeline.run_analysis") as mock_analysis:
-            mock_analysis.return_value = MagicMock(success=False)
+            mock_analysis.return_value = MagicMock(
+                success=False, error="Analysis failed"
+            )
             with patch("biointelligence.pipeline.send_failure_notification"):
                 run_full_pipeline(datetime.date(2026, 3, 2), settings=mock_settings)
 

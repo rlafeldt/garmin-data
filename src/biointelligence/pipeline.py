@@ -2,13 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import date
+import time
+from datetime import UTC, date, datetime
 
 import structlog
+from garminconnect import Garmin
 from pydantic import BaseModel
 
 from biointelligence.analysis.engine import AnalysisResult, analyze_daily
 from biointelligence.analysis.storage import upsert_daily_protocol
+from biointelligence.automation.notify import send_failure_notification
+from biointelligence.automation.run_log import PipelineRunLog, log_pipeline_run
 from biointelligence.config import Settings, get_settings
 from biointelligence.delivery.renderer import build_subject, render_html, render_text
 from biointelligence.delivery.sender import DeliveryResult, send_email
@@ -38,13 +42,26 @@ class IngestionResult(BaseModel):
     success: bool
 
 
+class PipelineResult(BaseModel):
+    """Result of a full pipeline run (ingestion + analysis + delivery)."""
+
+    date: date
+    success: bool
+    failed_stage: str | None = None
+    duration_seconds: float
+    error: str | None = None
+
+
 def run_ingestion(
-    target_date: date, settings: Settings | None = None
+    target_date: date,
+    settings: Settings | None = None,
+    *,
+    garmin_client: Garmin | None = None,
 ) -> IngestionResult:
     """Run the complete data ingestion pipeline for a single date.
 
     Stages:
-        1. Authenticate with Garmin Connect
+        1. Authenticate with Garmin Connect (skipped if garmin_client provided)
         2. Extract all metric categories for the target date
         3. Normalize raw data via Pydantic models
         4. Assess completeness and flag no-wear days
@@ -53,6 +70,9 @@ def run_ingestion(
     Args:
         target_date: The date to ingest data for.
         settings: Optional settings override. Uses get_settings() if not provided.
+        garmin_client: Optional pre-authenticated Garmin client. If provided,
+            skips authentication (avoids double-auth when called from
+            run_full_pipeline).
 
     Returns:
         IngestionResult with date, completeness, activity_count, and success flag.
@@ -62,8 +82,9 @@ def run_ingestion(
 
     log.info("pipeline_start", date=target_date.isoformat())
 
-    # Step 1: Authenticate
-    garmin_client = get_authenticated_client(settings)
+    # Step 1: Authenticate (skip if pre-authenticated client provided)
+    if garmin_client is None:
+        garmin_client = get_authenticated_client(settings)
 
     # Step 2: Extract
     raw_data = extract_all_metrics(garmin_client, target_date)
@@ -214,3 +235,125 @@ def run_delivery(
         )
 
     return result
+
+
+def run_full_pipeline(
+    target_date: date, settings: Settings | None = None
+) -> PipelineResult:
+    """Run the complete pipeline: ingestion -> analysis -> delivery.
+
+    Orchestrates all stages with timing, run logging to Supabase, and
+    failure notification via email. Each error is caught and recorded;
+    run logging and notification failures are best-effort (logged as
+    warnings, never mask the pipeline result).
+
+    Args:
+        target_date: The date to process.
+        settings: Optional settings override. Uses get_settings() if not provided.
+
+    Returns:
+        PipelineResult with success status, failed_stage, duration, and error.
+    """
+    if settings is None:
+        settings = get_settings()
+
+    started_at = datetime.now(tz=UTC).isoformat()
+    t0 = time.monotonic()
+
+    log.info("full_pipeline_start", date=target_date.isoformat())
+
+    # Get shared Supabase client for run logging and token persistence
+    supabase_client = get_supabase_client(settings)
+
+    # Authenticate Garmin once with Supabase token persistence
+    garmin_client = get_authenticated_client(
+        settings, supabase_client=supabase_client
+    )
+
+    failed_stage: str | None = None
+    error_message: str | None = None
+
+    # Stage 1: Ingestion
+    try:
+        ingestion_result = run_ingestion(
+            target_date, settings, garmin_client=garmin_client
+        )
+        if not ingestion_result.success:
+            failed_stage = "ingestion"
+            error_message = "Ingestion returned success=False"
+    except Exception as exc:
+        failed_stage = "ingestion"
+        error_message = str(exc)
+
+    # Stage 2: Analysis
+    if failed_stage is None:
+        try:
+            analysis_result = run_analysis(target_date, settings)
+            if not analysis_result.success:
+                failed_stage = "analysis"
+                error_message = analysis_result.error or "Analysis returned success=False"
+        except Exception as exc:
+            failed_stage = "analysis"
+            error_message = str(exc)
+
+    # Stage 3: Delivery
+    if failed_stage is None:
+        try:
+            delivery_result = run_delivery(analysis_result, settings)
+            if not delivery_result.success:
+                failed_stage = "delivery"
+                error_message = delivery_result.error or "Delivery returned success=False"
+        except Exception as exc:
+            failed_stage = "delivery"
+            error_message = str(exc)
+
+    duration = time.monotonic() - t0
+    success = failed_stage is None
+
+    # Send failure notification (best-effort)
+    if not success:
+        try:
+            send_failure_notification(
+                target_date=target_date,
+                failed_stage=failed_stage,
+                error_message=error_message,
+                settings=settings,
+            )
+        except Exception:
+            log.exception(
+                "full_pipeline_notification_failed",
+                date=target_date.isoformat(),
+            )
+
+    # Log pipeline run to Supabase (best-effort)
+    run_log = PipelineRunLog(
+        date=target_date,
+        status="success" if success else "failure",
+        failed_stage=failed_stage,
+        error_message=error_message,
+        duration_seconds=round(duration, 2),
+        started_at=started_at,
+    )
+    try:
+        log_pipeline_run(supabase_client, run_log)
+    except Exception:
+        log.exception(
+            "full_pipeline_run_log_failed",
+            date=target_date.isoformat(),
+        )
+
+    log.info(
+        "full_pipeline_complete",
+        date=target_date.isoformat(),
+        success=success,
+        failed_stage=failed_stage,
+        duration_seconds=round(duration, 2),
+    )
+
+    return PipelineResult(
+        date=target_date,
+        success=success,
+        failed_stage=failed_stage,
+        duration_seconds=round(duration, 2),
+        error=error_message,
+    )
