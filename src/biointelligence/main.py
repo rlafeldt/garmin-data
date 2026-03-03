@@ -1,4 +1,4 @@
-"""CLI entry point for the BioIntelligence data ingestion pipeline."""
+"""CLI entry point for the BioIntelligence data ingestion and analysis pipeline."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 import structlog
 
 from biointelligence.logging import configure_logging
-from biointelligence.pipeline import run_ingestion
+from biointelligence.pipeline import run_analysis, run_ingestion
 
 log = structlog.get_logger()
 
@@ -31,7 +31,7 @@ def _get_yesterday(tz_name: str = "Europe/Berlin") -> date:
 
 
 def main(argv: list[str] | None = None) -> int:
-    """Run the data ingestion pipeline from the command line.
+    """Run the data ingestion (and optionally analysis) pipeline from the command line.
 
     Args:
         argv: Command line arguments. Defaults to sys.argv[1:].
@@ -41,7 +41,10 @@ def main(argv: list[str] | None = None) -> int:
     """
     parser = argparse.ArgumentParser(
         prog="biointelligence",
-        description="Ingest daily Garmin biometric data into Supabase.",
+        description=(
+            "Ingest daily Garmin biometric data into Supabase"
+            " and optionally run AI analysis."
+        ),
     )
     parser.add_argument(
         "--date",
@@ -54,6 +57,12 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         default=False,
         help="Output logs as JSON (default: colored console)",
+    )
+    parser.add_argument(
+        "--analyze",
+        action="store_true",
+        default=False,
+        help="Run analysis after ingestion (requires ANTHROPIC_API_KEY)",
     )
 
     args = parser.parse_args(argv)
@@ -80,6 +89,23 @@ def main(argv: list[str] | None = None) -> int:
         f"activities={result.activity_count}, "
         f"no_wear={result.completeness.is_no_wear}"
     )
+
+    if args.analyze:
+        try:
+            analysis_result = run_analysis(target_date)
+        except Exception:
+            log.exception("analysis_failed", date=target_date.isoformat())
+            return 1
+
+        if not analysis_result.success:
+            log.error("analysis_unsuccessful", date=target_date.isoformat())
+            return 1
+
+        print(
+            f"Analysis complete for {target_date}: "
+            f"model={analysis_result.model}, "
+            f"tokens={analysis_result.input_tokens}in/{analysis_result.output_tokens}out"
+        )
 
     return 0
 

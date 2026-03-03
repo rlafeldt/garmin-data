@@ -1,4 +1,4 @@
-"""Pipeline orchestrator: extract -> validate -> store."""
+"""Pipeline orchestrator: extract -> validate -> store -> analyze."""
 
 from __future__ import annotations
 
@@ -7,6 +7,8 @@ from datetime import date
 import structlog
 from pydantic import BaseModel
 
+from biointelligence.analysis.engine import AnalysisResult, analyze_daily
+from biointelligence.analysis.storage import upsert_daily_protocol
 from biointelligence.config import Settings, get_settings
 from biointelligence.garmin.client import get_authenticated_client
 from biointelligence.garmin.extractors import extract_all_metrics
@@ -100,5 +102,49 @@ def run_ingestion(
         activity_count=len(activities),
         is_no_wear=completeness.is_no_wear,
     )
+
+    return result
+
+
+def run_analysis(
+    target_date: date, settings: Settings | None = None
+) -> AnalysisResult:
+    """Run the complete analysis pipeline for a single date.
+
+    Orchestrates the full analysis flow: call Claude API for daily protocol
+    generation, then persist the result to Supabase. Skips storage if
+    analysis fails to avoid partial writes.
+
+    Args:
+        target_date: The date to analyze.
+        settings: Optional settings override. Uses get_settings() if not provided.
+
+    Returns:
+        AnalysisResult with protocol, token usage, and success status.
+    """
+    if settings is None:
+        settings = get_settings()
+
+    log.info("analysis_pipeline_start", date=target_date.isoformat())
+
+    result = analyze_daily(target_date, settings)
+
+    if result.success and result.protocol is not None:
+        supabase_client = get_supabase_client(settings)
+        upsert_daily_protocol(supabase_client, result)
+
+        log.info(
+            "analysis_pipeline_complete",
+            date=target_date.isoformat(),
+            model=result.model,
+            input_tokens=result.input_tokens,
+            output_tokens=result.output_tokens,
+        )
+    else:
+        log.error(
+            "analysis_pipeline_failed",
+            date=target_date.isoformat(),
+            error=result.error,
+        )
 
     return result
