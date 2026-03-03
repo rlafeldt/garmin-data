@@ -31,11 +31,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. When Garmin returns empty or incomplete data, the system detects it and logs a warning rather than storing null records
   4. Garmin authentication persists across runs without manual re-login (token refresh works)
   5. Querying Supabase for a stored date returns all expected metric categories with correct values
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Project scaffold, Garmin auth client, metric extractors, Pydantic models, completeness scoring
+- [ ] 01-02-PLAN.md — Supabase storage layer, pipeline orchestrator, CLI entry point, end-to-end verification
 
 ### Phase 2: Health Profile and Prompt Assembly
 **Goal**: Personal health profile is loaded from config, rolling trend statistics are computed from stored data, and a structured prompt is assembled ready for Claude
