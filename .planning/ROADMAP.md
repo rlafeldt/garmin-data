@@ -63,11 +63,11 @@ Plans:
   3. The sleep section analyzes architecture quality and provides actionable optimization advice tied to prior-day data
   4. Nutrition and supplementation recommendations reference the health profile (dietary preferences, current supplements, lab values) rather than inventing generic advice
   5. When data is ambiguous or concerning patterns emerge, the protocol explicitly states assumptions and recommends consulting a healthcare professional
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md — Anthropic client factory, structured output API call with retry, analysis engine orchestration, Settings extension, and tests
+- [ ] 03-02-PLAN.md — Protocol storage in Supabase, pipeline run_analysis function, and CLI --analyze flag
 
 ### Phase 4: Protocol Rendering and Email Delivery
 **Goal**: The Daily Protocol is rendered into a readable email format and delivered reliably each morning
