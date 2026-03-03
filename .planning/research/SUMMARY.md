@@ -269,6 +269,23 @@ Phases with standard patterns (skip research-phase):
 
 - [SendGrid free tier retirement (Medium, May 2025)](https://medium.com/@nermeennasim/email-apis-in-2025-sendgrid-vs-resend-vs-aws-ses-a-developers-journey-8db7b5545233) — single source; verify if already holding a SendGrid account
 
+## Additional Research (User-Authored)
+
+Detailed Garmin integration research with delivery channel analysis:
+
+- [GARMIN_RESEARCH_SYNTHESIS.md](GARMIN_RESEARCH_SYNTHESIS.md) — Overview: all data access paths, delivery channels, architecture recommendations
+- [GARMIN_DATA_ACCESS.md](GARMIN_DATA_ACCESS.md) — Full API documentation, endpoints, auth flows, data fields, rate limits
+- [GARMIN_DATA_TOOLS.md](GARMIN_DATA_TOOLS.md) — Open-source libraries, FIT SDK, export tools, comparison matrix
+- [INTEGRATION_PATHS.md](INTEGRATION_PATHS.md) — All 9 delivery channels with detailed analysis, pricing, code examples
+
+Key findings incorporated into PROJECT.md:
+- Official Garmin Health API confirmed enterprise-only (rejected for personal projects)
+- Rate limits ~1 req/5 min on some endpoints; batch daily pulls mandatory
+- Connect IQ, Apple Health, Google Health Connect all confirmed non-viable for server-side access
+- Telegram identified as best interactive delivery channel for v1.1 (free, no business verification)
+- Garmin bulk export available for historical backfill (FIT/GPX/TCX parsing)
+- Aggregator APIs (Terra, Vital) documented as fallback if garminconnect breaks
+
 ---
 *Research completed: 2026-03-03*
-*Ready for roadmap: yes*
+*Updated: 2026-03-03 after Garmin research synthesis incorporation*

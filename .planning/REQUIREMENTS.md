@@ -78,6 +78,7 @@ Deferred to future release. Tracked but not in current roadmap.
 
 - **DLVR-01**: HTML email template with structured scannable sections (TL;DR at top, detailed domains below)
 - **DLVR-02**: Weekend vs weekday protocol differentiation accounting for schedule differences
+- **DLVR-03**: Telegram bot delivery as interactive alternative to email (free, 2-min setup, rich Markdown, inline keyboards)
 
 ### Intelligence Improvements
 
@@ -89,6 +90,10 @@ Deferred to future release. Tracked but not in current roadmap.
 - **PLAT-01**: Web dashboard with trend visualizations and protocol history
 - **PLAT-02**: Lab result PDF upload with OCR parsing
 - **PLAT-03**: Weekly and monthly summary reports
+
+### Data Enrichment
+
+- **ENRH-01**: Historical data backfill via Garmin bulk export (FIT/GPX/TCX parsing with garmin_fit_sdk or fitparse)
 
 ## Out of Scope
 
@@ -106,6 +111,10 @@ Explicitly excluded. Documented to prevent scope creep.
 | Automated supplement ordering | Business complexity, conflict of interest risk, regulatory concerns. |
 | Multi-user support | Personal tool first. Multi-user requires auth, profiles, billing — different product. |
 | CGM integration | Future expansion. Static config captures relevant metabolic context for v1. |
+| Official Garmin Health API | Enterprise-only: requires business approval, commercial license, 2+ users min. Personal projects rejected. |
+| Connect IQ watch apps | No networking capability — cannot send data to external servers. |
+| WhatsApp delivery | Requires Meta Business Verification, template pre-approval. Telegram is superior for personal tool. |
+| Apple Health / Google Health Connect | Device-local APIs only, no server-side access for backend agent. |
 
 ## Traceability
 

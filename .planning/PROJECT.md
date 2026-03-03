@@ -37,6 +37,9 @@ Every morning, receive a single coherent Daily Protocol that tells you exactly w
 - Other wearable integrations (Apple Watch, Whoop, Oura) — Garmin first
 - CGM integration — future expansion
 - Marketplace/ecosystem features — Phase 4 vision, not v1
+- Connect IQ watch apps — no networking capability, cannot send data to external servers
+- Apple Health / Google Health Connect — device-local APIs only, no server-side access
+- WhatsApp delivery — requires Meta Business Verification, template pre-approval; Telegram is superior for personal tool
 
 ## Context
 
@@ -46,13 +49,22 @@ Every morning, receive a single coherent Daily Protocol that tells you exactly w
 - Supabase provides hosted PostgreSQL with easy setup and a path to web dashboard later
 - Claude API single-prompt approach is validated as sufficient for this type of structured analysis
 - The Daily Protocol format (as described in the README) is the north star output format
+- **Garmin health data has no public weblinks** — sleep, stress, body battery, HRV, etc. cannot be shared via URL. Only activity links exist. All health data requires authenticated API access.
+- **Official Garmin Health API is enterprise-only** — requires business approval, commercial license, 2+ users minimum. Personal projects are explicitly excluded.
+- **Rate limits on unofficial API** — ~1 request/5 min on some endpoints; batch daily pulls recommended. Re-authenticating per run triggers rate limits.
+- **garth library handles OAuth** — tokens persist ~1 year; token refresh is the critical reliability concern
+- **Connect IQ apps cannot send data externally** — no networking capability, not a viable extraction path
+- **Bulk export available for historical backfill** — garmin.com/account/datamanagement/ provides FIT/GPX/TCX files, parseable with garmin_fit_sdk or fitparse
+- **Aggregator APIs (Terra ~$0.10/1K calls, Vital $99+/mo) exist as fallback** — if garminconnect breaks, Terra covers 30+ wearables but loses Garmin-specific metrics (Body Battery, training load)
+- **Telegram is the best interactive delivery channel** — free, 2-min bot setup, rich Markdown, no business verification (unlike WhatsApp which requires Meta Business Verification)
 
 ## Constraints
 
 - **Tech stack**: Python 3.11+ — aligns with garminconnect library and data pipeline tooling
 - **AI provider**: Claude API (Anthropic) — single structured prompt approach
 - **Database**: Supabase (hosted PostgreSQL) — time-series biometric data + health profile
-- **Garmin API**: Unofficial garminconnect Python library — no official API available for consumer devices
+- **Garmin API**: Unofficial garminconnect Python library — official Health API is enterprise-only, explicitly rejects personal projects
+- **Garmin rate limits**: ~1 req/5 min on some endpoints; must batch daily pulls, never re-authenticate per run
 - **Delivery**: Email — simplest channel, no app infrastructure needed
 - **Audience**: Single user (personal tool) — no auth, no multi-tenancy
 
@@ -65,6 +77,9 @@ Every morning, receive a single coherent Daily Protocol that tells you exactly w
 | All 5 domains in v1 | Core value is the holistic Daily Protocol — partial domains weaken the value proposition | — Pending |
 | Include trend analysis in v1 | Trends are what make the protocol intelligent over time, not just reactive | — Pending |
 | Email delivery over web dashboard | Validates core intelligence without building UI; daily email is natural consumption pattern | — Pending |
+| Unofficial garminconnect over official Health API | Official API is enterprise-only (business approval, commercial license, 2+ users). Unofficial library has 105+ endpoints, actively maintained, used by Home Assistant. | — Pending |
+| Dedicated non-MFA Garmin account for automation | MFA-enabled accounts have known OAuth refresh failures (Issue #312, Dec 2025). Non-MFA account eliminates this risk. | — Pending |
+| Telegram as v1.1 delivery channel | Free, 2-min bot setup, rich Markdown, interactive keyboards. WhatsApp requires Meta Business Verification — wrong for personal tool. | — Pending |
 
 ---
-*Last updated: 2026-03-03 after initialization*
+*Last updated: 2026-03-03 after Garmin research synthesis incorporation*
