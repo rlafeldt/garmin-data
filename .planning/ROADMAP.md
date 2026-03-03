@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Data Ingestion and Storage** - Pull Garmin biometrics daily, validate completeness, and persist to Supabase with idempotent upserts
 - [x] **Phase 2: Health Profile and Prompt Assembly** - Load personal health profile, compute rolling trends, and assemble structured Claude prompts
 - [x] **Phase 3: Analysis Engine** - Claude API integration producing validated Daily Protocol JSON across all 5 domains with safety guardrails
-- [ ] **Phase 4: Protocol Rendering and Email Delivery** - Render Daily Protocol as email and deliver each morning via Resend
+- [x] **Phase 4: Protocol Rendering and Email Delivery** - Render Daily Protocol as email and deliver each morning via Resend
 - [ ] **Phase 5: Pipeline Automation** - End-to-end automated daily pipeline with scheduling, failure handling, and monitoring
 - [ ] **Phase 6: Intelligence Hardening** - Extended 28-day trend windows, multi-metric anomaly detection, and proactive alerts
 
@@ -83,7 +83,7 @@ Plans:
 
 Plans:
 - [x] 04-01-PLAN.md — HTML/plain-text email renderers, delivery package scaffold, Settings extension with Resend config
-- [ ] 04-02-PLAN.md — Resend sender with retry, run_delivery pipeline function, CLI --deliver flag
+- [x] 04-02-PLAN.md — Resend sender with retry, run_delivery pipeline function, CLI --deliver flag
 
 ### Phase 5: Pipeline Automation
 **Goal**: The entire pull-analyze-deliver pipeline runs automatically each morning without manual intervention

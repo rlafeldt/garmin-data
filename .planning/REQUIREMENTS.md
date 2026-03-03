@@ -49,7 +49,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 - [x] **PROT-01**: System produces a unified Daily Protocol synthesizing training, recovery, sleep, nutrition, and supplementation into a single coherent output each morning
 - [x] **PROT-02**: Daily Protocol includes explanatory reasoning chains explaining why data looks the way it does and what cross-domain interactions exist
-- [ ] **PROT-03**: Daily Protocol is delivered via email each morning using a transactional email service
+- [x] **PROT-03**: Daily Protocol is delivered via email each morning using a transactional email service
 - [x] **PROT-04**: Daily Protocol includes a "Why this matters" section explaining the broader context and what's at stake
 
 ### Trends & Intelligence
@@ -148,7 +148,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAFE-03 | Phase 3: Analysis Engine | Complete |
 | PROT-01 | Phase 4: Protocol Rendering and Email Delivery | Complete |
 | PROT-02 | Phase 4: Protocol Rendering and Email Delivery | Complete |
-| PROT-03 | Phase 4: Protocol Rendering and Email Delivery | Pending |
+| PROT-03 | Phase 4: Protocol Rendering and Email Delivery | Complete |
 | PROT-04 | Phase 4: Protocol Rendering and Email Delivery | Complete |
 | SAFE-01 | Phase 4: Protocol Rendering and Email Delivery | Complete |
 | AUTO-01 | Phase 5: Pipeline Automation | Pending |

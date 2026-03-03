@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-stopped_at: Completed 04-01-PLAN.md
-last_updated: "2026-03-03T21:36:06Z"
-last_activity: 2026-03-03 -- Plan 04-01 executed (HTML/plain-text email renderers, delivery package scaffold, Settings extension)
+status: completed
+stopped_at: Completed 04-02-PLAN.md
+last_updated: "2026-03-03T21:45:45.252Z"
+last_activity: 2026-03-03 -- Plan 04-02 executed (Resend email sender, run_delivery pipeline, CLI --deliver flag)
 progress:
   total_phases: 6
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 9
-  completed_plans: 8
-  percent: 89
+  completed_plans: 9
+  percent: 100
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-03)
 
 **Core value:** Every morning, receive a single coherent Daily Protocol that tells you exactly what to do today based on your Garmin data, health profile, and recent trends.
-**Current focus:** Phase 4 in progress: Protocol Rendering and Email Delivery (1/2 plans complete)
+**Current focus:** Phase 4 complete. Ready for Phase 5: Pipeline Automation
 
 ## Current Position
 
-Phase: 4 of 6 (Protocol Rendering and Email Delivery)
-Plan: 1 of 2 in current phase
-Status: Phase 4 in progress
-Last activity: 2026-03-03 -- Plan 04-01 executed (HTML/plain-text email renderers, delivery package scaffold, Settings extension)
+Phase: 4 of 6 (Protocol Rendering and Email Delivery) -- COMPLETE
+Plan: 2 of 2 in current phase (all done)
+Status: Phase 4 complete
+Last activity: 2026-03-03 -- Plan 04-02 executed (Resend email sender, run_delivery pipeline, CLI --deliver flag)
 
-Progress: [████████░░] 89%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
+- Total plans completed: 9
 - Average duration: 6min
-- Total execution time: 0.8 hours
+- Total execution time: 0.9 hours
 
 **By Phase:**
 
@@ -46,16 +46,17 @@ Progress: [████████░░] 89%
 | 1 - Data Ingestion and Storage | 3/3 | 23min | 8min |
 | 2 - Health Profile and Prompt Assembly | 2/2 | 10min | 5min |
 | 3 - Analysis Engine | 2/2 | 11min | 6min |
-| 4 - Protocol Rendering and Email Delivery | 1/2 | 4min | 4min |
+| 4 - Protocol Rendering and Email Delivery | 2/2 | 8min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (4min), 02-02 (6min), 03-01 (7min), 03-02 (4min), 04-01 (4min)
+- Last 5 plans: 02-02 (6min), 03-01 (7min), 03-02 (4min), 04-01 (4min), 04-02 (4min)
 - Trend: Stable
 
 *Updated after each plan completion*
 | Phase 03 P01 | 7min | 2 tasks | 9 files |
 | Phase 03 P02 | 4min | 2 tasks | 6 files |
 | Phase 04 P01 | 4min | 2 tasks | 4 files |
+| Phase 04 P02 | 4min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,12 @@ Recent decisions affecting current work:
 - 04-01: html.escape() on all dynamic text content for XSS prevention
 - 04-01: Traffic light colors: green #22c55e (8-10), yellow #eab308 (5-7), red #ef4444 (1-4)
 - 04-01: Footer uses target_date as pragmatic approximation of last Garmin sync
+- 04-02: resend.api_key set per-call inside send_email (not at module level) for test isolation
+- 04-02: RetryError unwrapping extracts last_attempt exception for user-facing error messages
+- 04-02: --deliver implies --analyze via flag chaining (delivery requires analysis)
+- 04-02: run_delivery guards both success=False and protocol=None before calling renderers
+- [Phase 04]: resend.api_key set per-call inside send_email for test isolation
+- [Phase 04]: --deliver implies --analyze via flag chaining (delivery requires analysis)
 
 ### Pending Todos
 
@@ -106,6 +113,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-03T21:36:06Z
-Stopped at: Completed 04-01-PLAN.md
-Resume file: .planning/phases/04-protocol-rendering-and-email-delivery/04-01-SUMMARY.md
+Last session: 2026-03-03T21:45:39.573Z
+Stopped at: Completed 04-02-PLAN.md
+Resume file: None
