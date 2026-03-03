@@ -82,7 +82,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — HTML/plain-text email renderers, delivery package scaffold, Settings extension with Resend config
+- [x] 04-01-PLAN.md — HTML/plain-text email renderers, delivery package scaffold, Settings extension with Resend config
 - [ ] 04-02-PLAN.md — Resend sender with retry, run_delivery pipeline function, CLI --deliver flag
 
 ### Phase 5: Pipeline Automation
@@ -121,6 +121,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Data Ingestion and Storage | 3/3 | Complete | 2026-03-03 |
 | 2. Health Profile and Prompt Assembly | 2/2 | Complete | 2026-03-03 |
 | 3. Analysis Engine | 2/2 | Complete | 2026-03-03 |
-| 4. Protocol Rendering and Email Delivery | 0/2 | Not started | - |
+| 4. Protocol Rendering and Email Delivery | 1/2 | In progress | - |
 | 5. Pipeline Automation | 0/1 | Not started | - |
 | 6. Intelligence Hardening | 0/1 | Not started | - |
