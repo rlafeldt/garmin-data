@@ -1043,3 +1043,369 @@ class TestMainCliDeliver:
 
             mock_run_delivery.assert_not_called()
             assert exit_code == 0
+
+
+# ---------------------------------------------------------------------------
+# Task 1 (Plan 05-02): run_full_pipeline orchestrator and CLI wiring
+# ---------------------------------------------------------------------------
+
+
+class TestPipelineResult:
+    """Tests for PipelineResult model."""
+
+    def test_pipeline_result_fields(self):
+        """PipelineResult has date, success, failed_stage, duration_seconds, error."""
+        from biointelligence.pipeline import PipelineResult
+
+        result = PipelineResult(
+            date=datetime.date(2026, 3, 2),
+            success=True,
+            failed_stage=None,
+            duration_seconds=42.5,
+            error=None,
+        )
+        assert result.date == datetime.date(2026, 3, 2)
+        assert result.success is True
+        assert result.failed_stage is None
+        assert result.duration_seconds == 42.5
+        assert result.error is None
+
+    def test_pipeline_result_failure(self):
+        """PipelineResult captures failure details."""
+        from biointelligence.pipeline import PipelineResult
+
+        result = PipelineResult(
+            date=datetime.date(2026, 3, 2),
+            success=False,
+            failed_stage="ingestion",
+            duration_seconds=1.2,
+            error="Connection refused",
+        )
+        assert result.success is False
+        assert result.failed_stage == "ingestion"
+        assert result.error == "Connection refused"
+
+
+class TestRunFullPipeline:
+    """Tests for run_full_pipeline orchestrator."""
+
+    @pytest.fixture()
+    def mock_settings(self, monkeypatch):
+        """Create mock settings for pipeline tests."""
+        monkeypatch.setenv("GARMIN_EMAIL", "test@garmin.com")
+        monkeypatch.setenv("GARMIN_PASSWORD", "testpass")
+        monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
+        monkeypatch.setenv("SUPABASE_KEY", "testkey")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+        monkeypatch.setenv("RESEND_API_KEY", "re_test_key")
+        monkeypatch.setenv("SENDER_EMAIL", "protocol@example.com")
+        monkeypatch.setenv("RECIPIENT_EMAIL", "user@example.com")
+
+        from biointelligence.config import Settings
+
+        return Settings(_env_file=None)
+
+    @patch("biointelligence.pipeline.log_pipeline_run")
+    @patch("biointelligence.pipeline.run_delivery")
+    @patch("biointelligence.pipeline.run_analysis")
+    @patch("biointelligence.pipeline.run_ingestion")
+    @patch("biointelligence.pipeline.get_authenticated_client")
+    @patch("biointelligence.pipeline.get_supabase_client")
+    def test_successful_full_pipeline(
+        self,
+        mock_get_supabase,
+        mock_auth,
+        mock_ingestion,
+        mock_analysis,
+        mock_delivery,
+        mock_log_run,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_full_pipeline orchestrates all stages and logs success."""
+        from biointelligence.pipeline import run_full_pipeline
+
+        mock_supabase = MagicMock()
+        mock_get_supabase.return_value = mock_supabase
+        mock_auth.return_value = MagicMock()
+
+        mock_ingestion.return_value = MagicMock(success=True)
+
+        analysis_result = MagicMock(
+            success=True, protocol=fake_protocol, date=datetime.date(2026, 3, 2)
+        )
+        mock_analysis.return_value = analysis_result
+        mock_delivery.return_value = MagicMock(success=True)
+
+        target_date = datetime.date(2026, 3, 2)
+        result = run_full_pipeline(target_date, settings=mock_settings)
+
+        assert result.success is True
+        assert result.failed_stage is None
+        assert result.duration_seconds > 0
+
+        # Run log should have been called with status="success"
+        mock_log_run.assert_called_once()
+        run_log = mock_log_run.call_args[0][1]
+        assert run_log.status == "success"
+        assert run_log.failed_stage is None
+
+    @patch("biointelligence.pipeline.send_failure_notification")
+    @patch("biointelligence.pipeline.log_pipeline_run")
+    @patch("biointelligence.pipeline.run_ingestion")
+    @patch("biointelligence.pipeline.get_authenticated_client")
+    @patch("biointelligence.pipeline.get_supabase_client")
+    def test_ingestion_failure_sends_notification(
+        self,
+        mock_get_supabase,
+        mock_auth,
+        mock_ingestion,
+        mock_log_run,
+        mock_notify,
+        mock_settings,
+    ):
+        """Ingestion failure sends notification with failed_stage='ingestion'."""
+        from biointelligence.pipeline import run_full_pipeline
+
+        mock_get_supabase.return_value = MagicMock()
+        mock_auth.return_value = MagicMock()
+        mock_ingestion.side_effect = RuntimeError("Garmin API down")
+
+        result = run_full_pipeline(datetime.date(2026, 3, 2), settings=mock_settings)
+
+        assert result.success is False
+        assert result.failed_stage == "ingestion"
+        mock_notify.assert_called_once()
+        assert mock_notify.call_args[1]["failed_stage"] == "ingestion"
+
+    @patch("biointelligence.pipeline.send_failure_notification")
+    @patch("biointelligence.pipeline.log_pipeline_run")
+    @patch("biointelligence.pipeline.run_analysis")
+    @patch("biointelligence.pipeline.run_ingestion")
+    @patch("biointelligence.pipeline.get_authenticated_client")
+    @patch("biointelligence.pipeline.get_supabase_client")
+    def test_analysis_failure_sends_notification(
+        self,
+        mock_get_supabase,
+        mock_auth,
+        mock_ingestion,
+        mock_analysis,
+        mock_log_run,
+        mock_notify,
+        mock_settings,
+    ):
+        """Analysis failure sends notification with failed_stage='analysis'."""
+        from biointelligence.pipeline import run_full_pipeline
+
+        mock_get_supabase.return_value = MagicMock()
+        mock_auth.return_value = MagicMock()
+        mock_ingestion.return_value = MagicMock(success=True)
+        mock_analysis.side_effect = RuntimeError("Claude API error")
+
+        result = run_full_pipeline(datetime.date(2026, 3, 2), settings=mock_settings)
+
+        assert result.success is False
+        assert result.failed_stage == "analysis"
+        mock_notify.assert_called_once()
+        assert mock_notify.call_args[1]["failed_stage"] == "analysis"
+
+    @patch("biointelligence.pipeline.send_failure_notification")
+    @patch("biointelligence.pipeline.log_pipeline_run")
+    @patch("biointelligence.pipeline.run_delivery")
+    @patch("biointelligence.pipeline.run_analysis")
+    @patch("biointelligence.pipeline.run_ingestion")
+    @patch("biointelligence.pipeline.get_authenticated_client")
+    @patch("biointelligence.pipeline.get_supabase_client")
+    def test_delivery_failure_sends_notification(
+        self,
+        mock_get_supabase,
+        mock_auth,
+        mock_ingestion,
+        mock_analysis,
+        mock_delivery,
+        mock_log_run,
+        mock_notify,
+        mock_settings,
+        fake_protocol,
+    ):
+        """Delivery failure sends notification with failed_stage='delivery'."""
+        from biointelligence.pipeline import run_full_pipeline
+
+        mock_get_supabase.return_value = MagicMock()
+        mock_auth.return_value = MagicMock()
+        mock_ingestion.return_value = MagicMock(success=True)
+        mock_analysis.return_value = MagicMock(
+            success=True, protocol=fake_protocol, date=datetime.date(2026, 3, 2)
+        )
+        mock_delivery.side_effect = RuntimeError("Resend down")
+
+        result = run_full_pipeline(datetime.date(2026, 3, 2), settings=mock_settings)
+
+        assert result.success is False
+        assert result.failed_stage == "delivery"
+        mock_notify.assert_called_once()
+        assert mock_notify.call_args[1]["failed_stage"] == "delivery"
+
+    @patch("biointelligence.pipeline.send_failure_notification")
+    @patch("biointelligence.pipeline.log_pipeline_run")
+    @patch("biointelligence.pipeline.run_delivery")
+    @patch("biointelligence.pipeline.run_analysis")
+    @patch("biointelligence.pipeline.run_ingestion")
+    @patch("biointelligence.pipeline.get_authenticated_client")
+    @patch("biointelligence.pipeline.get_supabase_client")
+    def test_run_log_failure_does_not_mask_result(
+        self,
+        mock_get_supabase,
+        mock_auth,
+        mock_ingestion,
+        mock_analysis,
+        mock_delivery,
+        mock_log_run,
+        mock_notify,
+        mock_settings,
+        fake_protocol,
+    ):
+        """If log_pipeline_run raises, pipeline result is still returned."""
+        from biointelligence.pipeline import run_full_pipeline
+
+        mock_get_supabase.return_value = MagicMock()
+        mock_auth.return_value = MagicMock()
+        mock_ingestion.return_value = MagicMock(success=True)
+        mock_analysis.return_value = MagicMock(
+            success=True, protocol=fake_protocol, date=datetime.date(2026, 3, 2)
+        )
+        mock_delivery.return_value = MagicMock(success=True)
+
+        # log_pipeline_run blows up
+        mock_log_run.side_effect = ConnectionError("Supabase down")
+
+        result = run_full_pipeline(datetime.date(2026, 3, 2), settings=mock_settings)
+
+        # Pipeline succeeded, logging failure should not mask that
+        assert result.success is True
+
+    @patch("biointelligence.pipeline.send_failure_notification")
+    @patch("biointelligence.pipeline.log_pipeline_run")
+    @patch("biointelligence.pipeline.run_ingestion")
+    @patch("biointelligence.pipeline.get_authenticated_client")
+    @patch("biointelligence.pipeline.get_supabase_client")
+    def test_notification_failure_does_not_mask_error(
+        self,
+        mock_get_supabase,
+        mock_auth,
+        mock_ingestion,
+        mock_log_run,
+        mock_notify,
+        mock_settings,
+    ):
+        """If send_failure_notification raises, original error is preserved."""
+        from biointelligence.pipeline import run_full_pipeline
+
+        mock_get_supabase.return_value = MagicMock()
+        mock_auth.return_value = MagicMock()
+        mock_ingestion.side_effect = RuntimeError("Garmin API down")
+
+        # Notification also fails
+        mock_notify.side_effect = ConnectionError("Resend down too")
+
+        result = run_full_pipeline(datetime.date(2026, 3, 2), settings=mock_settings)
+
+        assert result.success is False
+        assert result.failed_stage == "ingestion"
+        assert "Garmin API down" in result.error
+
+    @patch("biointelligence.pipeline.log_pipeline_run")
+    @patch("biointelligence.pipeline.run_ingestion")
+    @patch("biointelligence.pipeline.get_authenticated_client")
+    @patch("biointelligence.pipeline.get_supabase_client")
+    def test_ingestion_passes_garmin_client(
+        self,
+        mock_get_supabase,
+        mock_auth,
+        mock_ingestion,
+        mock_log_run,
+        mock_settings,
+    ):
+        """run_full_pipeline passes garmin_client to run_ingestion to avoid double-auth."""
+        from biointelligence.pipeline import run_full_pipeline
+
+        mock_supabase = MagicMock()
+        mock_get_supabase.return_value = mock_supabase
+        mock_garmin = MagicMock()
+        mock_auth.return_value = mock_garmin
+        mock_ingestion.return_value = MagicMock(success=True)
+
+        # Analysis will fail to cut short
+        with patch("biointelligence.pipeline.run_analysis") as mock_analysis:
+            mock_analysis.return_value = MagicMock(success=False)
+            with patch("biointelligence.pipeline.send_failure_notification"):
+                run_full_pipeline(datetime.date(2026, 3, 2), settings=mock_settings)
+
+        # Check garmin_client was passed to run_ingestion
+        call_kwargs = mock_ingestion.call_args
+        assert call_kwargs[1].get("garmin_client") is mock_garmin
+
+
+class TestMainCliDeliverUpdated:
+    """Tests for CLI --deliver using run_full_pipeline."""
+
+    @patch("biointelligence.main.run_full_pipeline")
+    @patch("biointelligence.main.configure_logging")
+    def test_deliver_uses_run_full_pipeline(
+        self, mock_logging, mock_run_full
+    ):
+        """CLI --deliver now calls run_full_pipeline instead of separate stages."""
+        from biointelligence.main import main
+
+        mock_run_full.return_value = MagicMock(
+            success=True,
+            date=datetime.date(2026, 3, 2),
+            failed_stage=None,
+            duration_seconds=45.0,
+            error=None,
+        )
+
+        exit_code = main(["--date", "2026-03-02", "--deliver"])
+
+        mock_run_full.assert_called_once()
+        assert exit_code == 0
+
+    @patch("biointelligence.main.run_full_pipeline")
+    @patch("biointelligence.main.configure_logging")
+    def test_deliver_returns_1_on_pipeline_failure(
+        self, mock_logging, mock_run_full
+    ):
+        """CLI --deliver returns exit 1 when run_full_pipeline fails."""
+        from biointelligence.main import main
+
+        mock_run_full.return_value = MagicMock(
+            success=False,
+            date=datetime.date(2026, 3, 2),
+            failed_stage="analysis",
+            duration_seconds=12.0,
+            error="Claude API error",
+        )
+
+        exit_code = main(["--date", "2026-03-02", "--deliver"])
+
+        assert exit_code == 1
+
+    @patch("biointelligence.main.run_ingestion")
+    @patch("biointelligence.main.configure_logging")
+    def test_no_deliver_still_uses_old_path(
+        self, mock_logging, mock_ingestion
+    ):
+        """CLI without --deliver still uses run_ingestion directly."""
+        from biointelligence.main import main
+
+        mock_ingestion.return_value = MagicMock(
+            success=True,
+            date=datetime.date(2026, 3, 2),
+            activity_count=1,
+            completeness=MagicMock(score=0.9, is_no_wear=False),
+        )
+
+        exit_code = main(["--date", "2026-03-02"])
+
+        mock_ingestion.assert_called_once()
+        assert exit_code == 0
