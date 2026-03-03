@@ -1,0 +1,42 @@
+[project]
+name = "biointelligence"
+version = "0.1.0"
+description = "Personal AI health agent that transforms Garmin biometric data into actionable Daily Protocols"
+readme = "README.md"
+authors = [
+    { name = "rlafeldt", email = "raphael.lafeldt06@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "garminconnect",
+    "supabase",
+    "pydantic-settings",
+    "structlog",
+    "tenacity",
+]
+
+[dependency-groups]
+dev = [
+    "ruff",
+    "pytest",
+    "pytest-mock",
+    "mypy",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.7,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["biointelligence"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

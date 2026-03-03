@@ -1,13 +1,13 @@
 """Tests for configuration and Garmin authentication client."""
 
 import os
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 from garminconnect import GarminConnectAuthenticationError
+from pydantic import ValidationError
 
-from biointelligence.config import Settings, get_settings
+from biointelligence.config import Settings
 from biointelligence.garmin.client import get_authenticated_client
 
 
@@ -55,7 +55,7 @@ class TestSettings:
         monkeypatch.delenv("SUPABASE_URL", raising=False)
         monkeypatch.delenv("SUPABASE_KEY", raising=False)
 
-        with pytest.raises(Exception):  # ValidationError from pydantic
+        with pytest.raises(ValidationError):
             Settings()
 
 
