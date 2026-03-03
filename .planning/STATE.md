@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 5 context gathered
-last_updated: "2026-03-03T22:00:54.483Z"
-last_activity: 2026-03-03 -- Plan 04-02 executed (Resend email sender, run_delivery pipeline, CLI --deliver flag)
+status: in-progress
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-03T22:37:25.285Z"
+last_activity: 2026-03-03 -- Plan 05-01 executed (automation primitives -- tokens, run log, notifications)
 progress:
   total_phases: 6
   completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
-  percent: 100
+  total_plans: 11
+  completed_plans: 10
+  percent: 91
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-03)
 
 **Core value:** Every morning, receive a single coherent Daily Protocol that tells you exactly what to do today based on your Garmin data, health profile, and recent trends.
-**Current focus:** Phase 4 complete. Ready for Phase 5: Pipeline Automation
+**Current focus:** Phase 5 in progress. Automation primitives complete, pipeline orchestrator next.
 
 ## Current Position
 
-Phase: 4 of 6 (Protocol Rendering and Email Delivery) -- COMPLETE
-Plan: 2 of 2 in current phase (all done)
-Status: Phase 4 complete
-Last activity: 2026-03-03 -- Plan 04-02 executed (Resend email sender, run_delivery pipeline, CLI --deliver flag)
+Phase: 5 of 6 (Pipeline Automation) -- IN PROGRESS
+Plan: 1 of 2 in current phase (05-01 complete)
+Status: Plan 05-01 complete, 05-02 next
+Last activity: 2026-03-03 -- Plan 05-01 executed (automation primitives -- tokens, run log, notifications)
 
-Progress: [██████████] 100%
+Progress: [█████████░] 91%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 9
+- Total plans completed: 10
 - Average duration: 6min
-- Total execution time: 0.9 hours
+- Total execution time: 1.0 hours
 
 **By Phase:**
 
@@ -47,9 +47,10 @@ Progress: [██████████] 100%
 | 2 - Health Profile and Prompt Assembly | 2/2 | 10min | 5min |
 | 3 - Analysis Engine | 2/2 | 11min | 6min |
 | 4 - Protocol Rendering and Email Delivery | 2/2 | 8min | 4min |
+| 5 - Pipeline Automation | 1/2 | 4min | 4min |
 
 **Recent Trend:**
-- Last 5 plans: 02-02 (6min), 03-01 (7min), 03-02 (4min), 04-01 (4min), 04-02 (4min)
+- Last 5 plans: 03-01 (7min), 03-02 (4min), 04-01 (4min), 04-02 (4min), 05-01 (4min)
 - Trend: Stable
 
 *Updated after each plan completion*
@@ -57,6 +58,7 @@ Progress: [██████████] 100%
 | Phase 03 P02 | 4min | 2 tasks | 6 files |
 | Phase 04 P01 | 4min | 2 tasks | 4 files |
 | Phase 04 P02 | 4min | 2 tasks | 6 files |
+| Phase 05 P01 | 4min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -100,6 +102,10 @@ Recent decisions affecting current work:
 - 04-02: run_delivery guards both success=False and protocol=None before calling renderers
 - [Phase 04]: resend.api_key set per-call inside send_email for test isolation
 - [Phase 04]: --deliver implies --analyze via flag chaining (delivery requires analysis)
+- [Phase 05]: Refactored client.py into _auth_supabase and _auth_filesystem helpers for clean dual-mode separation
+- [Phase 05]: Token save-back immediately after auth (before extraction) to persist refresh on later failure
+- [Phase 05]: Failure notification is best-effort with exception swallowing to avoid masking original error
+- [Phase 05]: Delivery-stage failure notification suppressed (cannot email about email failure)
 
 ### Pending Todos
 
@@ -109,10 +115,10 @@ None yet.
 
 - Phase 1: MFA handling decision needed -- use dedicated non-MFA Garmin account vs. MFA workarounds (research flag from SUMMARY.md)
 - Phase 1: Validate garminconnect endpoints with specific Garmin device before building normalization layer
-- Phase 5: GitHub Actions token persistence approach needs design (store Garmin OAuth tokens in Supabase vs. local cron)
+- Phase 5: GitHub Actions token persistence approach -- RESOLVED: Supabase-backed token persistence implemented in 05-01
 
 ## Session Continuity
 
-Last session: 2026-03-03T22:00:54.480Z
-Stopped at: Phase 5 context gathered
-Resume file: .planning/phases/05-pipeline-automation/05-CONTEXT.md
+Last session: 2026-03-03T22:37:24.242Z
+Stopped at: Completed 05-01-PLAN.md
+Resume file: None

@@ -67,8 +67,8 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Pipeline Automation
 
-- [ ] **AUTO-01**: Daily pipeline runs automatically via cron or scheduled task (pull -> analyze -> deliver) without manual intervention
-- [ ] **AUTO-02**: Pipeline handles failures gracefully with retry logic and sends notification if daily protocol cannot be generated
+- [x] **AUTO-01**: Daily pipeline runs automatically via cron or scheduled task (pull -> analyze -> deliver) without manual intervention
+- [x] **AUTO-02**: Pipeline handles failures gracefully with retry logic and sends notification if daily protocol cannot be generated
 
 ## v2 Requirements
 
@@ -151,8 +151,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PROT-03 | Phase 4: Protocol Rendering and Email Delivery | Complete |
 | PROT-04 | Phase 4: Protocol Rendering and Email Delivery | Complete |
 | SAFE-01 | Phase 4: Protocol Rendering and Email Delivery | Complete |
-| AUTO-01 | Phase 5: Pipeline Automation | Pending |
-| AUTO-02 | Phase 5: Pipeline Automation | Pending |
+| AUTO-01 | Phase 5: Pipeline Automation | Complete |
+| AUTO-02 | Phase 5: Pipeline Automation | Complete |
 | TRND-02 | Phase 6: Intelligence Hardening | Pending |
 | TRND-03 | Phase 6: Intelligence Hardening | Pending |
 
