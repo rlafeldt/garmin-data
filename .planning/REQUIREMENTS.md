@@ -21,7 +21,7 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Health Profile
 
 - [x] **PROF-01**: User defines personal health profile in a static YAML config file including age, sex, weight, height, body composition, training goals, medical history, metabolic profile, diet preferences, current supplements with dosages, sleep context, and relevant lab values
-- [ ] **PROF-02**: Health profile is injected into every Claude API analysis call as structured context
+- [x] **PROF-02**: Health profile is injected into every Claude API analysis call as structured context
 
 ### Analysis — Training & Recovery
 
@@ -57,7 +57,7 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **TRND-01**: System feeds 7-day rolling trend context into the analysis prompt for longitudinal awareness
 - [ ] **TRND-02**: System computes 28-day extended trend windows for deeper pattern detection (HRV trajectory, resting HR creep, sleep debt accumulation)
 - [ ] **TRND-03**: System detects multi-metric anomaly convergence (e.g., simultaneous HRV decline + elevated resting HR + poor sleep efficiency) and generates proactive alerts
-- [ ] **TRND-04**: System prompt encodes sports science frameworks (periodization models, HRV interpretation, sleep architecture research) for grounded recommendations
+- [x] **TRND-04**: System prompt encodes sports science frameworks (periodization models, HRV interpretation, sleep architecture research) for grounded recommendations
 
 ### Safety & Quality
 
@@ -131,9 +131,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-07 | Phase 1: Data Ingestion and Storage | Complete |
 | DATA-08 | Phase 1: Data Ingestion and Storage | Complete |
 | PROF-01 | Phase 2: Health Profile and Prompt Assembly | Complete |
-| PROF-02 | Phase 2: Health Profile and Prompt Assembly | Pending |
+| PROF-02 | Phase 2: Health Profile and Prompt Assembly | Complete |
 | TRND-01 | Phase 2: Health Profile and Prompt Assembly | Complete |
-| TRND-04 | Phase 2: Health Profile and Prompt Assembly | Pending |
+| TRND-04 | Phase 2: Health Profile and Prompt Assembly | Complete |
 | TRNG-01 | Phase 3: Analysis Engine | Pending |
 | TRNG-02 | Phase 3: Analysis Engine | Pending |
 | TRNG-03 | Phase 3: Analysis Engine | Pending |
