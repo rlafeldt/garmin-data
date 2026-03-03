@@ -34,7 +34,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 2 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Project scaffold, Garmin auth client, metric extractors, Pydantic models, completeness scoring
+- [x] 01-01-PLAN.md — Project scaffold, Garmin auth client, metric extractors, Pydantic models, completeness scoring
 - [ ] 01-02-PLAN.md — Supabase storage layer, pipeline orchestrator, CLI entry point, end-to-end verification
 
 ### Phase 2: Health Profile and Prompt Assembly
@@ -117,7 +117,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Ingestion and Storage | 0/2 | Not started | - |
+| 1. Data Ingestion and Storage | 1/2 | In Progress | - |
 | 2. Health Profile and Prompt Assembly | 0/2 | Not started | - |
 | 3. Analysis Engine | 0/2 | Not started | - |
 | 4. Protocol Rendering and Email Delivery | 0/2 | Not started | - |

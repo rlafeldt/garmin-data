@@ -9,14 +9,14 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Data Ingestion
 
-- [ ] **DATA-01**: System pulls previous day's Garmin data automatically covering training activities, heart rate zones, training effect, training load, training status, and VO2 max trend
-- [ ] **DATA-02**: System pulls recovery metrics including overnight HRV (average and trend), Body Battery (charge/drain curve), and resting heart rate
-- [ ] **DATA-03**: System pulls sleep data including total duration, sleep stages (deep, light, REM, awake), sleep score, SpO2, and respiration rate
-- [ ] **DATA-04**: System pulls stress data including all-day stress score, stress duration breakdown, and relaxation time
-- [ ] **DATA-05**: System pulls general metrics including steps, intensity minutes, and calories burned
-- [ ] **DATA-06**: System validates data completeness and detects silent empty responses from Garmin API
+- [x] **DATA-01**: System pulls previous day's Garmin data automatically covering training activities, heart rate zones, training effect, training load, training status, and VO2 max trend
+- [x] **DATA-02**: System pulls recovery metrics including overnight HRV (average and trend), Body Battery (charge/drain curve), and resting heart rate
+- [x] **DATA-03**: System pulls sleep data including total duration, sleep stages (deep, light, REM, awake), sleep score, SpO2, and respiration rate
+- [x] **DATA-04**: System pulls stress data including all-day stress score, stress duration breakdown, and relaxation time
+- [x] **DATA-05**: System pulls general metrics including steps, intensity minutes, and calories burned
+- [x] **DATA-06**: System validates data completeness and detects silent empty responses from Garmin API
 - [ ] **DATA-07**: System stores daily biometric data in Supabase with wide denormalized schema and upsert-by-date idempotency
-- [ ] **DATA-08**: System handles Garmin auth token persistence and refresh without manual intervention
+- [x] **DATA-08**: System handles Garmin auth token persistence and refresh without manual intervention
 
 ### Health Profile
 
@@ -122,14 +122,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1: Data Ingestion and Storage | Pending |
-| DATA-02 | Phase 1: Data Ingestion and Storage | Pending |
-| DATA-03 | Phase 1: Data Ingestion and Storage | Pending |
-| DATA-04 | Phase 1: Data Ingestion and Storage | Pending |
-| DATA-05 | Phase 1: Data Ingestion and Storage | Pending |
-| DATA-06 | Phase 1: Data Ingestion and Storage | Pending |
+| DATA-01 | Phase 1: Data Ingestion and Storage | Complete |
+| DATA-02 | Phase 1: Data Ingestion and Storage | Complete |
+| DATA-03 | Phase 1: Data Ingestion and Storage | Complete |
+| DATA-04 | Phase 1: Data Ingestion and Storage | Complete |
+| DATA-05 | Phase 1: Data Ingestion and Storage | Complete |
+| DATA-06 | Phase 1: Data Ingestion and Storage | Complete |
 | DATA-07 | Phase 1: Data Ingestion and Storage | Pending |
-| DATA-08 | Phase 1: Data Ingestion and Storage | Pending |
+| DATA-08 | Phase 1: Data Ingestion and Storage | Complete |
 | PROF-01 | Phase 2: Health Profile and Prompt Assembly | Pending |
 | PROF-02 | Phase 2: Health Profile and Prompt Assembly | Pending |
 | TRND-01 | Phase 2: Health Profile and Prompt Assembly | Pending |
