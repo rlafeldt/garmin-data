@@ -473,6 +473,7 @@ class TestAnalyzeDaily:
 
         return Settings(_env_file=None)
 
+    @patch("biointelligence.analysis.engine.PromptContext")
     @patch("biointelligence.analysis.engine.analyze_prompt")
     @patch("biointelligence.analysis.engine.get_anthropic_client")
     @patch("biointelligence.analysis.engine.assemble_prompt")
@@ -491,6 +492,7 @@ class TestAnalyzeDaily:
         mock_assemble_prompt,
         mock_get_client,
         mock_analyze_prompt,
+        mock_prompt_context,
         mock_settings,
         fake_protocol,
     ):
@@ -502,6 +504,7 @@ class TestAnalyzeDaily:
         mock_fetch_metrics.return_value = MagicMock()
         mock_fetch_activities.return_value = []
         mock_compute_trends.return_value = MagicMock()
+        mock_prompt_context.return_value = MagicMock()
         mock_assemble_prompt.return_value = MagicMock(text="test prompt", estimated_tokens=500)
         mock_get_client.return_value = MagicMock()
         mock_analyze_prompt.return_value = (
@@ -517,6 +520,7 @@ class TestAnalyzeDaily:
         assert result.output_tokens == 1800
         assert result.date == datetime.date(2026, 3, 2)
 
+    @patch("biointelligence.analysis.engine.PromptContext")
     @patch("biointelligence.analysis.engine.analyze_prompt")
     @patch("biointelligence.analysis.engine.get_anthropic_client")
     @patch("biointelligence.analysis.engine.assemble_prompt")
@@ -535,6 +539,7 @@ class TestAnalyzeDaily:
         mock_assemble_prompt,
         mock_get_client,
         mock_analyze_prompt,
+        mock_prompt_context,
         mock_settings,
     ):
         """analyze_daily returns success=False with error message on API failure."""
@@ -545,6 +550,7 @@ class TestAnalyzeDaily:
         mock_fetch_metrics.return_value = MagicMock()
         mock_fetch_activities.return_value = []
         mock_compute_trends.return_value = MagicMock()
+        mock_prompt_context.return_value = MagicMock()
         mock_assemble_prompt.return_value = MagicMock(text="test prompt", estimated_tokens=500)
         mock_get_client.return_value = MagicMock()
         mock_analyze_prompt.side_effect = ValueError("Claude refused the analysis request")
@@ -555,6 +561,7 @@ class TestAnalyzeDaily:
         assert "refused" in result.error.lower()
         assert result.protocol is None
 
+    @patch("biointelligence.analysis.engine.PromptContext")
     @patch("biointelligence.analysis.engine.analyze_prompt")
     @patch("biointelligence.analysis.engine.get_anthropic_client")
     @patch("biointelligence.analysis.engine.assemble_prompt")
@@ -573,6 +580,7 @@ class TestAnalyzeDaily:
         mock_assemble_prompt,
         mock_get_client,
         mock_analyze_prompt,
+        mock_prompt_context,
         mock_settings,
         fake_protocol,
         caplog,
@@ -585,6 +593,7 @@ class TestAnalyzeDaily:
         mock_fetch_metrics.return_value = MagicMock()
         mock_fetch_activities.return_value = []
         mock_compute_trends.return_value = MagicMock()
+        mock_prompt_context.return_value = MagicMock()
         mock_assemble_prompt.return_value = MagicMock(text="test prompt", estimated_tokens=500)
         mock_get_client.return_value = MagicMock()
         mock_analyze_prompt.return_value = (
