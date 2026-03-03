@@ -1,0 +1,49 @@
+biometrics:
+  age: 30
+  sex: male
+  weight_kg: 75.0
+  height_cm: 178.0
+
+training:
+  phase: build
+  weekly_volume_hours: 6.0
+  preferred_types:
+    - cycling
+  race_goals:
+    - event: "Spring Century"
+      date: "2026-05-10"
+      priority: B
+  injury_history: []
+
+medical:
+  conditions: []
+  medications: []
+  allergies: []
+
+metabolic:
+  resting_metabolic_rate: 1750
+  glucose_response: normal
+
+diet:
+  preference: balanced
+  restrictions: []
+  meal_timing: "3 meals"
+
+supplements:
+  - name: magnesium_glycinate
+    dose: "400mg"
+    form: glycinate
+    timing: evening
+    condition: "increase to 600mg on high-stress days"
+
+sleep_context:
+  chronotype: intermediate
+  target_bedtime: "22:30"
+  target_wake: "06:30"
+
+lab_values:
+  vitamin_d:
+    value: 42
+    unit: "ng/mL"
+    date: "2025-11"
+    range: "30-100"
