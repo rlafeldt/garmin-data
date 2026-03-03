@@ -67,7 +67,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Pipeline Automation
 
-- [ ] **AUTO-01**: Daily pipeline runs automatically via cron or scheduled task (pull → analyze → deliver) without manual intervention
+- [ ] **AUTO-01**: Daily pipeline runs automatically via cron or scheduled task (pull -> analyze -> deliver) without manual intervention
 - [ ] **AUTO-02**: Pipeline handles failures gracefully with retry logic and sends notification if daily protocol cannot be generated
 
 ## v2 Requirements
@@ -113,13 +113,45 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| (Populated during roadmap creation) | | |
+| DATA-01 | Phase 1: Data Ingestion and Storage | Pending |
+| DATA-02 | Phase 1: Data Ingestion and Storage | Pending |
+| DATA-03 | Phase 1: Data Ingestion and Storage | Pending |
+| DATA-04 | Phase 1: Data Ingestion and Storage | Pending |
+| DATA-05 | Phase 1: Data Ingestion and Storage | Pending |
+| DATA-06 | Phase 1: Data Ingestion and Storage | Pending |
+| DATA-07 | Phase 1: Data Ingestion and Storage | Pending |
+| DATA-08 | Phase 1: Data Ingestion and Storage | Pending |
+| PROF-01 | Phase 2: Health Profile and Prompt Assembly | Pending |
+| PROF-02 | Phase 2: Health Profile and Prompt Assembly | Pending |
+| TRND-01 | Phase 2: Health Profile and Prompt Assembly | Pending |
+| TRND-04 | Phase 2: Health Profile and Prompt Assembly | Pending |
+| TRNG-01 | Phase 3: Analysis Engine | Pending |
+| TRNG-02 | Phase 3: Analysis Engine | Pending |
+| TRNG-03 | Phase 3: Analysis Engine | Pending |
+| TRNG-04 | Phase 3: Analysis Engine | Pending |
+| SLEP-01 | Phase 3: Analysis Engine | Pending |
+| SLEP-02 | Phase 3: Analysis Engine | Pending |
+| NUTR-01 | Phase 3: Analysis Engine | Pending |
+| NUTR-02 | Phase 3: Analysis Engine | Pending |
+| SUPP-01 | Phase 3: Analysis Engine | Pending |
+| SUPP-02 | Phase 3: Analysis Engine | Pending |
+| SAFE-02 | Phase 3: Analysis Engine | Pending |
+| SAFE-03 | Phase 3: Analysis Engine | Pending |
+| PROT-01 | Phase 4: Protocol Rendering and Email Delivery | Pending |
+| PROT-02 | Phase 4: Protocol Rendering and Email Delivery | Pending |
+| PROT-03 | Phase 4: Protocol Rendering and Email Delivery | Pending |
+| PROT-04 | Phase 4: Protocol Rendering and Email Delivery | Pending |
+| SAFE-01 | Phase 4: Protocol Rendering and Email Delivery | Pending |
+| AUTO-01 | Phase 5: Pipeline Automation | Pending |
+| AUTO-02 | Phase 5: Pipeline Automation | Pending |
+| TRND-02 | Phase 6: Intelligence Hardening | Pending |
+| TRND-03 | Phase 6: Intelligence Hardening | Pending |
 
 **Coverage:**
-- v1 requirements: 28 total
-- Mapped to phases: 0
-- Unmapped: 28 (pending roadmap creation)
+- v1 requirements: 33 total
+- Mapped to phases: 33
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-03*
-*Last updated: 2026-03-03 after initial definition*
+*Last updated: 2026-03-03 after roadmap creation*
