@@ -8,7 +8,6 @@ import pytest
 
 from biointelligence.garmin.models import (
     Activity,
-    CompletenessResult,
     DailyMetrics,
     assess_completeness,
     normalize_activities,

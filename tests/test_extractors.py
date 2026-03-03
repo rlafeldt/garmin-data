@@ -1,9 +1,8 @@
 """Tests for Garmin metric extraction with retry and error isolation."""
 
 import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
-import pytest
 from garminconnect import GarminConnectConnectionError, GarminConnectTooManyRequestsError
 
 from biointelligence.garmin.extractors import _fetch_with_retry, extract_all_metrics
