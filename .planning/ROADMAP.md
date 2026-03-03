@@ -36,7 +36,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — Project scaffold, Garmin auth client, metric extractors, Pydantic models, completeness scoring
 - [x] 01-02-PLAN.md — Supabase storage layer, pipeline orchestrator, CLI entry point, end-to-end verification
-- [ ] 01-03-PLAN.md — Gap closure: fix Settings test isolation from .env file (2 failing tests)
+- [x] 01-03-PLAN.md — Gap closure: fix Settings test isolation from .env file (2 failing tests)
 
 ### Phase 2: Health Profile and Prompt Assembly
 **Goal**: Personal health profile is loaded from config, rolling trend statistics are computed from stored data, and a structured prompt is assembled ready for Claude
@@ -50,7 +50,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Health profile Pydantic models, YAML loader, reference config, and 7-day rolling trend computation
+- [x] 02-01-PLAN.md — Health profile Pydantic models, YAML loader, reference config, and 7-day rolling trend computation
 - [ ] 02-02-PLAN.md — Prompt assembler with XML-tagged sections, sports science grounding, DailyProtocol schema, and token budget
 
 ### Phase 3: Analysis Engine
@@ -118,8 +118,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Ingestion and Storage | 2/3 | Gap closure | - |
-| 2. Health Profile and Prompt Assembly | 0/2 | Planned | - |
+| 1. Data Ingestion and Storage | 3/3 | Complete | 2026-03-03 |
+| 2. Health Profile and Prompt Assembly | 1/2 | In Progress | - |
 | 3. Analysis Engine | 0/2 | Not started | - |
 | 4. Protocol Rendering and Email Delivery | 0/2 | Not started | - |
 | 5. Pipeline Automation | 0/1 | Not started | - |
