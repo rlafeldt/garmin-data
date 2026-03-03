@@ -1,16 +1,23 @@
 """Tests for pipeline orchestrator and CLI entry point."""
 
 import datetime
-import sys
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
+import structlog
 
 from biointelligence.garmin.models import (
     Activity,
     CompletenessResult,
     DailyMetrics,
 )
+
+
+@pytest.fixture(autouse=True)
+def _reset_structlog():
+    """Reset structlog configuration after each test to avoid cross-test pollution."""
+    yield
+    structlog.reset_defaults()
 
 
 class TestIngestionResult:
@@ -198,7 +205,11 @@ class TestRunIngestion:
             score=0.0,
             critical_present=0,
             critical_total=6,
-            missing_critical=["total_sleep_seconds", "hrv_overnight_avg", "body_battery_morning", "resting_hr", "avg_stress_level", "steps"],
+            missing_critical=[
+                "total_sleep_seconds", "hrv_overnight_avg",
+                "body_battery_morning", "resting_hr",
+                "avg_stress_level", "steps",
+            ],
             is_no_wear=True,
         )
 
@@ -209,6 +220,7 @@ class TestRunIngestion:
         upserted_record = mock_upsert_daily.call_args[0][1]
         assert upserted_record.is_no_wear is True
 
+    @patch("biointelligence.pipeline.log")
     @patch("biointelligence.pipeline.get_supabase_client")
     @patch("biointelligence.pipeline.upsert_activities")
     @patch("biointelligence.pipeline.upsert_daily_metrics")
@@ -227,8 +239,8 @@ class TestRunIngestion:
         mock_upsert_daily,
         mock_upsert_activities,
         mock_get_supabase,
+        mock_log,
         mock_settings,
-        capsys,
     ):
         """run_ingestion logs a warning when completeness has missing critical fields."""
         from biointelligence.pipeline import run_ingestion
@@ -240,28 +252,31 @@ class TestRunIngestion:
         mock_normalize_daily.return_value = mock_record
         mock_normalize_activities.return_value = []
 
+        missing = [
+            "hrv_overnight_avg", "body_battery_morning",
+            "avg_stress_level", "total_sleep_seconds",
+        ]
         mock_completeness.return_value = CompletenessResult(
             score=0.5,
             critical_present=2,
             critical_total=6,
-            missing_critical=["hrv_overnight_avg", "body_battery_morning", "avg_stress_level", "total_sleep_seconds"],
+            missing_critical=missing,
             is_no_wear=False,
         )
 
         mock_get_supabase.return_value = MagicMock()
 
-        # Configure logging to capture output
-        from biointelligence.logging import configure_logging
-
-        configure_logging(json_output=False)
-
         result = run_ingestion(datetime.date(2026, 3, 2), settings=mock_settings)
 
         # Pipeline still succeeds even with missing data
         assert result.success is True
-        # Warning logged to stderr
-        captured = capsys.readouterr()
-        assert "missing_critical" in captured.err or "incomplete_data" in captured.err
+        # Verify warning was logged with missing_critical fields
+        mock_log.warning.assert_called_once_with(
+            "incomplete_data",
+            date="2026-03-02",
+            missing_critical=missing,
+            score=0.5,
+        )
 
     @patch("biointelligence.pipeline.get_supabase_client")
     @patch("biointelligence.pipeline.upsert_activities")
@@ -353,7 +368,7 @@ class TestMainCli:
             completeness=MagicMock(score=0.5, missing_critical=[]),
         )
 
-        exit_code = main([])
+        main([])
 
         mock_ingestion.assert_called_once()
         # The date should be yesterday (we can't assert exact date but verify it's a date)

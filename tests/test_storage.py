@@ -1,9 +1,7 @@
 """Tests for Supabase storage layer."""
 
 import datetime
-from unittest.mock import MagicMock, call, patch
-
-import pytest
+from unittest.mock import MagicMock, patch
 
 from biointelligence.garmin.models import Activity, DailyMetrics
 from biointelligence.storage.supabase import (
@@ -41,7 +39,7 @@ class TestUpsertDailyMetrics:
     """Tests for daily metrics upsert."""
 
     def test_calls_upsert_with_on_conflict_date(self):
-        """upsert_daily_metrics calls supabase.table('daily_metrics').upsert() with on_conflict='date'."""
+        """upsert_daily_metrics calls upsert with on_conflict='date'."""
         mock_client = MagicMock()
         record = DailyMetrics(
             date=datetime.date(2026, 3, 2),
@@ -61,7 +59,7 @@ class TestUpsertDailyMetrics:
         mock_client.table.return_value.upsert.return_value.execute.assert_called_once()
 
     def test_serializes_via_model_dump_json(self):
-        """upsert_daily_metrics serializes DailyMetrics via model_dump(mode='json') before sending."""
+        """upsert_daily_metrics serializes via model_dump(mode='json')."""
         mock_client = MagicMock()
         record = DailyMetrics(
             date=datetime.date(2026, 3, 2),
