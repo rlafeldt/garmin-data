@@ -1,4 +1,4 @@
-"""Pipeline orchestrator: extract -> validate -> store -> analyze."""
+"""Pipeline orchestrator: extract -> validate -> store -> analyze -> deliver."""
 
 from __future__ import annotations
 
@@ -10,6 +10,8 @@ from pydantic import BaseModel
 from biointelligence.analysis.engine import AnalysisResult, analyze_daily
 from biointelligence.analysis.storage import upsert_daily_protocol
 from biointelligence.config import Settings, get_settings
+from biointelligence.delivery.renderer import build_subject, render_html, render_text
+from biointelligence.delivery.sender import DeliveryResult, send_email
 from biointelligence.garmin.client import get_authenticated_client
 from biointelligence.garmin.extractors import extract_all_metrics
 from biointelligence.garmin.models import (
@@ -143,6 +145,70 @@ def run_analysis(
     else:
         log.error(
             "analysis_pipeline_failed",
+            date=target_date.isoformat(),
+            error=result.error,
+        )
+
+    return result
+
+
+def run_delivery(
+    analysis_result: AnalysisResult, settings: Settings | None = None
+) -> DeliveryResult:
+    """Render and deliver the Daily Protocol email.
+
+    Orchestrates the full delivery flow: guard against failed analysis,
+    render HTML + plain text, build subject line, and send via Resend.
+
+    Args:
+        analysis_result: Result from run_analysis with DailyProtocol.
+        settings: Optional settings override. Uses get_settings() if not provided.
+
+    Returns:
+        DeliveryResult with email_id on success, error on failure.
+    """
+    if settings is None:
+        settings = get_settings()
+
+    log.info("delivery_pipeline_start", date=analysis_result.date.isoformat())
+
+    # Guard: skip delivery if analysis failed or no protocol available
+    if not analysis_result.success or analysis_result.protocol is None:
+        log.warning(
+            "delivery_pipeline_skipped",
+            date=analysis_result.date.isoformat(),
+            reason="No protocol available for delivery",
+        )
+        return DeliveryResult(
+            date=analysis_result.date,
+            success=False,
+            error="No protocol available for delivery",
+        )
+
+    protocol = analysis_result.protocol
+    target_date = analysis_result.date
+
+    html_content = render_html(protocol, target_date)
+    text_content = render_text(protocol, target_date)
+    subject = build_subject(protocol, target_date)
+
+    result = send_email(
+        html=html_content,
+        text=text_content,
+        subject=subject,
+        target_date=target_date,
+        settings=settings,
+    )
+
+    if result.success:
+        log.info(
+            "delivery_pipeline_complete",
+            date=target_date.isoformat(),
+            email_id=result.email_id,
+        )
+    else:
+        log.error(
+            "delivery_pipeline_failed",
             date=target_date.isoformat(),
             error=result.error,
         )

@@ -10,7 +10,7 @@ from datetime import date, datetime, timedelta
 import structlog
 
 from biointelligence.logging import configure_logging
-from biointelligence.pipeline import run_analysis, run_ingestion
+from biointelligence.pipeline import run_analysis, run_delivery, run_ingestion
 
 log = structlog.get_logger()
 
@@ -64,8 +64,18 @@ def main(argv: list[str] | None = None) -> int:
         default=False,
         help="Run analysis after ingestion (requires ANTHROPIC_API_KEY)",
     )
+    parser.add_argument(
+        "--deliver",
+        action="store_true",
+        default=False,
+        help="Send protocol email after analysis (requires RESEND_API_KEY)",
+    )
 
     args = parser.parse_args(argv)
+
+    # --deliver implies --analyze (delivery requires a protocol)
+    if args.deliver:
+        args.analyze = True
 
     configure_logging(json_output=args.json_log)
 
@@ -106,6 +116,26 @@ def main(argv: list[str] | None = None) -> int:
             f"model={analysis_result.model}, "
             f"tokens={analysis_result.input_tokens}in/{analysis_result.output_tokens}out"
         )
+
+        if args.deliver:
+            try:
+                delivery_result = run_delivery(analysis_result)
+            except Exception:
+                log.exception("delivery_failed", date=target_date.isoformat())
+                return 1
+
+            if not delivery_result.success:
+                log.error(
+                    "delivery_unsuccessful",
+                    date=target_date.isoformat(),
+                    error=delivery_result.error,
+                )
+                return 1
+
+            print(
+                f"Delivery complete for {target_date}: "
+                f"email_id={delivery_result.email_id}"
+            )
 
     return 0
 

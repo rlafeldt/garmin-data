@@ -727,3 +727,319 @@ class TestMainCliAnalyze:
 
             mock_run_analysis.assert_not_called()
             assert exit_code == 0
+
+
+# ---------------------------------------------------------------------------
+# Task 2 (Plan 04-02): run_delivery pipeline function and CLI --deliver
+# ---------------------------------------------------------------------------
+
+
+class TestRunDelivery:
+    """Tests for the run_delivery pipeline function."""
+
+    @pytest.fixture()
+    def mock_settings(self, monkeypatch):
+        """Create mock settings for run_delivery tests."""
+        monkeypatch.setenv("GARMIN_EMAIL", "test@garmin.com")
+        monkeypatch.setenv("GARMIN_PASSWORD", "testpass")
+        monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
+        monkeypatch.setenv("SUPABASE_KEY", "testkey")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+        monkeypatch.setenv("RESEND_API_KEY", "re_test_key")
+        monkeypatch.setenv("SENDER_EMAIL", "protocol@example.com")
+        monkeypatch.setenv("RECIPIENT_EMAIL", "user@example.com")
+
+        from biointelligence.config import Settings
+
+        return Settings(_env_file=None)
+
+    @patch("biointelligence.pipeline.send_email")
+    @patch("biointelligence.pipeline.build_subject")
+    @patch("biointelligence.pipeline.render_text")
+    @patch("biointelligence.pipeline.render_html")
+    def test_successful_delivery_calls_render_and_send(
+        self,
+        mock_render_html,
+        mock_render_text,
+        mock_build_subject,
+        mock_send_email,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_delivery with successful AnalysisResult calls all renderers and send_email."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20250514",
+            success=True,
+        )
+
+        mock_render_html.return_value = "<html>rendered</html>"
+        mock_render_text.return_value = "plain text"
+        mock_build_subject.return_value = "Daily Protocol -- Mar 2, 2026"
+        mock_send_email.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="email-123",
+            success=True,
+        )
+
+        result = run_delivery(analysis_result, settings=mock_settings)
+
+        mock_render_html.assert_called_once_with(
+            fake_protocol, datetime.date(2026, 3, 2)
+        )
+        mock_render_text.assert_called_once_with(
+            fake_protocol, datetime.date(2026, 3, 2)
+        )
+        mock_build_subject.assert_called_once_with(
+            fake_protocol, datetime.date(2026, 3, 2)
+        )
+        mock_send_email.assert_called_once_with(
+            html="<html>rendered</html>",
+            text="plain text",
+            subject="Daily Protocol -- Mar 2, 2026",
+            target_date=datetime.date(2026, 3, 2),
+            settings=mock_settings,
+        )
+        assert result.success is True
+        assert result.email_id == "email-123"
+
+    @patch("biointelligence.pipeline.send_email")
+    @patch("biointelligence.pipeline.build_subject")
+    @patch("biointelligence.pipeline.render_text")
+    @patch("biointelligence.pipeline.render_html")
+    def test_failed_analysis_returns_failed_delivery(
+        self,
+        mock_render_html,
+        mock_render_text,
+        mock_build_subject,
+        mock_send_email,
+        mock_settings,
+    ):
+        """run_delivery with failed AnalysisResult (protocol is None) returns failed DeliveryResult."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.pipeline import run_delivery
+
+        failed_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=None,
+            model="claude-haiku-4-5-20250514",
+            success=False,
+            error="API connection failed",
+        )
+
+        result = run_delivery(failed_result, settings=mock_settings)
+
+        assert result.success is False
+        assert "No protocol available" in result.error
+        mock_render_html.assert_not_called()
+        mock_send_email.assert_not_called()
+
+    @patch("biointelligence.pipeline.send_email")
+    @patch("biointelligence.pipeline.build_subject")
+    @patch("biointelligence.pipeline.render_text")
+    @patch("biointelligence.pipeline.render_html")
+    def test_success_false_returns_failed_delivery(
+        self,
+        mock_render_html,
+        mock_render_text,
+        mock_build_subject,
+        mock_send_email,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_delivery with success=False returns failed DeliveryResult without calling renderers."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.pipeline import run_delivery
+
+        # success=False but protocol is set (edge case)
+        failed_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            model="claude-haiku-4-5-20250514",
+            success=False,
+            error="Validation failed",
+        )
+
+        result = run_delivery(failed_result, settings=mock_settings)
+
+        assert result.success is False
+        mock_render_html.assert_not_called()
+        mock_send_email.assert_not_called()
+
+    @patch("biointelligence.pipeline.log")
+    @patch("biointelligence.pipeline.send_email")
+    @patch("biointelligence.pipeline.build_subject")
+    @patch("biointelligence.pipeline.render_text")
+    @patch("biointelligence.pipeline.render_html")
+    def test_logs_start_completion_and_failure(
+        self,
+        mock_render_html,
+        mock_render_text,
+        mock_build_subject,
+        mock_send_email,
+        mock_log,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_delivery logs start, completion (with email_id), and failure events."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20250514",
+            success=True,
+        )
+
+        mock_render_html.return_value = "<html>test</html>"
+        mock_render_text.return_value = "test"
+        mock_build_subject.return_value = "Test Subject"
+        mock_send_email.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="email-456",
+            success=True,
+        )
+
+        run_delivery(analysis_result, settings=mock_settings)
+
+        log_events = [c[0][0] for c in mock_log.info.call_args_list]
+        assert "delivery_pipeline_start" in log_events
+        assert "delivery_pipeline_complete" in log_events
+
+
+class TestMainCliDeliver:
+    """Tests for CLI --deliver flag."""
+
+    @patch("biointelligence.main.run_delivery")
+    @patch("biointelligence.main.run_analysis")
+    @patch("biointelligence.main.run_ingestion")
+    @patch("biointelligence.main.configure_logging")
+    def test_deliver_flag_triggers_run_delivery(
+        self, mock_logging, mock_ingestion, mock_run_analysis, mock_run_delivery
+    ):
+        """CLI --deliver flag triggers run_delivery after successful analysis."""
+        from biointelligence.main import main
+
+        mock_ingestion.return_value = MagicMock(
+            success=True,
+            date=datetime.date(2026, 3, 2),
+            activity_count=1,
+            completeness=MagicMock(score=0.9, is_no_wear=False),
+        )
+        mock_run_analysis.return_value = MagicMock(
+            success=True,
+            model="claude-haiku-4-5-20250514",
+            input_tokens=3200,
+            output_tokens=1800,
+        )
+        mock_run_delivery.return_value = MagicMock(
+            success=True,
+            email_id="email-789",
+            date=datetime.date(2026, 3, 2),
+        )
+
+        exit_code = main(["--date", "2026-03-02", "--deliver"])
+
+        mock_ingestion.assert_called_once()
+        mock_run_analysis.assert_called_once()
+        mock_run_delivery.assert_called_once()
+        assert exit_code == 0
+
+    @patch("biointelligence.main.run_delivery")
+    @patch("biointelligence.main.run_analysis")
+    @patch("biointelligence.main.run_ingestion")
+    @patch("biointelligence.main.configure_logging")
+    def test_deliver_without_analyze_auto_enables_analysis(
+        self, mock_logging, mock_ingestion, mock_run_analysis, mock_run_delivery
+    ):
+        """CLI --deliver without --analyze auto-enables analysis (delivery requires analysis)."""
+        from biointelligence.main import main
+
+        mock_ingestion.return_value = MagicMock(
+            success=True,
+            date=datetime.date(2026, 3, 2),
+            activity_count=1,
+            completeness=MagicMock(score=0.9, is_no_wear=False),
+        )
+        mock_run_analysis.return_value = MagicMock(
+            success=True,
+            model="claude-haiku-4-5-20250514",
+            input_tokens=3200,
+            output_tokens=1800,
+        )
+        mock_run_delivery.return_value = MagicMock(
+            success=True,
+            email_id="email-auto",
+            date=datetime.date(2026, 3, 2),
+        )
+
+        # Only --deliver, no --analyze
+        exit_code = main(["--date", "2026-03-02", "--deliver"])
+
+        # Analysis should be called even without --analyze flag
+        mock_run_analysis.assert_called_once()
+        mock_run_delivery.assert_called_once()
+        assert exit_code == 0
+
+    @patch("biointelligence.main.run_delivery")
+    @patch("biointelligence.main.run_analysis")
+    @patch("biointelligence.main.run_ingestion")
+    @patch("biointelligence.main.configure_logging")
+    def test_deliver_returns_1_on_delivery_failure(
+        self, mock_logging, mock_ingestion, mock_run_analysis, mock_run_delivery
+    ):
+        """CLI --deliver returns exit 1 when delivery fails."""
+        from biointelligence.main import main
+
+        mock_ingestion.return_value = MagicMock(
+            success=True,
+            date=datetime.date(2026, 3, 2),
+            activity_count=1,
+            completeness=MagicMock(score=0.9, is_no_wear=False),
+        )
+        mock_run_analysis.return_value = MagicMock(
+            success=True,
+            model="claude-haiku-4-5-20250514",
+            input_tokens=3200,
+            output_tokens=1800,
+        )
+        mock_run_delivery.return_value = MagicMock(
+            success=False,
+            error="Resend API error",
+        )
+
+        exit_code = main(["--date", "2026-03-02", "--deliver"])
+
+        assert exit_code == 1
+
+    @patch("biointelligence.main.run_ingestion")
+    @patch("biointelligence.main.configure_logging")
+    def test_no_deliver_flag_does_not_call_delivery(
+        self, mock_logging, mock_ingestion
+    ):
+        """CLI without --deliver does not call run_delivery."""
+        from biointelligence.main import main
+
+        mock_ingestion.return_value = MagicMock(
+            success=True,
+            date=datetime.date(2026, 3, 2),
+            activity_count=1,
+            completeness=MagicMock(score=0.9, is_no_wear=False),
+        )
+
+        with patch("biointelligence.main.run_delivery") as mock_run_delivery:
+            exit_code = main(["--date", "2026-03-02"])
+
+            mock_run_delivery.assert_not_called()
+            assert exit_code == 0
