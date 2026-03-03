@@ -79,11 +79,11 @@ Plans:
   3. The email includes a "Why this matters" section explaining broader context
   4. The email reports data freshness and alerts when any data source is missing or stale
   5. A test email arrives in the inbox (not spam) with correct formatting
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01: TBD
-- [ ] 04-02: TBD
+- [ ] 04-01-PLAN.md — HTML/plain-text email renderers, delivery package scaffold, Settings extension with Resend config
+- [ ] 04-02-PLAN.md — Resend sender with retry, run_delivery pipeline function, CLI --deliver flag
 
 ### Phase 5: Pipeline Automation
 **Goal**: The entire pull-analyze-deliver pipeline runs automatically each morning without manual intervention
