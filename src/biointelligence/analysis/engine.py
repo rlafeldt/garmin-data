@@ -14,13 +14,18 @@ from pydantic import BaseModel
 from supabase import Client
 
 from biointelligence.analysis.client import analyze_prompt, get_anthropic_client
+from biointelligence.anomaly.detector import detect_anomalies
 from biointelligence.config import Settings, get_settings
 from biointelligence.garmin.models import Activity, DailyMetrics
 from biointelligence.profile.loader import load_health_profile
 from biointelligence.prompt.assembler import assemble_prompt
 from biointelligence.prompt.models import DailyProtocol, PromptContext
 from biointelligence.storage.supabase import get_supabase_client
-from biointelligence.trends.compute import compute_trends
+from biointelligence.trends.compute import (
+    compute_extended_trends,
+    compute_trends,
+    fetch_trend_window,
+)
 
 log = structlog.get_logger()
 
@@ -96,6 +101,9 @@ def analyze_daily(target_date: date, settings: Settings | None = None) -> Analys
         1. Load health profile from YAML
         2. Fetch daily metrics and activities from Supabase
         3. Compute 7-day trends from Supabase
+        3b. Compute 28-day extended trends (graceful degradation)
+        3c. Fetch 28-day raw rows for consecutive day checks
+        3d. Run anomaly detection
         4. Assemble Claude prompt from all data sources
         5. Call Claude API with structured output
         6. Return AnalysisResult with protocol and metadata
@@ -122,8 +130,33 @@ def analyze_daily(target_date: date, settings: Settings | None = None) -> Analys
         today_metrics = _fetch_daily_metrics(supabase_client, target_date)
         activities = _fetch_activities(supabase_client, target_date)
 
-        # Step 3: Compute trends
+        # Step 3: Compute 7-day trends
         trends = compute_trends(supabase_client, target_date)
+
+        # Step 3b-3d: Extended trends and anomaly detection (graceful degradation)
+        extended_trends = None
+        anomaly_result = None
+        try:
+            extended_trends = compute_extended_trends(supabase_client, target_date)
+            trend_rows_28d = fetch_trend_window(
+                supabase_client, target_date, window_days=28,
+            )
+            anomaly_result = detect_anomalies(
+                today_metrics, extended_trends, trend_rows_28d,
+            )
+            log.info(
+                "anomaly_detection_complete",
+                alerts=len(anomaly_result.alerts),
+                metrics_checked=anomaly_result.metrics_checked,
+            )
+        except Exception as exc:
+            log.warning(
+                "anomaly_detection_failed",
+                error=str(exc),
+                date=target_date.isoformat(),
+            )
+            extended_trends = None
+            anomaly_result = None
 
         # Step 4: Assemble prompt
         context = PromptContext(
@@ -132,6 +165,8 @@ def analyze_daily(target_date: date, settings: Settings | None = None) -> Analys
             profile=profile,
             activities=activities,
             target_date=target_date,
+            extended_trends=extended_trends,
+            anomaly_result=anomaly_result,
         )
         prompt = assemble_prompt(context)
 

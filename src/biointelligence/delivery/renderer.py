@@ -5,6 +5,7 @@ from __future__ import annotations
 import html
 from datetime import date
 
+from biointelligence.anomaly.models import Alert, AlertSeverity
 from biointelligence.prompt.models import (
     DailyProtocol,
     NutritionGuidance,
@@ -36,6 +37,12 @@ _RED = "#ef4444"
 # Data quality banner
 _BANNER_BG = "#fef3c7"
 _BANNER_TEXT = "#92400e"
+
+# Alert banner colors
+_ALERT_WARNING_BG = "#fef9c3"
+_ALERT_WARNING_BORDER = "#eab308"
+_ALERT_CRITICAL_BG = "#fef2f2"
+_ALERT_CRITICAL_BORDER = "#ef4444"
 
 
 # ---------------------------------------------------------------------------
@@ -131,6 +138,47 @@ color: {_BANNER_TEXT}; font-family: {_FONT_STACK};">\
     </table>
   </td>
 </tr>"""
+
+
+def _render_alert_banners(alerts: list[Alert]) -> str:
+    """Render alert banners for the top of the email.
+
+    Returns empty string if alerts list is empty. Each alert gets a
+    colored left border and background based on severity.
+    """
+    if not alerts:
+        return ""
+
+    parts: list[str] = []
+    for alert in alerts:
+        if alert.severity == AlertSeverity.CRITICAL:
+            bg = _ALERT_CRITICAL_BG
+            border = _ALERT_CRITICAL_BORDER
+        else:
+            bg = _ALERT_WARNING_BG
+            border = _ALERT_WARNING_BORDER
+
+        parts.append(f"""\
+<tr>
+  <td style="padding: 8px 24px;">
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" \
+style="background-color: {bg}; border-left: 4px solid {border}; border-radius: 6px;">
+      <tr>
+        <td style="padding: 12px 16px;">
+          <p style="margin: 0 0 4px 0; font-size: 14px; font-weight: 700; \
+color: {border}; font-family: {_FONT_STACK};">{_e(alert.title)}</p>
+          <p style="margin: 0 0 4px 0; font-size: 13px; line-height: 1.5; \
+color: {_TEXT_COLOR}; font-family: {_FONT_STACK};">{_e(alert.description)}</p>
+          <p style="margin: 0; font-size: 13px; line-height: 1.5; \
+color: {_MUTED_COLOR}; font-family: {_FONT_STACK};">\
+<strong>Action:</strong> {_e(alert.suggested_action)}</p>
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>""")
+
+    return "\n".join(parts)
 
 
 def _render_domain_section(title: str, headline: str, content: str) -> str:
@@ -368,6 +416,7 @@ def render_html(protocol: DailyProtocol, target_date: date) -> str:
     color = _readiness_color(protocol.training.readiness_score)
 
     sections = [
+        _render_alert_banners(protocol.alerts),
         _render_readiness_dashboard(protocol, color),
         _render_data_quality_banner(protocol.data_quality_notes),
         _render_domain_section(
@@ -409,6 +458,19 @@ def render_text(protocol: DailyProtocol, target_date: date) -> str:
         f"DAILY PROTOCOL \u2014 {target_date:%B %-d, %Y}",
         f"Readiness: {score}/10",
         "",
+    ]
+
+    # Alert section at top when alerts exist
+    if protocol.alerts:
+        lines.append("ALERTS")
+        for alert in protocol.alerts:
+            lines.append(
+                f"- [{alert.severity.value.upper()}] {alert.title}: "
+                f"{alert.description} -- Action: {alert.suggested_action}"
+            )
+        lines.append("")
+
+    lines.extend([
         "QUICK SUMMARY",
         f"  Sleep: {protocol.sleep.headline}",
         f"  Recovery: {protocol.recovery.headline}",
@@ -416,7 +478,7 @@ def render_text(protocol: DailyProtocol, target_date: date) -> str:
         f"  Nutrition: {protocol.nutrition.headline}",
         f"  Supplements: {protocol.supplementation.headline}",
         "",
-    ]
+    ])
 
     if protocol.data_quality_notes and protocol.data_quality_notes.strip():
         lines.extend([
