@@ -141,11 +141,12 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
   3. Message delivery is confirmed via API status callbacks; failure triggers fallback to email
   4. Delivery timing is configurable based on user preference (morning / post-workout / evening / flexible)
   5. Alert banners from Phase 6 render correctly in WhatsApp format
-**Plans**: 2 plans
+**Plans**: 3 plans
 
 Plans:
-- [ ] 07-01-PLAN.md — WhatsApp renderer, WhatsApp sender, Settings extension with 3 WhatsApp env vars
-- [ ] 07-02-PLAN.md — Pipeline WhatsApp-first delivery with email fallback, delivery package wiring, GitHub Actions secrets
+- [x] 07-01-PLAN.md — WhatsApp renderer, WhatsApp sender, Settings extension with 3 WhatsApp env vars
+- [x] 07-02-PLAN.md — Pipeline WhatsApp-first delivery with email fallback, delivery package wiring, GitHub Actions secrets
+- [ ] 07-03-PLAN.md — Gap closure: update REQUIREMENTS.md and ROADMAP.md for WHTS-02 revised scope and WHTS-04 deferral
 
 ### Phase 8: User Onboarding
 **Goal**: Web-based onboarding flow replacing the manual YAML health profile. Initial onboarding captures only essentials (biological profile, sport, diet, training phase, chronotype); remaining fields collected progressively via in-app reminders. Full questionnaire covers 6 steps: biological profile, health/medications/supplementation, metabolic/nutrition profile, training/sleep context, baseline biometric metrics, and data upload with informed consent. All data persisted to Supabase and feeds the existing analysis engine.
