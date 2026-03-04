@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: completed
-stopped_at: Phase 6 context gathered
-last_updated: "2026-03-04T16:05:28.496Z"
-last_activity: 2026-03-04 -- Plan 05-02 executed (pipeline orchestrator, GitHub Actions, end-to-end verified)
+status: in_progress
+stopped_at: Phase 6 Plan 1 complete
+last_updated: "2026-03-04T16:38:52Z"
+last_activity: 2026-03-04 -- Plan 06-01 executed (extended trends with stddev, anomaly detection module)
 progress:
-  total_phases: 6
+  total_phases: 8
   completed_phases: 5
-  total_plans: 11
-  completed_plans: 11
-  percent: 100
+  total_plans: 13
+  completed_plans: 12
+  percent: 75
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-03)
 
 **Core value:** Every morning, receive a single coherent Daily Protocol that tells you exactly what to do today based on your Garmin data, health profile, and recent trends.
-**Current focus:** Phase 5 complete. Pipeline fully automated. Phase 6 (Intelligence Hardening) next.
+**Current focus:** Phase 6 in progress. Extended trends and anomaly detection complete (Plan 1). Prompt integration and rendering next (Plan 2).
 
 ## Current Position
 
-Phase: 5 of 6 (Pipeline Automation) -- COMPLETE
-Plan: 2 of 2 in current phase (all plans complete)
-Status: Phase 5 complete, Phase 6 next
-Last activity: 2026-03-04 -- Plan 05-02 executed (pipeline orchestrator, GitHub Actions, end-to-end verified)
+Phase: 6 of 8 (Intelligence Hardening)
+Plan: 1 of 2 in current phase (Plan 1 complete)
+Status: Phase 6 Plan 1 complete, Plan 2 next
+Last activity: 2026-03-04 -- Plan 06-01 executed (extended trends with stddev, anomaly detection module)
 
-Progress: [██████████] 100%
+Progress: [███████░░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
+- Total plans completed: 12
 - Average duration: 7min
-- Total execution time: 1.3 hours
+- Total execution time: 1.4 hours
 
 **By Phase:**
 
@@ -50,8 +50,8 @@ Progress: [██████████] 100%
 | 5 - Pipeline Automation | 2/2 | 24min | 12min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (4min), 04-01 (4min), 04-02 (4min), 05-01 (4min), 05-02 (20min)
-- Trend: 05-02 longer due to human verification checkpoint and additional fixes
+- Last 5 plans: 04-01 (4min), 04-02 (4min), 05-01 (4min), 05-02 (20min), 06-01 (8min)
+- Trend: Consistent execution pace, TDD tasks slightly longer due to test-first approach
 
 *Updated after each plan completion*
 | Phase 03 P01 | 7min | 2 tasks | 9 files |
@@ -60,6 +60,7 @@ Progress: [██████████] 100%
 | Phase 04 P02 | 4min | 2 tasks | 6 files |
 | Phase 05 P01 | 4min | 2 tasks | 7 files |
 | Phase 05 P02 | 20min | 3 tasks | 12 files |
+| Phase 06 P01 | 8min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -113,6 +114,16 @@ Recent decisions affecting current work:
 - [Phase 05]: Single-job workflow -- CLI already chains stages, no need for multi-job orchestration
 - [Phase 05]: Token fallback -- when stored Supabase token expires, fall back to email/password re-auth
 - [Phase 05]: CLI entry point registered in pyproject.toml for uv run biointelligence invocation
+- 06-01: 2.5 SD for WARNING and 3.0 SD for CRITICAL single-metric outlier thresholds
+- 06-01: 1.0 SD per metric within convergence patterns (lower bar since convergence IS the signal)
+- 06-01: body_battery_drain derived as (body_battery_max - body_battery_min) for stress escalation pattern
+- 06-01: statistics.stdev (sample) not pstdev (population) for 28-day rolling window
+- 06-01: Lazy imports in anomaly/__init__.py via __getattr__ pattern (matching existing modules)
+
+### Roadmap Evolution
+
+- Phase 7 added: WhatsApp Delivery — replace email with WhatsApp messages for mobile-friendly Daily Protocol delivery
+- Phase 8 added: User Onboarding — web-based 6-step onboarding flow (biological profile, health, nutrition, training/sleep, baselines, data upload + lab results)
 
 ### Pending Todos
 
@@ -126,6 +137,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-04T16:05:28.491Z
-Stopped at: Phase 6 context gathered
-Resume file: .planning/phases/06-intelligence-hardening/06-CONTEXT.md
+Last session: 2026-03-04T16:38:52Z
+Stopped at: Phase 6 Plan 1 complete
+Resume file: .planning/phases/06-intelligence-hardening/06-01-SUMMARY.md

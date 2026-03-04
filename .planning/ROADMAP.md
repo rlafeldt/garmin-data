@@ -18,6 +18,8 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Protocol Rendering and Email Delivery** - Render Daily Protocol as email and deliver each morning via Resend
 - [x] **Phase 5: Pipeline Automation** - End-to-end automated daily pipeline with scheduling, failure handling, and monitoring
 - [ ] **Phase 6: Intelligence Hardening** - Extended 28-day trend windows, multi-metric anomaly detection, and proactive alerts
+- [ ] **Phase 7: WhatsApp Delivery** - Replace email with WhatsApp messages for mobile-friendly Daily Protocol delivery
+- [ ] **Phase 8: User Onboarding** - Web-based onboarding flow where users input biological profile, health data, lab tests, and preferences
 
 ## Phase Details
 
@@ -116,7 +118,7 @@ Plans:
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -126,3 +128,34 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 4. Protocol Rendering and Email Delivery | 2/2 | Complete | 2026-03-03 |
 | 5. Pipeline Automation | 2/2 | Complete | 2026-03-04 |
 | 6. Intelligence Hardening | 0/2 | Not started | - |
+| 7. WhatsApp Delivery | 0/1 | Not started | - |
+| 8. User Onboarding | 0/1 | Not started | - |
+
+### Phase 7: WhatsApp Delivery
+**Goal**: Replace email delivery with WhatsApp messages for the Daily Protocol, rendering the protocol in a concise mobile-friendly format and sending via WhatsApp Business API each morning
+**Depends on**: Phase 4 (delivery infrastructure)
+**Requirements**: TBD
+**Success Criteria** (what must be TRUE):
+  1. The Daily Protocol is delivered as a WhatsApp message instead of email each morning
+  2. The protocol is formatted for mobile/WhatsApp readability (concise sections, no heavy HTML)
+  3. Message delivery is confirmed via API callback/status and failures trigger a notification
+  4. The pipeline orchestrator uses WhatsApp delivery instead of (or alongside) email delivery
+**Plans**: TBD
+
+Plans:
+- [ ] 07-01: TBD
+
+### Phase 8: User Onboarding
+**Goal**: Web-based onboarding flow where users complete a 6-step profile: biological profile (age, sex, height, weight, activity level, hormonal status, sport, goals), health conditions and medications, metabolic and nutrition profile (dietary pattern, metabolic flexibility signals, fasting, caffeine, alcohol), training context and sleep (periodisation, chronotype, schedule), baseline biometric metrics (30-day Garmin averages), and data upload (Garmin export, lab results/bloodwork). This replaces the manual YAML health profile with a structured, user-friendly intake that stores data in Supabase and feeds the analysis engine.
+**Depends on**: Phase 2 (health profile system)
+**Requirements**: TBD
+**Success Criteria** (what must be TRUE):
+  1. A user can complete the full 6-step onboarding flow via a web interface
+  2. All onboarding data is persisted to Supabase and replaces the YAML health profile as the data source for the analysis engine
+  3. Lab results/bloodwork can be uploaded (PDF/image/CSV) and parsed into structured data
+  4. The onboarding data feeds into the existing prompt assembly and Claude analysis pipeline seamlessly
+  5. Users can update their profile data after initial onboarding
+**Plans**: TBD
+
+Plans:
+- [ ] 08-01: TBD

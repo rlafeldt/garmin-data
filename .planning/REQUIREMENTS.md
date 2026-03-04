@@ -55,8 +55,8 @@ Requirements for initial release. Each maps to roadmap phases.
 ### Trends & Intelligence
 
 - [x] **TRND-01**: System feeds 7-day rolling trend context into the analysis prompt for longitudinal awareness
-- [ ] **TRND-02**: System computes 28-day extended trend windows for deeper pattern detection (HRV trajectory, resting HR creep, sleep debt accumulation)
-- [ ] **TRND-03**: System detects multi-metric anomaly convergence (e.g., simultaneous HRV decline + elevated resting HR + poor sleep efficiency) and generates proactive alerts
+- [x] **TRND-02**: System computes 28-day extended trend windows for deeper pattern detection (HRV trajectory, resting HR creep, sleep debt accumulation)
+- [x] **TRND-03**: System detects multi-metric anomaly convergence (e.g., simultaneous HRV decline + elevated resting HR + poor sleep efficiency) and generates proactive alerts
 - [x] **TRND-04**: System prompt encodes sports science frameworks (periodization models, HRV interpretation, sleep architecture research) for grounded recommendations
 
 ### Safety & Quality
@@ -153,8 +153,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | SAFE-01 | Phase 4: Protocol Rendering and Email Delivery | Complete |
 | AUTO-01 | Phase 5: Pipeline Automation | Complete |
 | AUTO-02 | Phase 5: Pipeline Automation | Complete |
-| TRND-02 | Phase 6: Intelligence Hardening | Pending |
-| TRND-03 | Phase 6: Intelligence Hardening | Pending |
+| TRND-02 | Phase 6: Intelligence Hardening | Complete |
+| TRND-03 | Phase 6: Intelligence Hardening | Complete |
 
 **Coverage:**
 - v1 requirements: 33 total
