@@ -923,6 +923,252 @@ class TestRunDelivery:
         assert "delivery_pipeline_complete" in log_events
 
 
+class TestRunDeliveryWhatsApp:
+    """Tests for run_delivery WhatsApp-first delivery with email fallback."""
+
+    @pytest.fixture()
+    def mock_settings(self, monkeypatch):
+        """Create mock settings with WhatsApp configured."""
+        monkeypatch.setenv("GARMIN_EMAIL", "test@garmin.com")
+        monkeypatch.setenv("GARMIN_PASSWORD", "testpass")
+        monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
+        monkeypatch.setenv("SUPABASE_KEY", "testkey")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+        monkeypatch.setenv("RESEND_API_KEY", "re_test_key")
+        monkeypatch.setenv("SENDER_EMAIL", "protocol@example.com")
+        monkeypatch.setenv("RECIPIENT_EMAIL", "user@example.com")
+        monkeypatch.setenv("WHATSAPP_ACCESS_TOKEN", "wa_test_token")
+        monkeypatch.setenv("WHATSAPP_PHONE_NUMBER_ID", "123456789")
+        monkeypatch.setenv("WHATSAPP_RECIPIENT_PHONE", "4915123456789")
+
+        from biointelligence.config import Settings
+
+        return Settings(_env_file=None)
+
+    @pytest.fixture()
+    def mock_settings_no_whatsapp(self, monkeypatch):
+        """Create mock settings without WhatsApp configured (empty token)."""
+        monkeypatch.setenv("GARMIN_EMAIL", "test@garmin.com")
+        monkeypatch.setenv("GARMIN_PASSWORD", "testpass")
+        monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
+        monkeypatch.setenv("SUPABASE_KEY", "testkey")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+        monkeypatch.setenv("RESEND_API_KEY", "re_test_key")
+        monkeypatch.setenv("SENDER_EMAIL", "protocol@example.com")
+        monkeypatch.setenv("RECIPIENT_EMAIL", "user@example.com")
+        # WhatsApp token not set (defaults to empty string)
+
+        from biointelligence.config import Settings
+
+        return Settings(_env_file=None)
+
+    @patch("biointelligence.pipeline.send_email")
+    @patch("biointelligence.pipeline.build_subject")
+    @patch("biointelligence.pipeline.render_text")
+    @patch("biointelligence.pipeline.render_html")
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_whatsapp_success_skips_email(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_render_html,
+        mock_render_text,
+        mock_build_subject,
+        mock_send_email,
+        mock_settings,
+        fake_protocol,
+    ):
+        """When WhatsApp is configured and succeeds, email is NOT called."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_whatsapp.return_value = "WhatsApp text"
+        mock_send_whatsapp.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="wamid.abc123",
+            success=True,
+        )
+
+        result = run_delivery(analysis_result, settings=mock_settings)
+
+        mock_render_whatsapp.assert_called_once_with(
+            fake_protocol, datetime.date(2026, 3, 2)
+        )
+        mock_send_whatsapp.assert_called_once_with(
+            "WhatsApp text", datetime.date(2026, 3, 2), mock_settings
+        )
+        assert result.success is True
+        assert result.email_id == "wamid.abc123"
+        mock_send_email.assert_not_called()
+
+    @patch("biointelligence.pipeline.send_email")
+    @patch("biointelligence.pipeline.build_subject")
+    @patch("biointelligence.pipeline.render_text")
+    @patch("biointelligence.pipeline.render_html")
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_whatsapp_failure_falls_back_to_email(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_render_html,
+        mock_render_text,
+        mock_build_subject,
+        mock_send_email,
+        mock_settings,
+        fake_protocol,
+    ):
+        """When WhatsApp fails, falls back to email delivery."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_whatsapp.return_value = "WhatsApp text"
+        mock_send_whatsapp.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            success=False,
+            error="WhatsApp API error",
+        )
+        mock_render_html.return_value = "<html>rendered</html>"
+        mock_render_text.return_value = "plain text"
+        mock_build_subject.return_value = "Daily Protocol -- Mar 2, 2026"
+        mock_send_email.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="email-fallback-123",
+            success=True,
+        )
+
+        result = run_delivery(analysis_result, settings=mock_settings)
+
+        # WhatsApp was attempted
+        mock_render_whatsapp.assert_called_once()
+        mock_send_whatsapp.assert_called_once()
+        # Email fallback was used
+        mock_render_html.assert_called_once()
+        mock_render_text.assert_called_once()
+        mock_build_subject.assert_called_once()
+        mock_send_email.assert_called_once()
+        assert result.success is True
+        assert result.email_id == "email-fallback-123"
+
+    @patch("biointelligence.pipeline.send_email")
+    @patch("biointelligence.pipeline.build_subject")
+    @patch("biointelligence.pipeline.render_text")
+    @patch("biointelligence.pipeline.render_html")
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_whatsapp_not_configured_uses_email_only(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_render_html,
+        mock_render_text,
+        mock_build_subject,
+        mock_send_email,
+        mock_settings_no_whatsapp,
+        fake_protocol,
+    ):
+        """When WhatsApp is not configured (empty token), skips WhatsApp entirely."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_html.return_value = "<html>rendered</html>"
+        mock_render_text.return_value = "plain text"
+        mock_build_subject.return_value = "Daily Protocol -- Mar 2, 2026"
+        mock_send_email.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="email-only-123",
+            success=True,
+        )
+
+        result = run_delivery(analysis_result, settings=mock_settings_no_whatsapp)
+
+        # WhatsApp NOT attempted
+        mock_render_whatsapp.assert_not_called()
+        mock_send_whatsapp.assert_not_called()
+        # Email path executes
+        mock_render_html.assert_called_once()
+        mock_send_email.assert_called_once()
+        assert result.success is True
+        assert result.email_id == "email-only-123"
+
+    @patch("biointelligence.pipeline.send_email")
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_failed_analysis_returns_failed_result_with_whatsapp_configured(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_send_email,
+        mock_settings,
+    ):
+        """Failed analysis returns failed DeliveryResult without attempting any delivery."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.pipeline import run_delivery
+
+        failed_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=None,
+            model="claude-haiku-4-5-20251001",
+            success=False,
+            error="API connection failed",
+        )
+
+        result = run_delivery(failed_result, settings=mock_settings)
+
+        assert result.success is False
+        assert "No protocol available" in result.error
+        mock_render_whatsapp.assert_not_called()
+        mock_send_whatsapp.assert_not_called()
+        mock_send_email.assert_not_called()
+
+
+class TestRunDeliveryWhatsAppLazyImports:
+    """Tests for delivery package lazy imports of WhatsApp functions."""
+
+    def test_render_whatsapp_importable_from_delivery(self):
+        """render_whatsapp is importable from biointelligence.delivery."""
+        from biointelligence.delivery import render_whatsapp
+
+        assert callable(render_whatsapp)
+
+    def test_send_whatsapp_importable_from_delivery(self):
+        """send_whatsapp is importable from biointelligence.delivery."""
+        from biointelligence.delivery import send_whatsapp
+
+        assert callable(send_whatsapp)
+
+
 class TestMainCliDeliver:
     """Tests for CLI --deliver flag (now uses run_full_pipeline)."""
 
