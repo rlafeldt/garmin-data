@@ -6,6 +6,7 @@ import datetime
 
 import pytest
 
+from biointelligence.anomaly.models import Alert, AlertSeverity
 from biointelligence.prompt.models import (
     DailyProtocol,
     NutritionGuidance,
@@ -456,3 +457,144 @@ class TestBuildSubject:
         assert "2026" in subject
         # Should use em-dash
         assert "\u2014" in subject
+
+
+# ---------------------------------------------------------------------------
+# Phase 6 Plan 02: Alert banner rendering tests
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture()
+def warning_alert() -> Alert:
+    """A WARNING severity alert."""
+    return Alert(
+        severity=AlertSeverity.WARNING,
+        title="HRV Declining Trend",
+        description="HRV has been 2.5 SD below baseline for 3 consecutive days.",
+        suggested_action="Consider reducing training intensity today.",
+        pattern_name="hrv_declining",
+    )
+
+
+@pytest.fixture()
+def critical_alert() -> Alert:
+    """A CRITICAL severity alert."""
+    return Alert(
+        severity=AlertSeverity.CRITICAL,
+        title="Overtraining Pattern Detected",
+        description="Multiple metrics converging: low HRV, elevated RHR, poor sleep.",
+        suggested_action="Take a full rest day. If symptoms persist, consult a physician.",
+        pattern_name="overtraining_convergence",
+    )
+
+
+@pytest.fixture()
+def protocol_with_alerts(fake_protocol, warning_alert, critical_alert) -> DailyProtocol:
+    """A DailyProtocol with populated alerts list."""
+    fake_protocol.alerts = [warning_alert, critical_alert]
+    return fake_protocol
+
+
+class TestRenderAlertBannersHtml:
+    """Tests for _render_alert_banners HTML rendering."""
+
+    def test_empty_alerts_returns_empty_string(self):
+        """_render_alert_banners returns empty string when alerts list is empty."""
+        from biointelligence.delivery.renderer import _render_alert_banners
+
+        result = _render_alert_banners([])
+        assert result == ""
+
+    def test_warning_alert_has_yellow_border(self, warning_alert):
+        """_render_alert_banners renders WARNING alert with yellow border (#eab308)."""
+        from biointelligence.delivery.renderer import _render_alert_banners
+
+        result = _render_alert_banners([warning_alert])
+        assert "#eab308" in result
+
+    def test_warning_alert_has_light_yellow_background(self, warning_alert):
+        """_render_alert_banners renders WARNING alert with light yellow background."""
+        from biointelligence.delivery.renderer import _render_alert_banners
+
+        result = _render_alert_banners([warning_alert])
+        assert "#fef9c3" in result
+
+    def test_critical_alert_has_red_border(self, critical_alert):
+        """_render_alert_banners renders CRITICAL alert with red border (#ef4444)."""
+        from biointelligence.delivery.renderer import _render_alert_banners
+
+        result = _render_alert_banners([critical_alert])
+        assert "#ef4444" in result
+
+    def test_critical_alert_has_light_red_background(self, critical_alert):
+        """_render_alert_banners renders CRITICAL alert with light red background."""
+        from biointelligence.delivery.renderer import _render_alert_banners
+
+        result = _render_alert_banners([critical_alert])
+        assert "#fef2f2" in result
+
+    def test_html_escapes_alert_text(self):
+        """_render_alert_banners HTML-escapes alert text content."""
+        from biointelligence.delivery.renderer import _render_alert_banners
+
+        xss_alert = Alert(
+            severity=AlertSeverity.WARNING,
+            title="Test <script>alert('xss')</script>",
+            description="Desc <b>bold</b>",
+            suggested_action="Action <img>",
+            pattern_name="test",
+        )
+        result = _render_alert_banners([xss_alert])
+        assert "<script>" not in result
+        assert "&lt;script&gt;" in result
+
+
+class TestRenderHtmlWithAlerts:
+    """Tests for render_html alert banner placement."""
+
+    def test_alert_banners_before_readiness_dashboard(self, protocol_with_alerts):
+        """render_html places alert banners before readiness dashboard when alerts exist."""
+        from biointelligence.delivery.renderer import render_html
+
+        html = render_html(protocol_with_alerts, datetime.date(2026, 3, 2))
+        # Alert title should appear before the readiness score
+        alert_pos = html.index("HRV Declining Trend")
+        readiness_pos = html.index("/10")
+        assert alert_pos < readiness_pos
+
+    def test_no_alert_banners_when_empty(self, fake_protocol):
+        """render_html produces no alert banners when alerts list is empty."""
+        from biointelligence.delivery.renderer import render_html
+
+        fake_protocol.alerts = []
+        html = render_html(fake_protocol, datetime.date(2026, 3, 2))
+        # Should not contain alert-specific colors
+        assert "#fef9c3" not in html
+        assert "#fef2f2" not in html
+
+
+class TestRenderTextWithAlerts:
+    """Tests for render_text alert section."""
+
+    def test_includes_alerts_section_at_top(self, protocol_with_alerts):
+        """render_text includes ALERTS section at top when alerts exist."""
+        from biointelligence.delivery.renderer import render_text
+
+        text = render_text(protocol_with_alerts, datetime.date(2026, 3, 2))
+        assert "ALERTS" in text
+        # ALERTS should appear before QUICK SUMMARY or SLEEP
+        alerts_pos = text.index("ALERTS")
+        # Check it's near the top (before domain sections)
+        sleep_pos = text.index("SLEEP")
+        assert alerts_pos < sleep_pos
+
+    def test_no_alerts_section_when_empty(self, fake_protocol):
+        """render_text has no ALERTS section when alerts list is empty."""
+        from biointelligence.delivery.renderer import render_text
+
+        fake_protocol.alerts = []
+        text = render_text(fake_protocol, datetime.date(2026, 3, 2))
+        # Should not have an ALERTS section header (but "ALERTS" might appear elsewhere
+        # so check for the specific section pattern)
+        lines = text.split("\n")
+        assert "ALERTS" not in lines  # No standalone ALERTS header line

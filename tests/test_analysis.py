@@ -731,3 +731,194 @@ class TestProtocolDomains:
         assert fake_protocol.sleep.reasoning != ""
         assert fake_protocol.nutrition.reasoning != ""
         assert fake_protocol.supplementation.reasoning != ""
+
+
+# ---------------------------------------------------------------------------
+# Phase 6 Plan 02: analyze_daily wiring for anomaly detection
+# ---------------------------------------------------------------------------
+
+
+class TestAnalyzeDailyAnomalyWiring:
+    """Tests for analyze_daily orchestrating 28-day trends and anomaly detection."""
+
+    @pytest.fixture()
+    def mock_settings(self, monkeypatch):
+        """Create mock settings for analyze_daily tests."""
+        monkeypatch.setenv("GARMIN_EMAIL", "test@garmin.com")
+        monkeypatch.setenv("GARMIN_PASSWORD", "testpass")
+        monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
+        monkeypatch.setenv("SUPABASE_KEY", "testkey")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test-key")
+
+        from biointelligence.config import Settings
+
+        return Settings(_env_file=None)
+
+    @patch("biointelligence.analysis.engine.detect_anomalies")
+    @patch("biointelligence.analysis.engine.fetch_trend_window")
+    @patch("biointelligence.analysis.engine.compute_extended_trends")
+    @patch("biointelligence.analysis.engine.PromptContext")
+    @patch("biointelligence.analysis.engine.analyze_prompt")
+    @patch("biointelligence.analysis.engine.get_anthropic_client")
+    @patch("biointelligence.analysis.engine.assemble_prompt")
+    @patch("biointelligence.analysis.engine.compute_trends")
+    @patch("biointelligence.analysis.engine._fetch_activities")
+    @patch("biointelligence.analysis.engine._fetch_daily_metrics")
+    @patch("biointelligence.analysis.engine.load_health_profile")
+    @patch("biointelligence.analysis.engine.get_supabase_client")
+    def test_calls_compute_extended_trends_and_detect_anomalies(
+        self,
+        mock_supabase,
+        mock_load_profile,
+        mock_fetch_metrics,
+        mock_fetch_activities,
+        mock_compute_trends,
+        mock_assemble_prompt,
+        mock_get_client,
+        mock_analyze_prompt,
+        mock_prompt_context,
+        mock_compute_extended,
+        mock_fetch_trend_window,
+        mock_detect_anomalies,
+        mock_settings,
+        fake_protocol,
+    ):
+        """analyze_daily calls compute_extended_trends and detect_anomalies."""
+        from biointelligence.analysis.engine import analyze_daily
+
+        mock_supabase.return_value = MagicMock()
+        mock_load_profile.return_value = MagicMock()
+        mock_fetch_metrics.return_value = MagicMock()
+        mock_fetch_activities.return_value = []
+        mock_compute_trends.return_value = MagicMock()
+        mock_compute_extended.return_value = MagicMock()
+        mock_fetch_trend_window.return_value = []
+        mock_detect_anomalies.return_value = MagicMock(alerts=[], metrics_checked=5)
+        mock_prompt_context.return_value = MagicMock()
+        mock_assemble_prompt.return_value = MagicMock(text="test", estimated_tokens=500)
+        mock_get_client.return_value = MagicMock()
+        mock_analyze_prompt.return_value = (
+            fake_protocol,
+            {"input_tokens": 3200, "output_tokens": 1800, "model": "claude-haiku-4-5-20251001"},
+        )
+
+        result = analyze_daily(datetime.date(2026, 3, 2), settings=mock_settings)
+
+        assert result.success is True
+        mock_compute_extended.assert_called_once()
+        mock_detect_anomalies.assert_called_once()
+
+    @patch("biointelligence.analysis.engine.detect_anomalies")
+    @patch("biointelligence.analysis.engine.fetch_trend_window")
+    @patch("biointelligence.analysis.engine.compute_extended_trends")
+    @patch("biointelligence.analysis.engine.PromptContext")
+    @patch("biointelligence.analysis.engine.analyze_prompt")
+    @patch("biointelligence.analysis.engine.get_anthropic_client")
+    @patch("biointelligence.analysis.engine.assemble_prompt")
+    @patch("biointelligence.analysis.engine.compute_trends")
+    @patch("biointelligence.analysis.engine._fetch_activities")
+    @patch("biointelligence.analysis.engine._fetch_daily_metrics")
+    @patch("biointelligence.analysis.engine.load_health_profile")
+    @patch("biointelligence.analysis.engine.get_supabase_client")
+    def test_passes_extended_trends_and_anomaly_to_prompt_context(
+        self,
+        mock_supabase,
+        mock_load_profile,
+        mock_fetch_metrics,
+        mock_fetch_activities,
+        mock_compute_trends,
+        mock_assemble_prompt,
+        mock_get_client,
+        mock_analyze_prompt,
+        mock_prompt_context,
+        mock_compute_extended,
+        mock_fetch_trend_window,
+        mock_detect_anomalies,
+        mock_settings,
+        fake_protocol,
+    ):
+        """analyze_daily passes extended_trends and anomaly_result to PromptContext."""
+        from biointelligence.analysis.engine import analyze_daily
+
+        extended_result = MagicMock(name="extended_trends")
+        anomaly_result = MagicMock(name="anomaly_result", alerts=[], metrics_checked=3)
+
+        mock_supabase.return_value = MagicMock()
+        mock_load_profile.return_value = MagicMock()
+        mock_fetch_metrics.return_value = MagicMock()
+        mock_fetch_activities.return_value = []
+        mock_compute_trends.return_value = MagicMock()
+        mock_compute_extended.return_value = extended_result
+        mock_fetch_trend_window.return_value = [{"date": "2026-03-01"}]
+        mock_detect_anomalies.return_value = anomaly_result
+        mock_prompt_context.return_value = MagicMock()
+        mock_assemble_prompt.return_value = MagicMock(text="test", estimated_tokens=500)
+        mock_get_client.return_value = MagicMock()
+        mock_analyze_prompt.return_value = (
+            fake_protocol,
+            {"input_tokens": 3200, "output_tokens": 1800, "model": "claude-haiku-4-5-20251001"},
+        )
+
+        analyze_daily(datetime.date(2026, 3, 2), settings=mock_settings)
+
+        # Verify PromptContext was called with extended_trends and anomaly_result
+        call_kwargs = mock_prompt_context.call_args
+        assert call_kwargs.kwargs.get("extended_trends") is extended_result
+        assert call_kwargs.kwargs.get("anomaly_result") is anomaly_result
+
+    @patch("biointelligence.analysis.engine.detect_anomalies")
+    @patch("biointelligence.analysis.engine.fetch_trend_window")
+    @patch("biointelligence.analysis.engine.compute_extended_trends")
+    @patch("biointelligence.analysis.engine.PromptContext")
+    @patch("biointelligence.analysis.engine.analyze_prompt")
+    @patch("biointelligence.analysis.engine.get_anthropic_client")
+    @patch("biointelligence.analysis.engine.assemble_prompt")
+    @patch("biointelligence.analysis.engine.compute_trends")
+    @patch("biointelligence.analysis.engine._fetch_activities")
+    @patch("biointelligence.analysis.engine._fetch_daily_metrics")
+    @patch("biointelligence.analysis.engine.load_health_profile")
+    @patch("biointelligence.analysis.engine.get_supabase_client")
+    def test_graceful_degradation_when_extended_trends_fails(
+        self,
+        mock_supabase,
+        mock_load_profile,
+        mock_fetch_metrics,
+        mock_fetch_activities,
+        mock_compute_trends,
+        mock_assemble_prompt,
+        mock_get_client,
+        mock_analyze_prompt,
+        mock_prompt_context,
+        mock_compute_extended,
+        mock_fetch_trend_window,
+        mock_detect_anomalies,
+        mock_settings,
+        fake_protocol,
+    ):
+        """analyze_daily still succeeds when compute_extended_trends fails."""
+        from biointelligence.analysis.engine import analyze_daily
+
+        mock_supabase.return_value = MagicMock()
+        mock_load_profile.return_value = MagicMock()
+        mock_fetch_metrics.return_value = MagicMock()
+        mock_fetch_activities.return_value = []
+        mock_compute_trends.return_value = MagicMock()
+        # Extended trends throws an exception
+        mock_compute_extended.side_effect = ConnectionError("Supabase timeout")
+        mock_prompt_context.return_value = MagicMock()
+        mock_assemble_prompt.return_value = MagicMock(text="test", estimated_tokens=500)
+        mock_get_client.return_value = MagicMock()
+        mock_analyze_prompt.return_value = (
+            fake_protocol,
+            {"input_tokens": 3200, "output_tokens": 1800, "model": "claude-haiku-4-5-20251001"},
+        )
+
+        result = analyze_daily(datetime.date(2026, 3, 2), settings=mock_settings)
+
+        # Should still succeed -- graceful degradation
+        assert result.success is True
+        assert result.protocol is not None
+        # PromptContext should be called with None for extended_trends and anomaly_result
+        call_kwargs = mock_prompt_context.call_args
+        assert call_kwargs.kwargs.get("extended_trends") is None
+        assert call_kwargs.kwargs.get("anomaly_result") is None
