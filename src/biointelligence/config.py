@@ -28,7 +28,7 @@ class Settings(BaseSettings):
 
     # Anthropic
     anthropic_api_key: str
-    claude_model: str = "claude-haiku-4-5-20250514"
+    claude_model: str = "claude-haiku-4-5-20251001"
 
     # Resend (delivery)
     resend_api_key: str = ""

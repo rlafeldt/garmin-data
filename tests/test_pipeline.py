@@ -509,7 +509,7 @@ class TestRunAnalysis:
             protocol=fake_protocol,
             input_tokens=3200,
             output_tokens=1800,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=True,
         )
         mock_analyze.return_value = analysis_result
@@ -544,7 +544,7 @@ class TestRunAnalysis:
             protocol=fake_protocol,
             input_tokens=3200,
             output_tokens=1800,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=True,
         )
         mock_analyze.return_value = analysis_result
@@ -574,7 +574,7 @@ class TestRunAnalysis:
         failed_result = AnalysisResult(
             date=datetime.date(2026, 3, 2),
             protocol=None,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=False,
             error="API connection failed",
         )
@@ -609,7 +609,7 @@ class TestRunAnalysis:
             protocol=fake_protocol,
             input_tokens=3200,
             output_tokens=1800,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=True,
         )
         mock_analyze.return_value = analysis_result
@@ -642,7 +642,7 @@ class TestMainCliAnalyze:
         )
         mock_run_analysis.return_value = MagicMock(
             success=True,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             input_tokens=3200,
             output_tokens=1800,
         )
@@ -670,7 +670,7 @@ class TestMainCliAnalyze:
         )
         mock_run_analysis.return_value = MagicMock(
             success=True,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             input_tokens=3200,
             output_tokens=1800,
         )
@@ -776,7 +776,7 @@ class TestRunDelivery:
             protocol=fake_protocol,
             input_tokens=3200,
             output_tokens=1800,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=True,
         )
 
@@ -829,7 +829,7 @@ class TestRunDelivery:
         failed_result = AnalysisResult(
             date=datetime.date(2026, 3, 2),
             protocol=None,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=False,
             error="API connection failed",
         )
@@ -862,7 +862,7 @@ class TestRunDelivery:
         failed_result = AnalysisResult(
             date=datetime.date(2026, 3, 2),
             protocol=fake_protocol,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=False,
             error="Validation failed",
         )
@@ -898,7 +898,7 @@ class TestRunDelivery:
             protocol=fake_protocol,
             input_tokens=3200,
             output_tokens=1800,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=True,
         )
 

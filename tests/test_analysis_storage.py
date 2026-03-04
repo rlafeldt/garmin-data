@@ -80,7 +80,7 @@ def fake_analysis_result(fake_protocol):
         protocol=fake_protocol,
         input_tokens=3200,
         output_tokens=1800,
-        model="claude-haiku-4-5-20250514",
+        model="claude-haiku-4-5-20251001",
         success=True,
     )
 
@@ -117,7 +117,7 @@ class TestUpsertDailyProtocol:
         # Verify record shape
         assert record["date"] == "2026-03-02"
         assert record["protocol"] == fake_protocol.model_dump(mode="json")
-        assert record["model"] == "claude-haiku-4-5-20250514"
+        assert record["model"] == "claude-haiku-4-5-20251001"
         assert record["input_tokens"] == 3200
         assert record["output_tokens"] == 1800
 

@@ -135,10 +135,10 @@ class TestAnalyzePrompt:
 
         from biointelligence.analysis.client import analyze_prompt
 
-        analyze_prompt(mock_client, mock_assembled_prompt, "claude-haiku-4-5-20250514")
+        analyze_prompt(mock_client, mock_assembled_prompt, "claude-haiku-4-5-20251001")
 
         mock_client.messages.parse.assert_called_once_with(
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             max_tokens=4096,
             temperature=0.3,
             messages=[{"role": "user", "content": mock_assembled_prompt.text}],
@@ -155,13 +155,13 @@ class TestAnalyzePrompt:
         from biointelligence.analysis.client import analyze_prompt
 
         protocol, metadata = analyze_prompt(
-            mock_client, mock_assembled_prompt, "claude-haiku-4-5-20250514"
+            mock_client, mock_assembled_prompt, "claude-haiku-4-5-20251001"
         )
 
         assert isinstance(protocol, DailyProtocol)
         assert metadata["input_tokens"] == 3200
         assert metadata["output_tokens"] == 1800
-        assert metadata["model"] == "claude-haiku-4-5-20250514"
+        assert metadata["model"] == "claude-haiku-4-5-20251001"
         assert metadata["stop_reason"] == "end_turn"
 
     def test_logs_token_usage(self, mock_assembled_prompt, mock_anthropic_response, caplog):
@@ -184,7 +184,7 @@ class TestAnalyzePrompt:
         with caplog.at_level(logging.INFO):
             from biointelligence.analysis.client import analyze_prompt
 
-            analyze_prompt(mock_client, mock_assembled_prompt, "claude-haiku-4-5-20250514")
+            analyze_prompt(mock_client, mock_assembled_prompt, "claude-haiku-4-5-20251001")
 
         assert "3200" in caplog.text or "input_tokens" in caplog.text
 
@@ -203,7 +203,7 @@ class TestAnalyzePrompt:
         from biointelligence.analysis.client import analyze_prompt
 
         with pytest.raises(ValueError, match="refused"):
-            analyze_prompt(mock_client, mock_assembled_prompt, "claude-haiku-4-5-20250514")
+            analyze_prompt(mock_client, mock_assembled_prompt, "claude-haiku-4-5-20251001")
 
     def test_logs_warning_on_max_tokens(
         self, mock_assembled_prompt, fake_protocol, caplog
@@ -234,7 +234,7 @@ class TestAnalyzePrompt:
             from biointelligence.analysis.client import analyze_prompt
 
             protocol, metadata = analyze_prompt(
-                mock_client, mock_assembled_prompt, "claude-haiku-4-5-20250514"
+                mock_client, mock_assembled_prompt, "claude-haiku-4-5-20251001"
             )
 
         assert metadata["stop_reason"] == "max_tokens"
@@ -267,7 +267,7 @@ class TestAnalyzePrompt:
         # Patch tenacity wait to avoid actual sleeping in tests
         with patch("biointelligence.analysis.client.analyze_prompt.retry.wait", return_value=0):
             protocol, metadata = analyze_prompt(
-                mock_client, mock_assembled_prompt, "claude-haiku-4-5-20250514"
+                mock_client, mock_assembled_prompt, "claude-haiku-4-5-20251001"
             )
 
         assert isinstance(protocol, DailyProtocol)
@@ -315,7 +315,7 @@ class TestAnalyzePrompt:
                 "biointelligence.analysis.client.analyze_prompt.retry.wait", return_value=0
             ):
                 protocol, metadata = analyze_prompt(
-                    mock_client, mock_assembled_prompt, "claude-haiku-4-5-20250514"
+                    mock_client, mock_assembled_prompt, "claude-haiku-4-5-20251001"
                 )
 
         assert isinstance(protocol, DailyProtocol)
@@ -346,7 +346,7 @@ class TestAnalyzePrompt:
         ):
             with pytest.raises(ValidationError):
                 analyze_prompt(
-                    mock_client, mock_assembled_prompt, "claude-haiku-4-5-20250514"
+                    mock_client, mock_assembled_prompt, "claude-haiku-4-5-20251001"
                 )
 
         assert mock_client.messages.parse.call_count == 3
@@ -369,7 +369,7 @@ class TestSettingsExtension:
         assert settings.anthropic_api_key == "sk-ant-test-key"
 
     def test_settings_claude_model_default(self, monkeypatch):
-        """Settings defaults claude_model to 'claude-haiku-4-5-20250514'."""
+        """Settings defaults claude_model to 'claude-haiku-4-5-20251001'."""
         monkeypatch.setenv("GARMIN_EMAIL", "test@example.com")
         monkeypatch.setenv("GARMIN_PASSWORD", "secret")
         monkeypatch.setenv("SUPABASE_URL", "https://abc.supabase.co")
@@ -379,7 +379,7 @@ class TestSettingsExtension:
         from biointelligence.config import Settings
 
         settings = Settings(_env_file=None)
-        assert settings.claude_model == "claude-haiku-4-5-20250514"
+        assert settings.claude_model == "claude-haiku-4-5-20251001"
 
     def test_settings_claude_model_override(self, monkeypatch):
         """Settings allows overriding claude_model via CLAUDE_MODEL env var."""
@@ -413,7 +413,7 @@ class TestAnalysisResult:
             protocol=fake_protocol,
             input_tokens=3200,
             output_tokens=1800,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=True,
             error=None,
         )
@@ -421,7 +421,7 @@ class TestAnalysisResult:
         assert result.protocol is not None
         assert result.input_tokens == 3200
         assert result.output_tokens == 1800
-        assert result.model == "claude-haiku-4-5-20250514"
+        assert result.model == "claude-haiku-4-5-20251001"
         assert result.success is True
         assert result.error is None
 
@@ -434,7 +434,7 @@ class TestAnalysisResult:
             protocol=None,
             input_tokens=0,
             output_tokens=0,
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=False,
             error="API connection failed",
         )
@@ -448,7 +448,7 @@ class TestAnalysisResult:
 
         result = AnalysisResult(
             date=datetime.date(2026, 3, 2),
-            model="claude-haiku-4-5-20250514",
+            model="claude-haiku-4-5-20251001",
             success=True,
         )
         assert result.protocol is None
@@ -509,7 +509,7 @@ class TestAnalyzeDaily:
         mock_get_client.return_value = MagicMock()
         mock_analyze_prompt.return_value = (
             fake_protocol,
-            {"input_tokens": 3200, "output_tokens": 1800, "model": "claude-haiku-4-5-20250514"},
+            {"input_tokens": 3200, "output_tokens": 1800, "model": "claude-haiku-4-5-20251001"},
         )
 
         result = analyze_daily(datetime.date(2026, 3, 2), settings=mock_settings)
@@ -598,7 +598,7 @@ class TestAnalyzeDaily:
         mock_get_client.return_value = MagicMock()
         mock_analyze_prompt.return_value = (
             fake_protocol,
-            {"input_tokens": 3200, "output_tokens": 1800, "model": "claude-haiku-4-5-20250514"},
+            {"input_tokens": 3200, "output_tokens": 1800, "model": "claude-haiku-4-5-20251001"},
         )
 
         structlog.configure(

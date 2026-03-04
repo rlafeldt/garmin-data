@@ -67,7 +67,7 @@ def analyze_prompt(
     Args:
         client: Anthropic API client instance.
         prompt: The assembled prompt to send to Claude.
-        model: Claude model identifier (e.g. "claude-haiku-4-5-20250514").
+        model: Claude model identifier (e.g. "claude-haiku-4-5-20251001").
         max_tokens: Maximum output tokens (default 4096).
         temperature: Sampling temperature (default 0.3).
 
