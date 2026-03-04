@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in-progress
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-03T22:37:25.285Z"
-last_activity: 2026-03-03 -- Plan 05-01 executed (automation primitives -- tokens, run log, notifications)
+status: completed
+stopped_at: Completed 05-02-PLAN.md
+last_updated: "2026-03-04T05:55:06.801Z"
+last_activity: 2026-03-04 -- Plan 05-02 executed (pipeline orchestrator, GitHub Actions, end-to-end verified)
 progress:
   total_phases: 6
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 11
-  completed_plans: 10
-  percent: 91
+  completed_plans: 11
+  percent: 100
 ---
 
 # Project State
@@ -21,23 +21,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-03)
 
 **Core value:** Every morning, receive a single coherent Daily Protocol that tells you exactly what to do today based on your Garmin data, health profile, and recent trends.
-**Current focus:** Phase 5 in progress. Automation primitives complete, pipeline orchestrator next.
+**Current focus:** Phase 5 complete. Pipeline fully automated. Phase 6 (Intelligence Hardening) next.
 
 ## Current Position
 
-Phase: 5 of 6 (Pipeline Automation) -- IN PROGRESS
-Plan: 1 of 2 in current phase (05-01 complete)
-Status: Plan 05-01 complete, 05-02 next
-Last activity: 2026-03-03 -- Plan 05-01 executed (automation primitives -- tokens, run log, notifications)
+Phase: 5 of 6 (Pipeline Automation) -- COMPLETE
+Plan: 2 of 2 in current phase (all plans complete)
+Status: Phase 5 complete, Phase 6 next
+Last activity: 2026-03-04 -- Plan 05-02 executed (pipeline orchestrator, GitHub Actions, end-to-end verified)
 
-Progress: [█████████░] 91%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: 6min
-- Total execution time: 1.0 hours
+- Total plans completed: 11
+- Average duration: 7min
+- Total execution time: 1.3 hours
 
 **By Phase:**
 
@@ -47,11 +47,11 @@ Progress: [█████████░] 91%
 | 2 - Health Profile and Prompt Assembly | 2/2 | 10min | 5min |
 | 3 - Analysis Engine | 2/2 | 11min | 6min |
 | 4 - Protocol Rendering and Email Delivery | 2/2 | 8min | 4min |
-| 5 - Pipeline Automation | 1/2 | 4min | 4min |
+| 5 - Pipeline Automation | 2/2 | 24min | 12min |
 
 **Recent Trend:**
-- Last 5 plans: 03-01 (7min), 03-02 (4min), 04-01 (4min), 04-02 (4min), 05-01 (4min)
-- Trend: Stable
+- Last 5 plans: 03-02 (4min), 04-01 (4min), 04-02 (4min), 05-01 (4min), 05-02 (20min)
+- Trend: 05-02 longer due to human verification checkpoint and additional fixes
 
 *Updated after each plan completion*
 | Phase 03 P01 | 7min | 2 tasks | 9 files |
@@ -59,6 +59,7 @@ Progress: [█████████░] 91%
 | Phase 04 P01 | 4min | 2 tasks | 4 files |
 | Phase 04 P02 | 4min | 2 tasks | 6 files |
 | Phase 05 P01 | 4min | 2 tasks | 7 files |
+| Phase 05 P02 | 20min | 3 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -106,6 +107,12 @@ Recent decisions affecting current work:
 - [Phase 05]: Token save-back immediately after auth (before extraction) to persist refresh on later failure
 - [Phase 05]: Failure notification is best-effort with exception swallowing to avoid masking original error
 - [Phase 05]: Delivery-stage failure notification suppressed (cannot email about email failure)
+- [Phase 05]: run_full_pipeline wraps ingestion/analysis/delivery with timing, run logging, and best-effort failure notification
+- [Phase 05]: CLI --deliver delegates entirely to run_full_pipeline (replaces sequential try/except chain)
+- [Phase 05]: GitHub Actions cron at 5:03 UTC (off-peak minute) for 6-7 AM CET/CEST daily execution
+- [Phase 05]: Single-job workflow -- CLI already chains stages, no need for multi-job orchestration
+- [Phase 05]: Token fallback -- when stored Supabase token expires, fall back to email/password re-auth
+- [Phase 05]: CLI entry point registered in pyproject.toml for uv run biointelligence invocation
 
 ### Pending Todos
 
@@ -119,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-03T22:37:24.242Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-04T05:55:06.798Z
+Stopped at: Completed 05-02-PLAN.md
 Resume file: None

@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Health Profile and Prompt Assembly** - Load personal health profile, compute rolling trends, and assemble structured Claude prompts
 - [x] **Phase 3: Analysis Engine** - Claude API integration producing validated Daily Protocol JSON across all 5 domains with safety guardrails
 - [x] **Phase 4: Protocol Rendering and Email Delivery** - Render Daily Protocol as email and deliver each morning via Resend
-- [ ] **Phase 5: Pipeline Automation** - End-to-end automated daily pipeline with scheduling, failure handling, and monitoring
+- [x] **Phase 5: Pipeline Automation** - End-to-end automated daily pipeline with scheduling, failure handling, and monitoring
 - [ ] **Phase 6: Intelligence Hardening** - Extended 28-day trend windows, multi-metric anomaly detection, and proactive alerts
 
 ## Phase Details
@@ -96,8 +96,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Automation module: Garmin token persistence via Supabase, pipeline run logging, failure notification, and updated Garmin client
-- [ ] 05-02-PLAN.md — Pipeline orchestrator (run_full_pipeline), CLI wiring, GitHub Actions workflow, and Supabase DDL
+- [x] 05-01-PLAN.md — Automation module: Garmin token persistence via Supabase, pipeline run logging, failure notification, and updated Garmin client
+- [x] 05-02-PLAN.md — Pipeline orchestrator (run_full_pipeline), CLI wiring, GitHub Actions workflow, and Supabase DDL
 
 ### Phase 6: Intelligence Hardening
 **Goal**: The analysis engine evolves from day-zero reactive analysis to longitudinal pattern detection with proactive alerts
@@ -122,6 +122,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 1. Data Ingestion and Storage | 3/3 | Complete | 2026-03-03 |
 | 2. Health Profile and Prompt Assembly | 2/2 | Complete | 2026-03-03 |
 | 3. Analysis Engine | 2/2 | Complete | 2026-03-03 |
-| 4. Protocol Rendering and Email Delivery | 1/2 | In progress | - |
-| 5. Pipeline Automation | 0/2 | Not started | - |
+| 4. Protocol Rendering and Email Delivery | 2/2 | Complete | 2026-03-03 |
+| 5. Pipeline Automation | 2/2 | Complete | 2026-03-04 |
 | 6. Intelligence Hardening | 0/1 | Not started | - |
