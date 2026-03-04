@@ -1,6 +1,13 @@
-"""Email rendering and delivery for Daily Protocol."""
+"""Email and WhatsApp rendering and delivery for Daily Protocol."""
 
-__all__ = ["render_html", "render_text", "send_email", "DeliveryResult"]
+__all__ = [
+    "render_html",
+    "render_text",
+    "send_email",
+    "DeliveryResult",
+    "render_whatsapp",
+    "send_whatsapp",
+]
 
 
 def __getattr__(name: str) -> object:
@@ -26,5 +33,13 @@ def __getattr__(name: str) -> object:
         from biointelligence.delivery.sender import DeliveryResult
 
         return DeliveryResult
+    if name == "render_whatsapp":
+        from biointelligence.delivery.whatsapp_renderer import render_whatsapp
+
+        return render_whatsapp
+    if name == "send_whatsapp":
+        from biointelligence.delivery.whatsapp_sender import send_whatsapp
+
+        return send_whatsapp
     msg = f"module {__name__!r} has no attribute {name!r}"
     raise AttributeError(msg)

@@ -16,6 +16,8 @@ from biointelligence.automation.run_log import PipelineRunLog, log_pipeline_run
 from biointelligence.config import Settings, get_settings
 from biointelligence.delivery.renderer import build_subject, render_html, render_text
 from biointelligence.delivery.sender import DeliveryResult, send_email
+from biointelligence.delivery.whatsapp_renderer import render_whatsapp
+from biointelligence.delivery.whatsapp_sender import send_whatsapp
 from biointelligence.garmin.client import get_authenticated_client
 from biointelligence.garmin.extractors import extract_all_metrics
 from biointelligence.garmin.models import (
@@ -176,17 +178,18 @@ def run_analysis(
 def run_delivery(
     analysis_result: AnalysisResult, settings: Settings | None = None
 ) -> DeliveryResult:
-    """Render and deliver the Daily Protocol email.
+    """Render and deliver the Daily Protocol via WhatsApp (preferred) or email (fallback).
 
     Orchestrates the full delivery flow: guard against failed analysis,
-    render HTML + plain text, build subject line, and send via Resend.
+    try WhatsApp delivery first when configured, fall back to email on
+    failure or when WhatsApp is not configured.
 
     Args:
         analysis_result: Result from run_analysis with DailyProtocol.
         settings: Optional settings override. Uses get_settings() if not provided.
 
     Returns:
-        DeliveryResult with email_id on success, error on failure.
+        DeliveryResult with message/email_id on success, error on failure.
     """
     if settings is None:
         settings = get_settings()
@@ -209,6 +212,27 @@ def run_delivery(
     protocol = analysis_result.protocol
     target_date = analysis_result.date
 
+    # WhatsApp-first delivery (when configured)
+    if settings.whatsapp_access_token:
+        whatsapp_text = render_whatsapp(protocol, target_date)
+        result = send_whatsapp(whatsapp_text, target_date, settings)
+
+        if result.success:
+            log.info(
+                "delivery_pipeline_complete",
+                date=target_date.isoformat(),
+                channel="whatsapp",
+                message_id=result.email_id,
+            )
+            return result
+
+        log.warning(
+            "whatsapp_failed_falling_back_to_email",
+            date=target_date.isoformat(),
+            error=result.error,
+        )
+
+    # Email fallback (or primary when WhatsApp not configured)
     html_content = render_html(protocol, target_date)
     text_content = render_text(protocol, target_date)
     subject = build_subject(protocol, target_date)
@@ -225,6 +249,7 @@ def run_delivery(
         log.info(
             "delivery_pipeline_complete",
             date=target_date.isoformat(),
+            channel="email",
             email_id=result.email_id,
         )
     else:
