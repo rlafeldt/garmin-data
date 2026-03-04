@@ -17,7 +17,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Analysis Engine** - Claude API integration producing validated Daily Protocol JSON across all 5 domains with safety guardrails
 - [x] **Phase 4: Protocol Rendering and Email Delivery** - Render Daily Protocol as email and deliver each morning via Resend
 - [x] **Phase 5: Pipeline Automation** - End-to-end automated daily pipeline with scheduling, failure handling, and monitoring
-- [ ] **Phase 6: Intelligence Hardening** - Extended 28-day trend windows, multi-metric anomaly detection, and proactive alerts
+- [x] **Phase 6: Intelligence Hardening** - Extended 28-day trend windows, multi-metric anomaly detection, and proactive alerts (completed 2026-03-04)
 - [ ] **Phase 7: WhatsApp Delivery** - Replace email with WhatsApp messages for mobile-friendly Daily Protocol delivery
 - [ ] **Phase 8: User Onboarding** - Web-based onboarding flow where users input biological profile, health data, lab tests, and preferences
 
@@ -112,8 +112,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Extended 28-day trend computation with stddev, anomaly detection module with z-score baselines and 5 convergence patterns
-- [ ] 06-02-PLAN.md — Prompt integration (trends_28d + anomalies sections), DailyProtocol alerts field, pipeline wiring, alert banner rendering
+- [x] 06-01-PLAN.md — Extended 28-day trend computation with stddev, anomaly detection module with z-score baselines and 5 convergence patterns
+- [x] 06-02-PLAN.md — Prompt integration (trends_28d + anomalies sections), DailyProtocol alerts field, pipeline wiring, alert banner rendering
 
 ## Progress
 
@@ -127,7 +127,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 3. Analysis Engine | 2/2 | Complete | 2026-03-03 |
 | 4. Protocol Rendering and Email Delivery | 2/2 | Complete | 2026-03-03 |
 | 5. Pipeline Automation | 2/2 | Complete | 2026-03-04 |
-| 6. Intelligence Hardening | 0/2 | Not started | - |
+| 6. Intelligence Hardening | 2/2 | Complete   | 2026-03-04 |
 | 7. WhatsApp Delivery | 0/1 | Not started | - |
 | 8. User Onboarding | 0/1 | Not started | - |
 
