@@ -46,6 +46,12 @@ The current training phase from the health profile should guide load recommendat
 """
 
 ANALYSIS_DIRECTIVES: str = """\
+## Headlines
+
+For each domain, provide a `headline` field: a single concise sentence (max 15 words) \
+that captures the key actionable takeaway. This is what the user reads first. Be direct \
+and specific — no filler words.
+
 ## Training Assessment
 
 Evaluate today's training readiness by synthesizing HRV status, body battery level, \
