@@ -107,10 +107,11 @@ Plans:
   1. The system computes 28-day extended trend windows and feeds summary statistics into the analysis prompt
   2. When multiple concerning metrics converge simultaneously (e.g., HRV decline + elevated resting HR + poor sleep efficiency), the system generates a proactive alert in the Daily Protocol
   3. Alert thresholds are based on personal baselines (relative deviations), not absolute population values
-**Plans**: TBD
+**Plans**: 2 plans
 
 Plans:
-- [ ] 06-01: TBD
+- [ ] 06-01-PLAN.md — Extended 28-day trend computation with stddev, anomaly detection module with z-score baselines and 5 convergence patterns
+- [ ] 06-02-PLAN.md — Prompt integration (trends_28d + anomalies sections), DailyProtocol alerts field, pipeline wiring, alert banner rendering
 
 ## Progress
 
@@ -124,4 +125,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6
 | 3. Analysis Engine | 2/2 | Complete | 2026-03-03 |
 | 4. Protocol Rendering and Email Delivery | 2/2 | Complete | 2026-03-03 |
 | 5. Pipeline Automation | 2/2 | Complete | 2026-03-04 |
-| 6. Intelligence Hardening | 0/1 | Not started | - |
+| 6. Intelligence Hardening | 0/2 | Not started | - |
