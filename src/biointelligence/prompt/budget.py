@@ -16,7 +16,9 @@ log = structlog.get_logger()
 SECTION_PRIORITY: list[str] = [
     "sports_science",
     "yesterday_activities",
+    "trends_28d",
     "trends_7d",
+    "anomalies",
     "analysis_directives",
     "output_format",
     "health_profile",
@@ -26,8 +28,8 @@ SECTION_PRIORITY: list[str] = [
 # Sections that must never be removed regardless of budget pressure.
 NEVER_TRIM: set[str] = {"health_profile", "today_metrics"}
 
-# Default token budget (upper end of ~4K-6K range).
-DEFAULT_TOKEN_BUDGET: int = 6000
+# Default token budget (increased for 28-day trends and anomaly sections).
+DEFAULT_TOKEN_BUDGET: int = 7000
 
 
 def estimate_tokens(text: str) -> int:

@@ -11,11 +11,16 @@ import json
 
 import structlog
 
+from biointelligence.anomaly.models import AnomalyResult
 from biointelligence.garmin.models import Activity, DailyMetrics
 from biointelligence.profile.models import HealthProfile
 from biointelligence.prompt.budget import DEFAULT_TOKEN_BUDGET, estimate_tokens, trim_to_budget
 from biointelligence.prompt.models import AssembledPrompt, DailyProtocol, PromptContext
-from biointelligence.prompt.templates import ANALYSIS_DIRECTIVES, SPORTS_SCIENCE_GROUNDING
+from biointelligence.prompt.templates import (
+    ANALYSIS_DIRECTIVES,
+    ANOMALY_INTERPRETATION_DIRECTIVES,
+    SPORTS_SCIENCE_GROUNDING,
+)
 from biointelligence.trends.models import TrendDirection, TrendResult
 
 log = structlog.get_logger()
@@ -25,6 +30,8 @@ SECTION_ORDER: list[str] = [
     "health_profile",
     "today_metrics",
     "trends_7d",
+    "trends_28d",
+    "anomalies",
     "yesterday_activities",
     "sports_science",
     "analysis_directives",
@@ -182,6 +189,82 @@ def _format_trends(trends: TrendResult) -> str:
     return "\n".join(lines)
 
 
+def _format_extended_trends(trends: TrendResult | None) -> str:
+    """Format 28-day extended trend data as compact summary.
+
+    Includes mean, stddev, min, max, and direction per metric.
+    Returns an "insufficient data" message when trends is None.
+    """
+    if trends is None:
+        return (
+            "28-day trends: Insufficient data "
+            "(fewer than 14 days available)."
+        )
+
+    all_insufficient = all(
+        m.direction == TrendDirection.INSUFFICIENT for m in trends.metrics.values()
+    )
+    if all_insufficient:
+        return (
+            "28-day trends: Insufficient data "
+            f"(fewer than 14 days available). "
+            f"Data points: {trends.data_points}."
+        )
+
+    lines: list[str] = [
+        f"Window: {trends.window_start.isoformat()} to {trends.window_end.isoformat()}",
+        f"Data points: {trends.data_points}",
+        "",
+    ]
+
+    for name, metric in sorted(trends.metrics.items()):
+        if metric.direction == TrendDirection.INSUFFICIENT:
+            continue
+        parts = [f"{name}:"]
+        if metric.avg is not None:
+            parts.append(f"avg={metric.avg:.1f}")
+        if metric.stddev is not None:
+            parts.append(f"stddev={metric.stddev:.1f}")
+        if metric.min_val is not None:
+            parts.append(f"min={metric.min_val:.1f}")
+        if metric.max_val is not None:
+            parts.append(f"max={metric.max_val:.1f}")
+        parts.append(f"direction={metric.direction.value}")
+        lines.append(" ".join(parts))
+
+    return "\n".join(lines)
+
+
+def _format_anomalies(anomaly_result: AnomalyResult | None) -> str:
+    """Format anomaly detection results for the prompt.
+
+    Lists detected alerts with severity, title, and description.
+    Returns "no anomalies detected" when result is None or empty.
+    """
+    if anomaly_result is None or not anomaly_result.alerts:
+        return (
+            "No anomalies detected. "
+            "All metrics within normal personal baselines."
+        )
+
+    lines: list[str] = [
+        f"DETECTED ANOMALIES ({len(anomaly_result.alerts)} alerts):",
+        "",
+    ]
+    for alert in anomaly_result.alerts:
+        lines.append(
+            f"- [{alert.severity.value.upper()}] {alert.title}: {alert.description}"
+        )
+
+    lines.append("")
+    lines.append(
+        "Interpret each anomaly in clinical context. "
+        "Populate the alerts field in your response accordingly."
+    )
+
+    return "\n".join(lines)
+
+
 def _format_activities(activities: list[Activity]) -> str:
     """Format yesterday's activities as human-readable text.
 
@@ -335,14 +418,25 @@ def assemble_prompt(
     Returns:
         AssembledPrompt with the full text, token estimate, and section metadata.
     """
+    # Build analysis directives, appending anomaly interpretation when anomalies exist
+    has_anomalies = (
+        context.anomaly_result is not None
+        and len(context.anomaly_result.alerts) > 0
+    )
+    directives = ANALYSIS_DIRECTIVES
+    if has_anomalies:
+        directives = ANALYSIS_DIRECTIVES + "\n\n" + ANOMALY_INTERPRETATION_DIRECTIVES
+
     # Build sections dict
     sections: dict[str, str] = {
         "health_profile": _format_profile(context.profile),
         "today_metrics": _format_metrics(context.today_metrics),
         "trends_7d": _format_trends(context.trends),
+        "trends_28d": _format_extended_trends(context.extended_trends),
+        "anomalies": _format_anomalies(context.anomaly_result),
         "yesterday_activities": _format_activities(context.activities),
         "sports_science": SPORTS_SCIENCE_GROUNDING,
-        "analysis_directives": ANALYSIS_DIRECTIVES,
+        "analysis_directives": directives,
         "output_format": _format_output_schema(),
     }
 

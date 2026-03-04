@@ -94,3 +94,20 @@ are approaching reference range boundaries or that were tested more than 6 month
 Provide timing recommendations that align with the day's training schedule. Note any \
 interactions between supplements and current conditions.\
 """
+
+ANOMALY_INTERPRETATION_DIRECTIVES: str = """\
+## Anomaly Interpretation
+
+When anomalies are detected (listed in the <anomalies> section), interpret them in clinical context.
+For each detected anomaly, provide:
+1. What the converging signals mean physiologically
+2. Whether this warrants immediate action or continued monitoring
+3. A specific, actionable recommendation for today
+
+Populate the `alerts` field in your response with structured Alert objects for each \
+detected anomaly. Each alert should have a clear title, descriptive explanation, and \
+practical suggested action. Use WARNING severity for concerning trends that need \
+attention, and CRITICAL severity for patterns that require immediate behavioral change.
+
+If no anomalies are detected, return an empty alerts list. Do not invent alerts.\
+"""
