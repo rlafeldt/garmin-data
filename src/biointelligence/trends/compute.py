@@ -1,9 +1,9 @@
-"""7-day rolling trend computation with split-half direction analysis."""
+"""Rolling trend computation with split-half direction analysis (7-day and 28-day)."""
 
 from __future__ import annotations
 
 from datetime import date, timedelta
-from statistics import mean
+from statistics import mean, stdev
 
 import structlog
 from supabase import Client
@@ -22,6 +22,7 @@ log = structlog.get_logger()
 TREND_FIELDS = (
     "date,hrv_overnight_avg,resting_hr,sleep_score,"
     "total_sleep_seconds,body_battery_morning,avg_stress_level,training_load_7d,"
+    "deep_sleep_seconds,rest_stress_minutes,body_battery_max,body_battery_min,"
     "is_no_wear"
 )
 
@@ -163,6 +164,84 @@ def compute_trends(client: Client, target_date: date) -> TrendResult:
         target_date=target_date.isoformat(),
         directions={name: trend.direction.value for name, trend in metrics.items()},
     )
+
+    return TrendResult(
+        window_start=window_start,
+        window_end=target_date,
+        data_points=len(rows),
+        metrics=metrics,
+    )
+
+
+def compute_extended_trends(
+    client: Client,
+    target_date: date,
+    window_days: int = 28,
+    min_data_points: int = 14,
+) -> TrendResult:
+    """Compute extended trend window with stddev for anomaly baselines.
+
+    Requires min_data_points (default 14) of valid data in the window.
+    Uses the same fetch_trend_window() and compute_direction() as 7-day trends.
+    Populates MetricTrend.stddev for each metric using sample standard deviation.
+
+    Args:
+        client: Supabase client instance.
+        target_date: The reference date (exclusive upper bound).
+        window_days: Number of days in the trend window (default 28).
+        min_data_points: Minimum rows required for valid computation (default 14).
+
+    Returns:
+        TrendResult with per-metric statistics including stddev.
+    """
+    window_start = target_date - timedelta(days=window_days)
+    rows = fetch_trend_window(client, target_date, window_days=window_days)
+
+    log.info(
+        "compute_extended_trends",
+        target_date=target_date.isoformat(),
+        window_days=window_days,
+        data_points=len(rows),
+    )
+
+    metrics: dict[str, MetricTrend] = {}
+
+    if len(rows) < min_data_points:
+        # Insufficient overall data -- mark all metrics as INSUFFICIENT
+        for metric_name in TRENDED_METRICS:
+            metrics[metric_name] = MetricTrend()
+        return TrendResult(
+            window_start=window_start,
+            window_end=target_date,
+            data_points=len(rows),
+            metrics=metrics,
+        )
+
+    for metric_name, config in TRENDED_METRICS.items():
+        # Extract non-None values for this metric
+        values = [
+            row[metric_name]
+            for row in rows
+            if row.get(metric_name) is not None
+        ]
+
+        if len(values) < min_data_points:
+            metrics[metric_name] = MetricTrend()
+            continue
+
+        direction = compute_direction(
+            values, lower_is_better=config["lower_is_better"]
+        )
+
+        metric_stddev = stdev(values) if len(values) >= 2 else 0.0
+
+        metrics[metric_name] = MetricTrend(
+            avg=mean(values),
+            min_val=min(values),
+            max_val=max(values),
+            stddev=metric_stddev,
+            direction=direction,
+        )
 
     return TrendResult(
         window_start=window_start,

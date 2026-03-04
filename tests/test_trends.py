@@ -127,18 +127,9 @@ class TestComputeTrends:
         # Stress decreasing -> IMPROVING (lower is better)
         assert result.metrics["avg_stress_level"].direction == TrendDirection.IMPROVING
 
-    def test_compute_trends_includes_all_seven_metrics(self, mock_client: MagicMock) -> None:
+    def test_compute_trends_includes_all_trended_metrics(self, mock_client: MagicMock) -> None:
         result = compute_trends(mock_client, date(2026, 3, 2))
-        expected = {
-            "hrv_overnight_avg",
-            "resting_hr",
-            "sleep_score",
-            "total_sleep_seconds",
-            "body_battery_morning",
-            "avg_stress_level",
-            "training_load_7d",
-        }
-        assert set(result.metrics.keys()) == expected
+        assert set(result.metrics.keys()) == set(TRENDED_METRICS.keys())
 
     def test_compute_trends_empty_response_all_insufficient(
         self, empty_client: MagicMock

@@ -1,4 +1,4 @@
-"""Pydantic models for 7-day rolling trend computation."""
+"""Pydantic models for rolling trend computation (7-day and 28-day windows)."""
 
 from __future__ import annotations
 
@@ -23,6 +23,7 @@ class MetricTrend(BaseModel):
     avg: float | None = None
     min_val: float | None = None
     max_val: float | None = None
+    stddev: float | None = None
     direction: TrendDirection = TrendDirection.INSUFFICIENT
 
 
@@ -45,4 +46,8 @@ TRENDED_METRICS: dict[str, dict[str, bool]] = {
     "body_battery_morning": {"lower_is_better": False},
     "avg_stress_level": {"lower_is_better": True},
     "training_load_7d": {"lower_is_better": False},
+    "deep_sleep_seconds": {"lower_is_better": False},
+    "rest_stress_minutes": {"lower_is_better": False},
+    "body_battery_max": {"lower_is_better": False},
+    "body_battery_min": {"lower_is_better": False},
 }
