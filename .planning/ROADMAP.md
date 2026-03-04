@@ -132,29 +132,33 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 8. User Onboarding | 0/1 | Not started | - |
 
 ### Phase 7: WhatsApp Delivery
-**Goal**: Replace email delivery with WhatsApp messages for the Daily Protocol, rendering the protocol in a concise mobile-friendly format and sending via WhatsApp Business API each morning
+**Goal**: Add WhatsApp as a delivery channel for the Daily Protocol alongside email, with mobile-optimised formatting and configurable delivery timing based on user preference
 **Depends on**: Phase 4 (delivery infrastructure)
-**Requirements**: TBD
+**Requirements**: WHTS-01, WHTS-02, WHTS-03, WHTS-04
 **Success Criteria** (what must be TRUE):
-  1. The Daily Protocol is delivered as a WhatsApp message instead of email each morning
-  2. The protocol is formatted for mobile/WhatsApp readability (concise sections, no heavy HTML)
-  3. Message delivery is confirmed via API callback/status and failures trigger a notification
-  4. The pipeline orchestrator uses WhatsApp delivery instead of (or alongside) email delivery
+  1. The Daily Protocol is delivered as a WhatsApp message formatted for mobile readability (WhatsApp-native formatting, concise sections)
+  2. WhatsApp delivery works alongside email — user selects preferred channel
+  3. Message delivery is confirmed via API status callbacks; failure triggers fallback to email
+  4. Delivery timing is configurable based on user preference (morning / post-workout / evening / flexible)
+  5. Alert banners from Phase 6 render correctly in WhatsApp format
 **Plans**: TBD
 
 Plans:
 - [ ] 07-01: TBD
 
 ### Phase 8: User Onboarding
-**Goal**: Web-based onboarding flow where users complete a 6-step profile: biological profile (age, sex, height, weight, activity level, hormonal status, sport, goals), health conditions and medications, metabolic and nutrition profile (dietary pattern, metabolic flexibility signals, fasting, caffeine, alcohol), training context and sleep (periodisation, chronotype, schedule), baseline biometric metrics (30-day Garmin averages), and data upload (Garmin export, lab results/bloodwork). This replaces the manual YAML health profile with a structured, user-friendly intake that stores data in Supabase and feeds the analysis engine.
+**Goal**: Web-based onboarding flow replacing the manual YAML health profile. Initial onboarding captures only essentials (biological profile, sport, diet, training phase, chronotype); remaining fields collected progressively via in-app reminders. Full questionnaire covers 6 steps: biological profile, health/medications/supplementation, metabolic/nutrition profile, training/sleep context, baseline biometric metrics, and data upload with informed consent. All data persisted to Supabase and feeds the existing analysis engine.
 **Depends on**: Phase 2 (health profile system)
-**Requirements**: TBD
+**Requirements**: ONBD-01, ONBD-02, ONBD-03, ONBD-04, ONBD-05, ONBD-06, ONBD-07, ONBD-08
 **Success Criteria** (what must be TRUE):
-  1. A user can complete the full 6-step onboarding flow via a web interface
-  2. All onboarding data is persisted to Supabase and replaces the YAML health profile as the data source for the analysis engine
-  3. Lab results/bloodwork can be uploaded (PDF/image/CSV) and parsed into structured data
-  4. The onboarding data feeds into the existing prompt assembly and Claude analysis pipeline seamlessly
-  5. Users can update their profile data after initial onboarding
+  1. A user can complete the essential initial onboarding in under 3 minutes (age, sex, height, weight, sport, dietary pattern, training phase, chronotype, consent)
+  2. Progressive profile enrichment via in-app reminders collects remaining fields (metabolic flexibility signals, supplements, hormonal context, baseline metrics, etc.)
+  3. All onboarding data is persisted to Supabase and replaces the YAML health profile as the data source for the analysis engine
+  4. Three informed consent checkboxes are required before onboarding completes
+  5. Lab results/bloodwork can be uploaded (PDF/image) and parsed into structured data
+  6. The onboarding data feeds into the existing prompt assembly and Claude analysis pipeline seamlessly
+  7. Users can update their profile data after initial onboarding
+  8. Falls back to YAML health profile if no onboarding data exists (backwards compatibility)
 **Plans**: TBD
 
 Plans:

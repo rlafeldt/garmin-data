@@ -70,6 +70,24 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **AUTO-01**: Daily pipeline runs automatically via cron or scheduled task (pull -> analyze -> deliver) without manual intervention
 - [x] **AUTO-02**: Pipeline handles failures gracefully with retry logic and sends notification if daily protocol cannot be generated
 
+### WhatsApp Delivery
+
+- **WHTS-01**: Daily Protocol delivered via WhatsApp message formatted for mobile readability (concise sections, WhatsApp-native formatting)
+- **WHTS-02**: WhatsApp delivery operates alongside email — user selects preferred channel
+- **WHTS-03**: Message delivery confirmed via API status callbacks; failure triggers fallback to email
+- **WHTS-04**: Delivery timing configurable based on user preference (morning / post-workout / evening / flexible)
+
+### User Onboarding
+
+- **ONBD-01**: Web-based 6-step onboarding flow capturing biological profile, health data, metabolic/nutrition profile, training/sleep context, baseline biometrics, and data upload with informed consent
+- **ONBD-02**: Essential fields collected in initial onboarding (age, sex, height, weight, sport, dietary pattern, training phase, chronotype); remaining fields collected progressively via in-app reminders
+- **ONBD-03**: All onboarding data persisted to Supabase, replacing YAML health profile as data source for analysis engine
+- **ONBD-04**: Informed consent (3 checkboxes) required before onboarding completes — AI research tool disclaimer, data processing consent, clinical evaluation acknowledgement
+- **ONBD-05**: Users can update profile data after initial onboarding
+- **ONBD-06**: Backwards compatibility — falls back to YAML health profile if no onboarding data exists (transition period)
+- **ONBD-07**: Lab results/bloodwork upload (PDF/image) with structured data extraction
+- **ONBD-08**: Female athlete hormonal context capture (menstrual status, cycle phase) for sex-specific biometric interpretation
+
 ## v2 Requirements
 
 Deferred to future release. Tracked but not in current roadmap.
@@ -113,7 +131,7 @@ Explicitly excluded. Documented to prevent scope creep.
 | CGM integration | Future expansion. Static config captures relevant metabolic context for v1. |
 | Official Garmin Health API | Enterprise-only: requires business approval, commercial license, 2+ users min. Personal projects rejected. |
 | Connect IQ watch apps | No networking capability — cannot send data to external servers. |
-| WhatsApp delivery | Requires Meta Business Verification, template pre-approval. Telegram is superior for personal tool. |
+| WhatsApp delivery | ~~Moved to Phase 7~~ — Now in scope. Requires Meta Business Verification and template pre-approval; Telegram as fallback if verification proves blocking. |
 | Apple Health / Google Health Connect | Device-local APIs only, no server-side access for backend agent. |
 
 ## Traceability
@@ -156,9 +174,23 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TRND-02 | Phase 6: Intelligence Hardening | Complete |
 | TRND-03 | Phase 6: Intelligence Hardening | Complete |
 
+| WHTS-01 | Phase 7: WhatsApp Delivery | Not started |
+| WHTS-02 | Phase 7: WhatsApp Delivery | Not started |
+| WHTS-03 | Phase 7: WhatsApp Delivery | Not started |
+| WHTS-04 | Phase 7: WhatsApp Delivery | Not started |
+| ONBD-01 | Phase 8: User Onboarding | Not started |
+| ONBD-02 | Phase 8: User Onboarding | Not started |
+| ONBD-03 | Phase 8: User Onboarding | Not started |
+| ONBD-04 | Phase 8: User Onboarding | Not started |
+| ONBD-05 | Phase 8: User Onboarding | Not started |
+| ONBD-06 | Phase 8: User Onboarding | Not started |
+| ONBD-07 | Phase 8: User Onboarding | Not started |
+| ONBD-08 | Phase 8: User Onboarding | Not started |
+
 **Coverage:**
-- v1 requirements: 33 total
-- Mapped to phases: 33
+- v1 requirements: 33 total (phases 1-6)
+- Phase 7-8 requirements: 12 total
+- Mapped to phases: 45
 - Unmapped: 0
 
 ---
