@@ -6,6 +6,7 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
+from biointelligence.anomaly.models import Alert, AnomalyResult
 from biointelligence.garmin.models import Activity, DailyMetrics
 from biointelligence.profile.models import HealthProfile
 from biointelligence.trends.models import TrendResult
@@ -19,6 +20,8 @@ class PromptContext(BaseModel):
     profile: HealthProfile
     activities: list[Activity]
     target_date: date
+    extended_trends: TrendResult | None = None
+    anomaly_result: AnomalyResult | None = None
 
 
 class AssembledPrompt(BaseModel):
@@ -107,3 +110,4 @@ class DailyProtocol(BaseModel):
     supplementation: SupplementationPlan
     overall_summary: str
     data_quality_notes: str | None = None
+    alerts: list[Alert] = Field(default_factory=list)
