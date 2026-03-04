@@ -18,7 +18,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 4: Protocol Rendering and Email Delivery** - Render Daily Protocol as email and deliver each morning via Resend
 - [x] **Phase 5: Pipeline Automation** - End-to-end automated daily pipeline with scheduling, failure handling, and monitoring
 - [x] **Phase 6: Intelligence Hardening** - Extended 28-day trend windows, multi-metric anomaly detection, and proactive alerts (completed 2026-03-04)
-- [ ] **Phase 7: WhatsApp Delivery** - Replace email with WhatsApp messages for mobile-friendly Daily Protocol delivery
+- [x] **Phase 7: WhatsApp Delivery** - Replace email with WhatsApp messages for mobile-friendly Daily Protocol delivery
 - [ ] **Phase 8: User Onboarding** - Web-based onboarding flow where users input biological profile, health data, lab tests, and preferences
 
 ## Phase Details
@@ -128,7 +128,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 4. Protocol Rendering and Email Delivery | 2/2 | Complete | 2026-03-03 |
 | 5. Pipeline Automation | 2/2 | Complete | 2026-03-04 |
 | 6. Intelligence Hardening | 2/2 | Complete   | 2026-03-04 |
-| 7. WhatsApp Delivery | 0/2 | Not started | - |
+| 7. WhatsApp Delivery | 3/3 | Complete | 2026-03-04 |
 | 8. User Onboarding | 0/1 | Not started | - |
 
 ### Phase 7: WhatsApp Delivery
@@ -137,16 +137,16 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 **Requirements**: WHTS-01, WHTS-02, WHTS-03, WHTS-04
 **Success Criteria** (what must be TRUE):
   1. The Daily Protocol is delivered as a WhatsApp message formatted for mobile readability (WhatsApp-native formatting, concise sections)
-  2. WhatsApp delivery works alongside email — user selects preferred channel
-  3. Message delivery is confirmed via API status callbacks; failure triggers fallback to email
-  4. Delivery timing is configurable based on user preference (morning / post-workout / evening / flexible)
+  2. WhatsApp is the primary delivery channel; email is the automatic fallback when WhatsApp fails or is not configured
+  3. Message delivery is confirmed via API response logging; failure triggers fallback to email
+  4. ~~Delivery timing is configurable~~ Deferred to Phase 8 — pipeline uses fixed 7 AM CET schedule
   5. Alert banners from Phase 6 render correctly in WhatsApp format
 **Plans**: 3 plans
 
 Plans:
 - [x] 07-01-PLAN.md — WhatsApp renderer, WhatsApp sender, Settings extension with 3 WhatsApp env vars
 - [x] 07-02-PLAN.md — Pipeline WhatsApp-first delivery with email fallback, delivery package wiring, GitHub Actions secrets
-- [ ] 07-03-PLAN.md — Gap closure: update REQUIREMENTS.md and ROADMAP.md for WHTS-02 revised scope and WHTS-04 deferral
+- [x] 07-03-PLAN.md — Gap closure: update REQUIREMENTS.md and ROADMAP.md for WHTS-02 revised scope and WHTS-04 deferral
 
 ### Phase 8: User Onboarding
 **Goal**: Web-based onboarding flow replacing the manual YAML health profile. Initial onboarding captures only essentials (biological profile, sport, diet, training phase, chronotype); remaining fields collected progressively via in-app reminders. Full questionnaire covers 6 steps: biological profile, health/medications/supplementation, metabolic/nutrition profile, training/sleep context, baseline biometric metrics, and data upload with informed consent. All data persisted to Supabase and feeds the existing analysis engine.

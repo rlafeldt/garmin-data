@@ -72,10 +72,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### WhatsApp Delivery
 
-- **WHTS-01**: Daily Protocol delivered via WhatsApp message formatted for mobile readability (concise sections, WhatsApp-native formatting)
-- **WHTS-02**: WhatsApp delivery operates alongside email — user selects preferred channel
-- **WHTS-03**: Message delivery confirmed via API status callbacks; failure triggers fallback to email
-- **WHTS-04**: Delivery timing configurable based on user preference (morning / post-workout / evening / flexible)
+- [x] **WHTS-01**: Daily Protocol delivered via WhatsApp message formatted for mobile readability (concise sections, WhatsApp-native formatting)
+- [x] **WHTS-02**: WhatsApp delivery operates alongside email — WhatsApp-first with automatic email fallback (revised from user-selectable channel per CONTEXT.md: channel is auto-determined by WhatsApp configuration availability)
+- [x] **WHTS-03**: Message delivery confirmed via API response logging; failure triggers fallback to email (simplified from webhook callbacks to fire-and-forget with API response status)
+- [ ] **WHTS-04**: ~~Delivery timing configurable based on user preference~~ Deferred to Phase 8 per CONTEXT.md — pipeline runs at fixed 7 AM CET schedule
 
 ### User Onboarding
 
@@ -174,10 +174,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TRND-02 | Phase 6: Intelligence Hardening | Complete |
 | TRND-03 | Phase 6: Intelligence Hardening | Complete |
 
-| WHTS-01 | Phase 7: WhatsApp Delivery | Not started |
-| WHTS-02 | Phase 7: WhatsApp Delivery | Not started |
-| WHTS-03 | Phase 7: WhatsApp Delivery | Not started |
-| WHTS-04 | Phase 7: WhatsApp Delivery | Not started |
+| WHTS-01 | Phase 7: WhatsApp Delivery | Complete |
+| WHTS-02 | Phase 7: WhatsApp Delivery | Complete (revised scope) |
+| WHTS-03 | Phase 7: WhatsApp Delivery | Complete (simplified scope) |
+| WHTS-04 | Phase 7: WhatsApp Delivery | Deferred to Phase 8 |
 | ONBD-01 | Phase 8: User Onboarding | Not started |
 | ONBD-02 | Phase 8: User Onboarding | Not started |
 | ONBD-03 | Phase 8: User Onboarding | Not started |
