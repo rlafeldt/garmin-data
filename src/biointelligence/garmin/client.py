@@ -49,13 +49,21 @@ def get_authenticated_client(
 
 
 def _auth_supabase(settings: Settings, supabase_client: Client) -> Garmin:
-    """Authenticate via Supabase-stored tokens (CI mode)."""
+    """Authenticate via Supabase-stored tokens (CI mode).
+
+    Falls back to email/password if stored tokens are expired or invalid.
+    """
     token_string = load_tokens_from_supabase(supabase_client)
 
     if token_string is not None:
         log.info("garmin_auth_supabase_token_load")
-        client = Garmin()
-        client.login(token_string)
+        try:
+            client = Garmin()
+            client.login(token_string)
+        except Exception:
+            log.warning("garmin_auth_token_expired_fallback_to_email")
+            client = Garmin(settings.garmin_email, settings.garmin_password)
+            client.login()
     else:
         log.info("garmin_auth_email_login_ci", email=settings.garmin_email)
         client = Garmin(settings.garmin_email, settings.garmin_password)
