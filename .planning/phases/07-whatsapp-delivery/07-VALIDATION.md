@@ -40,10 +40,10 @@ created: 2026-03-04
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
 | 07-01-01 | 01 | 1 | WHTS-01 | unit | `uv run pytest tests/test_whatsapp_renderer.py -x` | No -- Wave 0 | ⬜ pending |
 | 07-01-02 | 01 | 1 | WHTS-01 | unit | `uv run pytest tests/test_whatsapp_renderer.py::TestRenderWhatsappAlerts -x` | No -- Wave 0 | ⬜ pending |
-| 07-01-03 | 01 | 1 | WHTS-02 | unit | `uv run pytest tests/test_pipeline.py::TestRunDeliveryWhatsApp -x` | No -- Wave 0 | ⬜ pending |
+| 07-02-01 | 02 | 2 | WHTS-02 | unit | `uv run pytest tests/test_pipeline.py::TestRunDeliveryWhatsApp -x` | No -- Wave 0 | ⬜ pending |
 | 07-01-04 | 01 | 1 | WHTS-03 | unit | `uv run pytest tests/test_whatsapp_sender.py -x` | No -- Wave 0 | ⬜ pending |
 | 07-01-05 | 01 | 1 | WHTS-03 | unit | `uv run pytest tests/test_whatsapp_sender.py::TestRetryClassification -x` | No -- Wave 0 | ⬜ pending |
-| 07-01-06 | 01 | 1 | WHTS-04 | unit | `uv run pytest tests/test_whatsapp_sender.py::TestSettingsWhatsApp -x` | No -- Wave 0 | ⬜ pending |
+| 07-01-06 | 01 | 1 | WHTS-03 | unit | `uv run pytest tests/test_whatsapp_sender.py::TestSettingsWhatsApp -x` | No -- Wave 0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,7 +52,7 @@ created: 2026-03-04
 ## Wave 0 Requirements
 
 - [ ] `tests/test_whatsapp_renderer.py` — stubs for WHTS-01 (WhatsApp formatting, emoji headers, domain order, alerts, character length)
-- [ ] `tests/test_whatsapp_sender.py` — stubs for WHTS-03, WHTS-04 (API call, retry logic, error handling, Settings fields)
+- [ ] `tests/test_whatsapp_sender.py` — stubs for WHTS-03 (API call, retry logic, error handling, Settings fields)
 - [ ] `tests/test_pipeline.py` additions — stubs for WHTS-02 (WhatsApp-first delivery with email fallback)
 
 *Existing test infrastructure (pytest, conftest.py) covers framework needs.*
