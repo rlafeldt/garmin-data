@@ -19,6 +19,7 @@ from biointelligence.profile.models import (
     Supplement,
     TrainingContext,
 )
+from biointelligence.anomaly.models import Alert, AlertSeverity, AnomalyResult
 from biointelligence.prompt.assembler import assemble_prompt
 from biointelligence.prompt.budget import (
     DEFAULT_TOKEN_BUDGET,
@@ -494,3 +495,402 @@ class TestAssemblePrompt:
         result = assemble_prompt(mock_context)
         # Conditional dosing rules should appear
         assert "increase to 600mg" in result.text or "high-stress" in result.text
+
+
+# ---------------------------------------------------------------------------
+# Phase 6 Plan 02: Extended PromptContext, DailyProtocol alerts, prompt
+# sections for 28-day trends and anomalies, budget and template updates
+# ---------------------------------------------------------------------------
+
+
+class TestPromptContextExtended:
+    """Test PromptContext with extended_trends and anomaly_result fields."""
+
+    def test_accepts_extended_trends_field(
+        self,
+        mock_metrics: DailyMetrics,
+        mock_trends: TrendResult,
+        mock_profile: HealthProfile,
+        mock_activities: list[Activity],
+    ) -> None:
+        extended = TrendResult(
+            window_start=date(2026, 2, 3),
+            window_end=date(2026, 3, 3),
+            data_points=28,
+            metrics={
+                "hrv_overnight_avg": MetricTrend(
+                    avg=50.0, min_val=40.0, max_val=60.0, stddev=5.0,
+                    direction=TrendDirection.STABLE,
+                ),
+            },
+        )
+        ctx = PromptContext(
+            today_metrics=mock_metrics,
+            trends=mock_trends,
+            profile=mock_profile,
+            activities=mock_activities,
+            target_date=date(2026, 3, 3),
+            extended_trends=extended,
+        )
+        assert ctx.extended_trends is not None
+        assert ctx.extended_trends.data_points == 28
+
+    def test_accepts_anomaly_result_field(
+        self,
+        mock_metrics: DailyMetrics,
+        mock_trends: TrendResult,
+        mock_profile: HealthProfile,
+        mock_activities: list[Activity],
+    ) -> None:
+        anomaly = AnomalyResult(
+            alerts=[
+                Alert(
+                    severity=AlertSeverity.WARNING,
+                    title="Test Alert",
+                    description="Test",
+                    suggested_action="Monitor",
+                    pattern_name="test",
+                ),
+            ],
+            metrics_checked=5,
+        )
+        ctx = PromptContext(
+            today_metrics=mock_metrics,
+            trends=mock_trends,
+            profile=mock_profile,
+            activities=mock_activities,
+            target_date=date(2026, 3, 3),
+            anomaly_result=anomaly,
+        )
+        assert ctx.anomaly_result is not None
+        assert len(ctx.anomaly_result.alerts) == 1
+
+    def test_extended_trends_defaults_to_none(
+        self,
+        mock_metrics: DailyMetrics,
+        mock_trends: TrendResult,
+        mock_profile: HealthProfile,
+        mock_activities: list[Activity],
+    ) -> None:
+        ctx = PromptContext(
+            today_metrics=mock_metrics,
+            trends=mock_trends,
+            profile=mock_profile,
+            activities=mock_activities,
+            target_date=date(2026, 3, 3),
+        )
+        assert ctx.extended_trends is None
+
+    def test_anomaly_result_defaults_to_none(
+        self,
+        mock_metrics: DailyMetrics,
+        mock_trends: TrendResult,
+        mock_profile: HealthProfile,
+        mock_activities: list[Activity],
+    ) -> None:
+        ctx = PromptContext(
+            today_metrics=mock_metrics,
+            trends=mock_trends,
+            profile=mock_profile,
+            activities=mock_activities,
+            target_date=date(2026, 3, 3),
+        )
+        assert ctx.anomaly_result is None
+
+
+class TestDailyProtocolAlerts:
+    """Test DailyProtocol with alerts field."""
+
+    def test_accepts_alerts_field(self) -> None:
+        alerts = [
+            Alert(
+                severity=AlertSeverity.WARNING,
+                title="HRV Low",
+                description="HRV below baseline",
+                suggested_action="Rest today",
+                pattern_name="single_metric_outlier",
+            ),
+        ]
+        protocol = DailyProtocol(
+            date="2026-03-03",
+            training=TrainingRecommendation(
+                headline="Rest day",
+                readiness_score=5,
+                readiness_summary="Low readiness",
+                recommended_intensity="low",
+                recommended_type="walking",
+                recommended_duration_minutes=30,
+                training_load_assessment="Reduce",
+                reasoning="HRV low",
+            ),
+            recovery=RecoveryAssessment(
+                headline="Recovery needed",
+                recovery_status="poor",
+                hrv_interpretation="Low",
+                body_battery_assessment="Low",
+                stress_impact="High",
+                recommendations=["Rest"],
+                reasoning="Low HRV",
+            ),
+            sleep=SleepAnalysis(
+                headline="Poor sleep",
+                quality_assessment="Poor",
+                architecture_notes="Low deep sleep",
+                optimization_tips=["Earlier bedtime"],
+                reasoning="Low score",
+            ),
+            nutrition=NutritionGuidance(
+                headline="Recovery nutrition",
+                caloric_target="2200 kcal",
+                macro_focus="Protein",
+                hydration_target="3L",
+                meal_timing_notes="Regular",
+                reasoning="Recovery day",
+            ),
+            supplementation=SupplementationPlan(
+                headline="Increase magnesium",
+                adjustments=["Extra magnesium"],
+                timing_notes="Evening",
+                reasoning="High stress",
+            ),
+            overall_summary="Rest day recommended",
+            alerts=alerts,
+        )
+        assert len(protocol.alerts) == 1
+        assert protocol.alerts[0].severity == AlertSeverity.WARNING
+
+    def test_alerts_defaults_to_empty_list(self) -> None:
+        protocol = DailyProtocol(
+            date="2026-03-03",
+            training=TrainingRecommendation(
+                headline="Good day",
+                readiness_score=8,
+                readiness_summary="Good",
+                recommended_intensity="moderate",
+                recommended_type="cycling",
+                recommended_duration_minutes=60,
+                training_load_assessment="Balanced",
+                reasoning="Good",
+            ),
+            recovery=RecoveryAssessment(
+                headline="Well recovered",
+                recovery_status="good",
+                hrv_interpretation="Normal",
+                body_battery_assessment="Good",
+                stress_impact="Low",
+                recommendations=["Stretch"],
+                reasoning="Good",
+            ),
+            sleep=SleepAnalysis(
+                headline="Good sleep",
+                quality_assessment="Good",
+                architecture_notes="OK",
+                optimization_tips=["Consistent"],
+                reasoning="Good",
+            ),
+            nutrition=NutritionGuidance(
+                headline="Standard",
+                caloric_target="2400",
+                macro_focus="Balanced",
+                hydration_target="3L",
+                meal_timing_notes="Normal",
+                reasoning="Normal",
+            ),
+            supplementation=SupplementationPlan(
+                headline="Standard",
+                adjustments=["Normal"],
+                timing_notes="Normal",
+                reasoning="Normal",
+            ),
+            overall_summary="Good day",
+        )
+        assert protocol.alerts == []
+
+    def test_alerts_in_model_json_schema(self) -> None:
+        schema = DailyProtocol.model_json_schema()
+        schema_str = json.dumps(schema)
+        assert "alerts" in schema_str
+
+
+class TestFormatExtendedTrends:
+    """Test _format_extended_trends formatter."""
+
+    def test_formats_trends_with_stats(self) -> None:
+        from biointelligence.prompt.assembler import _format_extended_trends
+
+        trends = TrendResult(
+            window_start=date(2026, 2, 3),
+            window_end=date(2026, 3, 3),
+            data_points=28,
+            metrics={
+                "hrv_overnight_avg": MetricTrend(
+                    avg=50.0, min_val=40.0, max_val=60.0, stddev=5.0,
+                    direction=TrendDirection.STABLE,
+                ),
+                "resting_hr": MetricTrend(
+                    avg=55.0, min_val=50.0, max_val=60.0, stddev=3.0,
+                    direction=TrendDirection.IMPROVING,
+                ),
+            },
+        )
+        result = _format_extended_trends(trends)
+        assert "avg=" in result
+        assert "stddev=" in result
+        assert "direction=" in result
+
+    def test_returns_insufficient_data_when_none(self) -> None:
+        from biointelligence.prompt.assembler import _format_extended_trends
+
+        result = _format_extended_trends(None)
+        assert "insufficient" in result.lower() or "Insufficient" in result
+
+
+class TestFormatAnomalies:
+    """Test _format_anomalies formatter."""
+
+    def test_formats_anomalies_with_alerts(self) -> None:
+        from biointelligence.prompt.assembler import _format_anomalies
+
+        anomaly = AnomalyResult(
+            alerts=[
+                Alert(
+                    severity=AlertSeverity.WARNING,
+                    title="HRV Extreme Outlier",
+                    description="HRV is 2.8 SD below baseline",
+                    suggested_action="Monitor closely",
+                    pattern_name="single_metric_outlier",
+                ),
+                Alert(
+                    severity=AlertSeverity.CRITICAL,
+                    title="Overtraining Pattern",
+                    description="Multiple metrics converging",
+                    suggested_action="Rest today",
+                    pattern_name="overtraining_convergence",
+                ),
+            ],
+            metrics_checked=7,
+        )
+        result = _format_anomalies(anomaly)
+        assert "DETECTED ANOMALIES" in result or "detected" in result.lower()
+        assert "WARNING" in result or "warning" in result.lower()
+        assert "CRITICAL" in result or "critical" in result.lower()
+        assert "HRV Extreme Outlier" in result
+
+    def test_returns_no_anomalies_when_empty(self) -> None:
+        from biointelligence.prompt.assembler import _format_anomalies
+
+        anomaly = AnomalyResult(alerts=[], metrics_checked=7)
+        result = _format_anomalies(anomaly)
+        assert "no anomalies" in result.lower() or "No anomalies" in result
+
+    def test_returns_no_anomalies_when_none(self) -> None:
+        from biointelligence.prompt.assembler import _format_anomalies
+
+        result = _format_anomalies(None)
+        assert "no anomalies" in result.lower() or "No anomalies" in result
+
+
+class TestAssemblePromptExtended:
+    """Test assemble_prompt with 28-day trends and anomalies."""
+
+    @pytest.fixture()
+    def mock_extended_trends(self) -> TrendResult:
+        return TrendResult(
+            window_start=date(2026, 2, 3),
+            window_end=date(2026, 3, 3),
+            data_points=28,
+            metrics={
+                "hrv_overnight_avg": MetricTrend(
+                    avg=50.0, min_val=40.0, max_val=60.0, stddev=5.0,
+                    direction=TrendDirection.STABLE,
+                ),
+            },
+        )
+
+    @pytest.fixture()
+    def mock_anomaly_result(self) -> AnomalyResult:
+        return AnomalyResult(
+            alerts=[
+                Alert(
+                    severity=AlertSeverity.WARNING,
+                    title="Test Alert",
+                    description="Test description",
+                    suggested_action="Monitor",
+                    pattern_name="test_pattern",
+                ),
+            ],
+            metrics_checked=5,
+        )
+
+    def test_includes_trends_28d_section(
+        self,
+        mock_metrics: DailyMetrics,
+        mock_trends: TrendResult,
+        mock_profile: HealthProfile,
+        mock_activities: list[Activity],
+        mock_extended_trends: TrendResult,
+    ) -> None:
+        ctx = PromptContext(
+            today_metrics=mock_metrics,
+            trends=mock_trends,
+            profile=mock_profile,
+            activities=mock_activities,
+            target_date=date(2026, 3, 3),
+            extended_trends=mock_extended_trends,
+        )
+        result = assemble_prompt(ctx)
+        assert "<trends_28d>" in result.text
+        assert "</trends_28d>" in result.text
+
+    def test_includes_anomalies_section(
+        self,
+        mock_metrics: DailyMetrics,
+        mock_trends: TrendResult,
+        mock_profile: HealthProfile,
+        mock_activities: list[Activity],
+        mock_anomaly_result: AnomalyResult,
+    ) -> None:
+        ctx = PromptContext(
+            today_metrics=mock_metrics,
+            trends=mock_trends,
+            profile=mock_profile,
+            activities=mock_activities,
+            target_date=date(2026, 3, 3),
+            anomaly_result=mock_anomaly_result,
+        )
+        result = assemble_prompt(ctx)
+        assert "<anomalies>" in result.text
+        assert "</anomalies>" in result.text
+
+    def test_backward_compatible_without_extended_fields(
+        self, mock_context: PromptContext
+    ) -> None:
+        """Existing contexts without extended_trends/anomaly_result still work."""
+        result = assemble_prompt(mock_context)
+        assert isinstance(result, AssembledPrompt)
+        assert len(result.text) > 0
+
+
+class TestBudgetUpdates:
+    """Test budget.py updates for phase 6."""
+
+    def test_default_token_budget_is_7000(self) -> None:
+        assert DEFAULT_TOKEN_BUDGET == 7000
+
+    def test_section_priority_includes_anomalies(self) -> None:
+        assert "anomalies" in SECTION_PRIORITY
+
+    def test_section_priority_includes_trends_28d(self) -> None:
+        assert "trends_28d" in SECTION_PRIORITY
+
+
+class TestAnomalyDirectives:
+    """Test anomaly interpretation directives in templates."""
+
+    def test_anomaly_directives_exist(self) -> None:
+        from biointelligence.prompt.templates import ANOMALY_INTERPRETATION_DIRECTIVES
+
+        assert len(ANOMALY_INTERPRETATION_DIRECTIVES) > 0
+        lower = ANOMALY_INTERPRETATION_DIRECTIVES.lower()
+        assert "anomal" in lower
+        assert "alert" in lower
