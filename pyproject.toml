@@ -18,6 +18,9 @@ dependencies = [
     "resend>=2.23.0",
 ]
 
+[project.scripts]
+biointelligence = "biointelligence.main:cli"
+
 [dependency-groups]
 dev = [
     "ruff",

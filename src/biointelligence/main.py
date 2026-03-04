@@ -145,5 +145,10 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
-if __name__ == "__main__":
+def cli() -> None:
+    """Entry point for [project.scripts]. Converts return code to sys.exit."""
     sys.exit(main())
+
+
+if __name__ == "__main__":
+    cli()
