@@ -133,8 +133,8 @@ color: {_BANNER_TEXT}; font-family: {_FONT_STACK};">\
 </tr>"""
 
 
-def _render_domain_section(title: str, content: str) -> str:
-    """Wrap a domain's content in a section with heading and divider."""
+def _render_domain_section(title: str, headline: str, content: str) -> str:
+    """Wrap a domain's content in a section with headline and expandable details."""
     return f"""\
 <tr>
   <td style="padding: 0 24px;">
@@ -147,8 +147,19 @@ color: {_TEXT_COLOR}; font-family: {_FONT_STACK};">{_e(title)}</h2>
         </td>
       </tr>
       <tr>
+        <td style="padding-bottom: 4px;">
+          <p style="margin: 0; font-size: 15px; font-weight: 600; \
+line-height: 1.5; color: {_TEXT_COLOR}; \
+font-family: {_FONT_STACK};">{_e(headline)}</p>
+        </td>
+      </tr>
+      <tr>
         <td style="padding-bottom: 20px;">
+          <details>
+            <summary style="font-size: 13px; color: {_MUTED_COLOR}; \
+cursor: pointer; font-family: {_FONT_STACK}; padding: 4px 0;">Show details</summary>
 {content}
+          </details>
         </td>
       </tr>
     </table>
@@ -359,18 +370,24 @@ def render_html(protocol: DailyProtocol, target_date: date) -> str:
     sections = [
         _render_readiness_dashboard(protocol, color),
         _render_data_quality_banner(protocol.data_quality_notes),
-        _render_domain_section("Sleep", _render_sleep(protocol.sleep)),
         _render_domain_section(
-            "Recovery", _render_recovery(protocol.recovery)
+            "Sleep", protocol.sleep.headline,
+            _render_sleep(protocol.sleep),
         ),
         _render_domain_section(
-            "Training", _render_training(protocol.training)
+            "Recovery", protocol.recovery.headline,
+            _render_recovery(protocol.recovery),
         ),
         _render_domain_section(
-            "Nutrition", _render_nutrition(protocol.nutrition)
+            "Training", protocol.training.headline,
+            _render_training(protocol.training),
         ),
         _render_domain_section(
-            "Supplementation",
+            "Nutrition", protocol.nutrition.headline,
+            _render_nutrition(protocol.nutrition),
+        ),
+        _render_domain_section(
+            "Supplementation", protocol.supplementation.headline,
             _render_supplementation(protocol.supplementation),
         ),
         _render_why_this_matters(protocol.overall_summary),
@@ -391,6 +408,13 @@ def render_text(protocol: DailyProtocol, target_date: date) -> str:
     lines: list[str] = [
         f"DAILY PROTOCOL \u2014 {target_date:%B %-d, %Y}",
         f"Readiness: {score}/10",
+        "",
+        "QUICK SUMMARY",
+        f"  Sleep: {protocol.sleep.headline}",
+        f"  Recovery: {protocol.recovery.headline}",
+        f"  Training: {protocol.training.headline}",
+        f"  Nutrition: {protocol.nutrition.headline}",
+        f"  Supplements: {protocol.supplementation.headline}",
         "",
     ]
 

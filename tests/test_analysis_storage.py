@@ -31,6 +31,7 @@ def fake_protocol() -> DailyProtocol:
     return DailyProtocol(
         date="2026-03-02",
         training=TrainingRecommendation(
+            headline="Zone 2 ride day",
             readiness_score=7,
             readiness_summary="Good recovery overnight.",
             recommended_intensity="Zone 2",
@@ -40,6 +41,7 @@ def fake_protocol() -> DailyProtocol:
             reasoning="HRV above baseline, body battery 72.",
         ),
         recovery=RecoveryAssessment(
+            headline="Well recovered",
             recovery_status="Well recovered",
             hrv_interpretation="HRV 48ms above 7-day average.",
             body_battery_assessment="Morning body battery 72.",
@@ -48,12 +50,14 @@ def fake_protocol() -> DailyProtocol:
             reasoning="Solid recovery from yesterday.",
         ),
         sleep=SleepAnalysis(
+            headline="Good sleep quality",
             quality_assessment="Good sleep quality.",
             architecture_notes="Deep sleep 1h42m, REM 1h28m.",
             optimization_tips=["Maintain consistent bedtime"],
             reasoning="Sleep score 82 supports training.",
         ),
         nutrition=NutritionGuidance(
+            headline="Moderate fueling for ride",
             caloric_target="2,800 kcal",
             macro_focus="Higher carb pre-ride.",
             hydration_target="3.2L",
@@ -61,6 +65,7 @@ def fake_protocol() -> DailyProtocol:
             reasoning="Zone 2 cycling requires moderate fueling.",
         ),
         supplementation=SupplementationPlan(
+            headline="Standard stack",
             adjustments=["Creatine 5g with breakfast"],
             timing_notes="Magnesium 400mg before bed.",
             reasoning="Standard stack, no adjustments.",

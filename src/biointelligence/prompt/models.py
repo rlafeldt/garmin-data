@@ -39,6 +39,7 @@ class AssembledPrompt(BaseModel):
 class TrainingRecommendation(BaseModel):
     """Training guidance based on readiness and load."""
 
+    headline: str
     readiness_score: int = Field(..., ge=1, le=10, description="Overall readiness 1-10")
     readiness_summary: str
     recommended_intensity: str
@@ -51,6 +52,7 @@ class TrainingRecommendation(BaseModel):
 class RecoveryAssessment(BaseModel):
     """Recovery status derived from HRV, body battery, and stress."""
 
+    headline: str
     recovery_status: str
     hrv_interpretation: str
     body_battery_assessment: str
@@ -62,6 +64,7 @@ class RecoveryAssessment(BaseModel):
 class SleepAnalysis(BaseModel):
     """Sleep quality and optimization analysis."""
 
+    headline: str
     quality_assessment: str
     architecture_notes: str
     optimization_tips: list[str]
@@ -71,6 +74,7 @@ class SleepAnalysis(BaseModel):
 class NutritionGuidance(BaseModel):
     """Daily nutrition recommendations."""
 
+    headline: str
     caloric_target: str
     macro_focus: str
     hydration_target: str
@@ -81,6 +85,7 @@ class NutritionGuidance(BaseModel):
 class SupplementationPlan(BaseModel):
     """Supplement adjustments for the day."""
 
+    headline: str
     adjustments: list[str]
     timing_notes: str
     reasoning: str

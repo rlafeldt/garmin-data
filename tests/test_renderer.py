@@ -22,6 +22,7 @@ def fake_protocol() -> DailyProtocol:
     return DailyProtocol(
         date="2026-03-02",
         training=TrainingRecommendation(
+            headline="Zone 2 ride, 75 min — readiness is solid",
             readiness_score=7,
             readiness_summary="Good recovery overnight with HRV trending up.",
             recommended_intensity="Zone 2",
@@ -31,6 +32,7 @@ def fake_protocol() -> DailyProtocol:
             reasoning="HRV 48ms above baseline, body battery 72. Training load balanced.",
         ),
         recovery=RecoveryAssessment(
+            headline="Well recovered, HRV above baseline",
             recovery_status="Well recovered",
             hrv_interpretation="HRV 48ms is above your 7-day average of 44ms.",
             body_battery_assessment="Morning body battery 72 indicates good energy reserves.",
@@ -39,12 +41,14 @@ def fake_protocol() -> DailyProtocol:
             reasoning="Multi-metric convergence shows solid recovery.",
         ),
         sleep=SleepAnalysis(
+            headline="Good sleep, strong deep sleep phase",
             quality_assessment="Good sleep quality with adequate deep sleep.",
             architecture_notes="Deep sleep 1h42m (22%), REM 1h28m (19%).",
             optimization_tips=["Maintain consistent 22:30 bedtime", "Limit blue light after 21:00"],
             reasoning="Sleep score 82 with strong deep sleep phase supports training today.",
         ),
         nutrition=NutritionGuidance(
+            headline="2,800 kcal, carb-heavy for ride day",
             caloric_target="2,800 kcal",
             macro_focus="Higher carb pre-ride, moderate protein throughout.",
             hydration_target="3.2L including 500ml electrolyte during ride",
@@ -52,6 +56,7 @@ def fake_protocol() -> DailyProtocol:
             reasoning="Zone 2 cycling for 75min requires moderate fueling strategy.",
         ),
         supplementation=SupplementationPlan(
+            headline="Standard stack, no changes needed",
             adjustments=["Creatine 5g with breakfast", "Vitamin D 4000IU with lunch"],
             timing_notes="Take magnesium glycinate 400mg 1h before bed.",
             reasoning="Maintaining standard supplementation stack.",
@@ -304,6 +309,7 @@ class TestRenderHtml:
         protocol = DailyProtocol(
             date="2026-03-02",
             training=TrainingRecommendation(
+                headline="Test.",
                 readiness_score=7,
                 readiness_summary="Test <script>alert('xss')</script>",
                 recommended_intensity="Zone 2",
@@ -313,6 +319,7 @@ class TestRenderHtml:
                 reasoning="Test.",
             ),
             recovery=RecoveryAssessment(
+                headline="OK.",
                 recovery_status="OK",
                 hrv_interpretation="OK",
                 body_battery_assessment="OK",
@@ -321,12 +328,14 @@ class TestRenderHtml:
                 reasoning="OK.",
             ),
             sleep=SleepAnalysis(
+                headline="OK.",
                 quality_assessment="OK",
                 architecture_notes="OK",
                 optimization_tips=["sleep"],
                 reasoning="OK.",
             ),
             nutrition=NutritionGuidance(
+                headline="OK.",
                 caloric_target="2000",
                 macro_focus="balanced",
                 hydration_target="2L",
@@ -334,6 +343,7 @@ class TestRenderHtml:
                 reasoning="OK.",
             ),
             supplementation=SupplementationPlan(
+                headline="OK.",
                 adjustments=["none"],
                 timing_notes="none",
                 reasoning="OK.",
@@ -343,6 +353,26 @@ class TestRenderHtml:
         html = render_html(protocol, datetime.date(2026, 3, 2))
         assert "<script>" not in html
         assert "&lt;script&gt;" in html
+
+    def test_contains_details_tags_for_expandable_sections(self, fake_protocol):
+        """render_html wraps domain details in <details> tags."""
+        from biointelligence.delivery.renderer import render_html
+
+        html = render_html(fake_protocol, datetime.date(2026, 3, 2))
+        assert html.count("<details>") == 5
+        assert html.count("</details>") == 5
+        assert "Show details" in html
+
+    def test_headlines_appear_in_html(self, fake_protocol):
+        """render_html includes headline text for each domain."""
+        from biointelligence.delivery.renderer import render_html
+
+        html = render_html(fake_protocol, datetime.date(2026, 3, 2))
+        assert fake_protocol.sleep.headline in html
+        assert fake_protocol.recovery.headline in html
+        assert fake_protocol.training.headline in html
+        assert fake_protocol.nutrition.headline in html
+        assert fake_protocol.supplementation.headline in html
 
 
 class TestRenderText:
@@ -366,6 +396,18 @@ class TestRenderText:
         assert "TRAINING" in text
         assert "NUTRITION" in text
         assert "SUPPLEMENTATION" in text
+
+    def test_contains_quick_summary_with_headlines(self, fake_protocol):
+        """render_text includes QUICK SUMMARY block with all 5 headlines."""
+        from biointelligence.delivery.renderer import render_text
+
+        text = render_text(fake_protocol, datetime.date(2026, 3, 2))
+        assert "QUICK SUMMARY" in text
+        assert fake_protocol.sleep.headline in text
+        assert fake_protocol.recovery.headline in text
+        assert fake_protocol.training.headline in text
+        assert fake_protocol.nutrition.headline in text
+        assert fake_protocol.supplementation.headline in text
 
     def test_includes_why_this_matters(self, fake_protocol):
         """render_text includes WHY THIS MATTERS section."""

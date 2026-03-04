@@ -33,6 +33,7 @@ def fake_protocol() -> DailyProtocol:
     return DailyProtocol(
         date="2026-03-02",
         training=TrainingRecommendation(
+            headline="Moderate Zone 2 day",
             readiness_score=7,
             readiness_summary="Good recovery overnight with HRV trending up.",
             recommended_intensity="Zone 2",
@@ -42,6 +43,7 @@ def fake_protocol() -> DailyProtocol:
             reasoning="HRV 48ms above baseline, body battery 72. Training load balanced.",
         ),
         recovery=RecoveryAssessment(
+            headline="Well recovered from yesterday",
             recovery_status="Well recovered",
             hrv_interpretation="HRV 48ms is above your 7-day average of 44ms.",
             body_battery_assessment="Morning body battery 72 indicates good energy reserves.",
@@ -50,12 +52,14 @@ def fake_protocol() -> DailyProtocol:
             reasoning="Multi-metric convergence shows solid recovery from yesterday's effort.",
         ),
         sleep=SleepAnalysis(
+            headline="Solid sleep supports training",
             quality_assessment="Good sleep quality with adequate deep sleep.",
             architecture_notes="Deep sleep 1h42m (22%), REM 1h28m (19%), 6 awakenings.",
             optimization_tips=["Maintain consistent 22:30 bedtime", "Limit blue light after 21:00"],
             reasoning="Sleep score 82 with strong deep sleep phase supports training today.",
         ),
         nutrition=NutritionGuidance(
+            headline="Fuel for moderate endurance",
             caloric_target="2,800 kcal",
             macro_focus="Higher carb pre-ride, moderate protein throughout the day.",
             hydration_target="3.2L including 500ml electrolyte during ride",
@@ -63,6 +67,7 @@ def fake_protocol() -> DailyProtocol:
             reasoning="Zone 2 cycling for 75min requires moderate fueling strategy.",
         ),
         supplementation=SupplementationPlan(
+            headline="Standard stack, no changes",
             adjustments=["Creatine 5g with breakfast", "Vitamin D 4000IU with lunch"],
             timing_notes="Take magnesium glycinate 400mg 1h before bed.",
             reasoning="Maintaining standard supplementation stack. No adjustments needed today.",
@@ -673,6 +678,7 @@ class TestProtocolDomains:
         protocol_with_notes = DailyProtocol(
             date="2026-03-02",
             training=TrainingRecommendation(
+                headline="Conservative approach today",
                 readiness_score=5,
                 readiness_summary="Limited data available.",
                 recommended_intensity="Low",
@@ -682,6 +688,7 @@ class TestProtocolDomains:
                 reasoning="Data incomplete. Recommending conservative approach.",
             ),
             recovery=RecoveryAssessment(
+                headline="Insufficient data for assessment",
                 recovery_status="Unknown",
                 hrv_interpretation="HRV data not available.",
                 body_battery_assessment="Body battery data missing.",
@@ -690,12 +697,14 @@ class TestProtocolDomains:
                 reasoning="Insufficient data for full assessment.",
             ),
             sleep=SleepAnalysis(
+                headline="Limited sleep data available",
                 quality_assessment="Sleep data limited.",
                 architecture_notes="No sleep stage breakdown available.",
                 optimization_tips=["Ensure consistent sleep schedule"],
                 reasoning="Limited sleep data available.",
             ),
             nutrition=NutritionGuidance(
+                headline="Default nutrition guidance",
                 caloric_target="2,200 kcal (estimated)",
                 macro_focus="Balanced macros recommended.",
                 hydration_target="2.5L minimum",
@@ -703,6 +712,7 @@ class TestProtocolDomains:
                 reasoning="Using profile defaults due to limited activity data.",
             ),
             supplementation=SupplementationPlan(
+                headline="Maintain current stack",
                 adjustments=["Maintain current stack"],
                 timing_notes="Standard timing.",
                 reasoning="No data-driven adjustments possible today.",

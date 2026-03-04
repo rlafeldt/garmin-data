@@ -130,6 +130,7 @@ class TestDailyProtocol:
         protocol = DailyProtocol(
             date="2026-03-03",
             training=TrainingRecommendation(
+                headline="Moderate training day",
                 readiness_score=8,
                 readiness_summary="Well recovered",
                 recommended_intensity="moderate",
@@ -139,6 +140,7 @@ class TestDailyProtocol:
                 reasoning="Good HRV and sleep",
             ),
             recovery=RecoveryAssessment(
+                headline="Full recovery indicated",
                 recovery_status="good",
                 hrv_interpretation="Above baseline",
                 body_battery_assessment="High morning charge",
@@ -147,12 +149,14 @@ class TestDailyProtocol:
                 reasoning="Metrics indicate full recovery",
             ),
             sleep=SleepAnalysis(
+                headline="Good sleep quality",
                 quality_assessment="Good",
                 architecture_notes="Adequate deep sleep",
                 optimization_tips=["Maintain consistent bedtime"],
                 reasoning="Sleep score above target",
             ),
             nutrition=NutritionGuidance(
+                headline="Balanced nutrition day",
                 caloric_target="2400 kcal",
                 macro_focus="Balanced",
                 hydration_target="3L",
@@ -160,6 +164,7 @@ class TestDailyProtocol:
                 reasoning="Moderate training day",
             ),
             supplementation=SupplementationPlan(
+                headline="Standard dosing",
                 adjustments=["Standard dosing"],
                 timing_notes="Evening magnesium",
                 reasoning="No special adjustments needed",
