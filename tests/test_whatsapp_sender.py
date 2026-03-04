@@ -243,8 +243,8 @@ class TestSendWhatsApp:
         assert result.success is False
         assert result.error is not None
 
-    @patch("biointelligence.delivery.whatsapp_sender.httpx")
-    def test_permanent_failure_no_retry(self, mock_httpx, mock_settings):
+    @patch("biointelligence.delivery.whatsapp_sender.httpx.post")
+    def test_permanent_failure_no_retry(self, mock_post, mock_settings):
         """On permanent failure (401, 400): fails immediately without retry."""
         from biointelligence.delivery.whatsapp_sender import (
             _send_via_whatsapp,
@@ -263,7 +263,7 @@ class TestSendWhatsApp:
                 request=MagicMock(),
                 response=mock_response,
             )
-            mock_httpx.post.return_value = mock_response
+            mock_post.return_value = mock_response
 
             result = send_whatsapp(
                 body_text="Hello",
@@ -274,12 +274,12 @@ class TestSendWhatsApp:
             assert result.success is False
             assert result.error is not None
             # Should NOT have retried -- only 1 call
-            assert mock_httpx.post.call_count == 1
+            assert mock_post.call_count == 1
         finally:
             _send_via_whatsapp.retry.wait = original_wait
 
-    @patch("biointelligence.delivery.whatsapp_sender.httpx")
-    def test_retries_exhausted_returns_failure(self, mock_httpx, mock_settings):
+    @patch("biointelligence.delivery.whatsapp_sender.httpx.post")
+    def test_retries_exhausted_returns_failure(self, mock_post, mock_settings):
         """On all retries exhausted: returns DeliveryResult(success=False, error=...) -- does not raise."""
         from biointelligence.delivery.whatsapp_sender import (
             _send_via_whatsapp,
@@ -298,7 +298,7 @@ class TestSendWhatsApp:
                 request=MagicMock(),
                 response=mock_response,
             )
-            mock_httpx.post.return_value = mock_response
+            mock_post.return_value = mock_response
 
             result = send_whatsapp(
                 body_text="Hello",
@@ -311,7 +311,7 @@ class TestSendWhatsApp:
             assert "500" in result.error or "Internal Server Error" in result.error
             assert result.email_id is None
             # Should have retried 3 times
-            assert mock_httpx.post.call_count == 3
+            assert mock_post.call_count == 3
         finally:
             _send_via_whatsapp.retry.wait = original_wait
 

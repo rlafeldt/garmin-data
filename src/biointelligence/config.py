@@ -35,6 +35,11 @@ class Settings(BaseSettings):
     sender_email: str = ""
     recipient_email: str = ""
 
+    # WhatsApp (delivery)
+    whatsapp_access_token: str = ""
+    whatsapp_phone_number_id: str = ""
+    whatsapp_recipient_phone: str = ""
+
 
 @lru_cache
 def get_settings() -> Settings:
