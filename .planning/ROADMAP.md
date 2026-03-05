@@ -129,7 +129,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8
 | 5. Pipeline Automation | 2/2 | Complete | 2026-03-04 |
 | 6. Intelligence Hardening | 2/2 | Complete   | 2026-03-04 |
 | 7. WhatsApp Delivery | 3/3 | Complete | 2026-03-04 |
-| 8. User Onboarding | 0/1 | Not started | - |
+| 8. User Onboarding | 0/5 | Not started | - |
 
 ### Phase 7: WhatsApp Delivery
 **Goal**: Replace email as the primary Daily Protocol delivery channel with WhatsApp messages via Meta's WhatsApp Cloud API, with mobile-optimised formatting, email fallback on failure, and same pipeline timing
@@ -161,7 +161,11 @@ Plans:
   6. The onboarding data feeds into the existing prompt assembly and Claude analysis pipeline seamlessly
   7. Users can update their profile data after initial onboarding
   8. Falls back to YAML health profile if no onboarding data exists (backwards compatibility)
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] 08-01: TBD
+- [ ] 08-01-PLAN.md — Next.js project scaffold, Supabase DDL, Zod validation schemas for all 6 steps, shared components
+- [ ] 08-02-PLAN.md — Python HealthProfile model extension, Supabase-first loader with YAML fallback, onboarding mapper
+- [ ] 08-03-PLAN.md — Wizard steps 1-4 (Biological Profile, Health & Meds, Metabolic & Nutrition, Training & Sleep)
+- [ ] 08-04-PLAN.md — Wizard steps 5-6 (Baseline Biometrics, Data Upload & Consent), completion page, profile edit page, lab extraction API
+- [ ] 08-05-PLAN.md — Lab extraction Python module, prompt assembler extension, WhatsApp nudges, pipeline wiring
