@@ -383,3 +383,82 @@ class TestYamlTypeCoercion:
         profile = load_health_profile(FIXTURES_DIR / "health_profile.yaml")
         vd = profile.lab_values["vitamin_d"]
         assert isinstance(vd.range, str)
+
+
+class TestSupabaseFirstLoader:
+    """Test load_health_profile with Supabase-first, YAML fallback."""
+
+    def _mock_supabase_response(self, mocker, data):
+        """Create a mock Supabase client that returns the given data."""
+        mock_response = mocker.MagicMock()
+        mock_response.data = data
+
+        mock_execute = mocker.MagicMock(return_value=mock_response)
+        mock_limit = mocker.MagicMock()
+        mock_limit.execute = mock_execute
+        mock_select = mocker.MagicMock()
+        mock_select.limit = mocker.MagicMock(return_value=mock_limit)
+        mock_table = mocker.MagicMock()
+        mock_table.select = mocker.MagicMock(return_value=mock_select)
+
+        mock_client = mocker.MagicMock()
+        mock_client.table = mocker.MagicMock(return_value=mock_table)
+
+        mocker.patch(
+            "biointelligence.profile.loader.get_supabase_client",
+            return_value=mock_client,
+        )
+        return mock_client
+
+    def test_loads_from_supabase_when_data_exists(self, mocker) -> None:
+        row = {
+            "step_1_data": {
+                "age": 32,
+                "biological_sex": "male",
+                "height_cm": 180,
+                "weight_kg": 78.5,
+                "primary_sport": "cycling",
+            },
+            "step_2_data": {},
+            "step_3_data": {"dietary_pattern": "mediterranean"},
+            "step_4_data": {"current_training_phase": "base_aerobic"},
+            "step_5_data": {},
+            "step_6_data": {},
+        }
+        self._mock_supabase_response(mocker, [row])
+
+        mock_settings = mocker.MagicMock()
+        profile = load_health_profile(
+            FIXTURES_DIR / "health_profile.yaml", settings=mock_settings,
+        )
+        assert isinstance(profile, HealthProfile)
+        assert profile.biometrics.age == 32
+        assert profile.biometrics.primary_sport == "cycling"
+        assert profile.training.phase == "base_aerobic"
+
+    def test_falls_back_to_yaml_when_supabase_empty(self, mocker) -> None:
+        self._mock_supabase_response(mocker, [])
+
+        mock_settings = mocker.MagicMock()
+        profile = load_health_profile(
+            FIXTURES_DIR / "health_profile.yaml", settings=mock_settings,
+        )
+        assert isinstance(profile, HealthProfile)
+        # Should load from YAML fixture
+        assert profile.biometrics.age == 30
+        assert profile.training.phase == "build"
+
+    def test_falls_back_to_yaml_on_supabase_exception(self, mocker) -> None:
+        mocker.patch(
+            "biointelligence.profile.loader.get_supabase_client",
+            side_effect=ConnectionError("Supabase unavailable"),
+        )
+
+        mock_settings = mocker.MagicMock()
+        profile = load_health_profile(
+            FIXTURES_DIR / "health_profile.yaml", settings=mock_settings,
+        )
+        assert isinstance(profile, HealthProfile)
+        # Should load from YAML fixture
+        assert profile.biometrics.age == 30
+        assert profile.training.phase == "build"
