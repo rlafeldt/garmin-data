@@ -1,13 +1,13 @@
 # Phase 8: User Onboarding - Context
 
-**Gathered:** 2026-03-04
+**Gathered:** 2026-03-05
 **Status:** Ready for planning
-**Source:** Onboarding idea and questions.pdf (project root)
+**Source:** Onboarding idea and questions.pdf (project root) + discuss-phase session
 
 <domain>
 ## Phase Boundary
 
-Replace the manual YAML health profile (`health_profile.yaml`) with a structured 6-step web-based onboarding flow. Users complete the questionnaire once during signup; data is persisted to Supabase and feeds the existing prompt assembly and Claude analysis pipeline. The onboarding captures significantly richer context than the current YAML config — adding metabolic flexibility signals, detailed supplement categories, hormonal context for female athletes, and informed consent.
+Replace the manual YAML health profile (`health_profile.yaml`) with a structured 6-step web-based onboarding flow. Users complete essential fields during signup (~3 min); remaining fields collected progressively via WhatsApp nudges. Data persisted to Supabase and feeds the existing prompt assembly and Claude analysis pipeline. Lab results uploaded as PDF/image and extracted via Claude Vision with user review.
 
 **Branding:** BioIntelligence — Precision AI · Evidence-Based Health Intelligence
 **Five Domains:** Metabolic Flexibility · Endocrinology · Neurobiology · Longevity Science · Sports Physiology
@@ -18,11 +18,39 @@ Replace the manual YAML health profile (`health_profile.yaml`) with a structured
 <decisions>
 ## Implementation Decisions
 
+### Web stack & hosting
+- Next.js frontend deployed to Vercel
+- Supabase JS client (`@supabase/supabase-js`) for direct client-side reads/writes — no backend API middleware
+- Supabase RLS handles authorization
+- Python pipeline reads onboarding data from Supabase (no Python web server needed)
+- `load_health_profile()` switches from YAML to Supabase query, with YAML fallback for backwards compatibility
+
+### Onboarding UX flow
+- Multi-page wizard: one step per page with progress indicator (Step 1 of 6)
+- All 6 steps shown, but non-essential steps marked "Skip for now" — user chooses depth on first visit
+- Essential fields (initial onboarding ~3 min): age, sex, height, weight, sport, dietary pattern, training phase, chronotype, consent
+- Each completed step saved to Supabase immediately — user can leave and resume from where they left off
+- User can navigate back to previous steps
+- Mobile-first responsive design (consistent with WhatsApp-first delivery)
+
 ### Onboarding structure
 - 6 steps matching the PDF questionnaire, each stored as a logical section in Supabase
 - Fields marked with `*` in the PDF are required; all others are optional
 - Multi-select fields stored as arrays; single-select as enums; free-text as strings
 - Numeric fields (age, weight, height, training volume, calories) have defined ranges
+
+### Progressive enrichment
+- WhatsApp nudges appended to Daily Protocol message (e.g., "Complete your metabolic profile for better nutrition insights → [link]")
+- Contextual nudges: triggered when analysis would benefit from missing data, max once per week
+- Nudge links deep-link to the specific incomplete section (e.g., /onboarding/step-3)
+- Daily Protocol analysis includes brief transparency note when working with incomplete profile data (e.g., "Note: Your metabolic profile is incomplete — nutrition insights are based on general assumptions.")
+
+### Lab result handling (ONBD-07)
+- Upload PDF/image → Claude Vision extracts lab values into structured data → user reviews/confirms in editable fields before saving
+- Targeted extraction: ~15-20 common health markers relevant to the 5 domains (Vitamin D, B12, iron/ferritin, thyroid TSH/T3/T4, lipids, glucose/HbA1c, testosterone, cortisol, CRP, magnesium, etc.)
+- Multiple uploads with dates supported — enables longitudinal tracking ("Your Vitamin D improved from 22 to 45 ng/mL since September")
+- Lab PDFs/images stored in Supabase Storage
+- Extracted values stored as structured records (value, unit, date, reference range)
 
 ### Data migration
 - Existing YAML health profile fields map into the new onboarding schema
@@ -37,6 +65,16 @@ Replace the manual YAML health profile (`health_profile.yaml`) with a structured
 ### Profile updates
 - Users can update their profile after initial onboarding
 - Changes take effect on the next daily pipeline run
+
+### Claude's Discretion
+- Next.js project structure and component organization
+- Supabase table schema design (single table vs normalized)
+- Form validation library choice (react-hook-form, zod, etc.)
+- UI component library or styling approach (Tailwind, shadcn/ui, etc.)
+- Claude Vision prompt design for lab extraction
+- Exact WhatsApp nudge message wording
+- How to handle extraction confidence scores for lab values
+- Profile completeness calculation logic
 
 </decisions>
 
@@ -126,7 +164,7 @@ Periodisation context, circadian alignment, and sleep data for interpreting dail
 - Screen/blue light exposure before bed (No screens after 8pm / Screens stop 1h before / 30min before / In bed until sleep / Blue-light glasses used)
 - Subjective recovery on waking (scale 1-5: Exhausted / Below average / Moderate / Good / Fully restored)
 - Perceived cognitive fatigue (Rarely / Occasional afternoon dip / Regular brain fog / Chronic)
-- **Preferred insight delivery time** (Morning / Post-workout / Evening / Flexible) — feeds Phase 7 delivery scheduling
+- **Preferred insight delivery time** (Morning / Post-workout / Evening / Flexible) — feeds delivery scheduling
 
 ### STEP 05: Baseline Biometric Metrics
 30-day averages from Garmin Connect establishing personal normal — the reference frame for daily deviation assessment.
@@ -143,11 +181,10 @@ Periodisation context, circadian alignment, and sleep data for interpreting dail
 - Current Garmin training status (Unproductive / Maintaining / Productive / Peaking / Overreaching / Recovery / Detraining / Not sure)
 
 ### STEP 06: Data Upload & Informed Consent
-Historical data upload and legal acknowledgement.
+Historical data upload, lab results, and legal acknowledgement.
 
 **Upload fields:**
-- Garmin export archive (.zip) — recommended
-- Lab results / bloodwork (PDF or image, multiple files)
+- Lab results / bloodwork (PDF or image, multiple files) — extracted via Claude Vision, user reviews before saving
 - Additional context for AI (free text: recent life events, illness, travel, training blocks, race schedule, stressors)
 
 **Required consent (all 3 must be checked):**
@@ -160,39 +197,30 @@ Historical data upload and legal acknowledgement.
 <code_context>
 ## Existing Code Insights
 
-### Fields mapping to current YAML health profile
-The current `health_profile.yaml` and Pydantic models (Phase 2) capture a subset of the onboarding data:
-- Biometrics: age, sex, height, weight — maps to Step 01
-- Goals: training goals — maps to Step 01 primary goals
-- Medical: conditions, medications — maps to Step 02
-- Diet: dietary pattern, preferences — maps to Step 03
-- Supplements: current supplements with dosages — maps to Step 02 supplementation
-- Sleep context: chronotype, sleep habits — maps to Step 04
-- Lab values: recent bloodwork — maps to Step 06 upload
+### Reusable Assets
+- `HealthProfile` model (profile/models.py): 9 Pydantic models covering biometrics, training, medical, metabolic, diet, supplements, sleep, labs — extend with onboarding-specific fields
+- `load_health_profile()` (profile/loader.py): YAML loader — modify to query Supabase with YAML fallback
+- `_format_profile()` (prompt/assembler.py): Converts HealthProfile to prompt text — works unchanged if Supabase schema matches model structure
+- `get_supabase_client()` (storage/supabase.py): Established Supabase client pattern with tenacity retry
+- `Settings` (config.py): Pydantic-settings with .env — extend with onboarding config
+- `DeliveryResult` model pattern: Reusable for lab extraction results
 
-### New data captured by onboarding (not in current YAML)
-- Hormonal/menstrual context for female athletes (Step 01)
-- Occupational activity level (Step 01)
-- Perceived chronic stress level (Step 01)
-- Metabolic flexibility signals — 5 self-assessment questions (Step 03)
-- Detailed nutrition timing (pre/intra/post training) (Step 03)
-- Caffeine and alcohol patterns (Step 03)
-- Food sensitivities (Step 03)
-- Training phase / periodisation context (Step 04)
-- Next race/event (Step 04)
-- Screen/blue light habits (Step 04)
-- Cognitive fatigue perception (Step 04)
-- Preferred insight delivery time (Step 04)
-- Self-reported baseline biometric averages (Step 05)
-- Garmin export archive for historical backfill (Step 06)
-- Informed consent records (Step 06)
+### Established Patterns
+- Pydantic models for all data structures — onboarding schema follows same pattern
+- Supabase upsert with `on_conflict` for idempotent writes
+- pydantic-settings with .env for configuration
+- tenacity retry on external API calls
+- structlog logging throughout
+- Lazy imports in `__init__.py` via `__getattr__` pattern
 
-### Integration points
-- `HealthProfile` model (prompt/models.py or health_profile/): Extend or replace with onboarding schema
-- `load_health_profile()`: Switch from YAML file read to Supabase query
-- `assemble_prompt()` (prompt/assembler.py): Health profile section of prompt needs richer context from onboarding
-- `ANALYSIS_DIRECTIVES`: Could reference metabolic flexibility signals, hormonal context, periodisation phase
-- Pipeline: Delivery time preference from Step 04 informs scheduling
+### Integration Points
+- `load_health_profile()` in analysis/engine.py: Switch from YAML to Supabase query
+- `_format_profile()` in prompt/assembler.py: May need extension for new fields (hormonal context, metabolic flexibility signals)
+- `ANALYSIS_DIRECTIVES` in prompt/templates.py: Could reference metabolic flexibility signals, hormonal context, periodisation phase
+- `run_delivery()` in pipeline.py: Add WhatsApp nudge logic for incomplete profiles
+- WhatsApp renderer: Append nudge links when profile sections are incomplete
+- Supabase: New tables for onboarding data, lab results, consent records
+- Supabase Storage: Bucket for lab PDF/image uploads
 
 </code_context>
 
@@ -200,14 +228,15 @@ The current `health_profile.yaml` and Pydantic models (Phase 2) capture a subset
 ## Deferred Ideas
 
 - CGM integration for real-time metabolic flexibility validation (mentioned in out-of-scope)
-- Automated lab result OCR/parsing (complex — may be Phase 8 stretch or separate phase)
-- Garmin export historical backfill processing (ENRH-01 in v2 requirements)
+- Garmin export archive upload and historical backfill processing (ENRH-01 in v2 requirements) — removed from Step 06 to reduce scope
 - Multi-user support / authentication (different product scope)
+- Delivery time configuration from preferred insight time (WHTS-04) — captured in Step 04 field but scheduling implementation deferred
+- Interactive WhatsApp bot for profile updates via chat
 
 </deferred>
 
 ---
 
 *Phase: 08-user-onboarding*
-*Context gathered: 2026-03-04*
-*Source: Onboarding idea and questions.pdf*
+*Context gathered: 2026-03-05*
+*Source: Onboarding idea and questions.pdf + discuss-phase session*
