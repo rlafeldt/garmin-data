@@ -365,7 +365,7 @@ class TestNudgeRateLimiting:
         mock_response.data = [{"last_nudge_sent_at": None}]
         mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_response
 
-        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
+        with patch("biointelligence.storage.supabase.get_supabase_client", return_value=mock_client):
             assert should_send_nudge(mock_settings) is True
 
     def test_should_send_nudge_true_when_cooldown_elapsed(self):
@@ -381,7 +381,7 @@ class TestNudgeRateLimiting:
         mock_response.data = [{"last_nudge_sent_at": eight_days_ago}]
         mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_response
 
-        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
+        with patch("biointelligence.storage.supabase.get_supabase_client", return_value=mock_client):
             assert should_send_nudge(mock_settings) is True
 
     def test_should_send_nudge_false_within_cooldown(self):
@@ -397,40 +397,64 @@ class TestNudgeRateLimiting:
         mock_response.data = [{"last_nudge_sent_at": three_days_ago}]
         mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_response
 
-        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
+        with patch("biointelligence.storage.supabase.get_supabase_client", return_value=mock_client):
             assert should_send_nudge(mock_settings) is False
 
     def test_should_send_nudge_false_at_exactly_7_days(self):
         """should_send_nudge returns False when last_nudge_sent_at is exactly 7 days ago (boundary)."""
         from unittest.mock import MagicMock, patch
 
-        from biointelligence.delivery.whatsapp_renderer import should_send_nudge
+        import biointelligence.delivery.whatsapp_renderer as wr
+
+        fixed_now = datetime.datetime(2026, 3, 5, 12, 0, 0, tzinfo=datetime.timezone.utc)
+        exactly_7_days = (fixed_now - datetime.timedelta(days=7)).isoformat()
 
         mock_settings = MagicMock()
         mock_client = MagicMock()
         mock_response = MagicMock()
-        exactly_7_days = (datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(days=7)).isoformat()
         mock_response.data = [{"last_nudge_sent_at": exactly_7_days}]
         mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_response
 
-        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
-            assert should_send_nudge(mock_settings) is False
+        original_datetime = wr.datetime
+
+        class FrozenDatetime(original_datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return fixed_now
+
+        with (
+            patch("biointelligence.storage.supabase.get_supabase_client", return_value=mock_client),
+            patch.object(wr, "datetime", FrozenDatetime),
+        ):
+            assert wr.should_send_nudge(mock_settings) is False
 
     def test_should_send_nudge_true_at_7_days_plus_1_second(self):
         """should_send_nudge returns True when last_nudge_sent_at is 7 days + 1 second ago."""
         from unittest.mock import MagicMock, patch
 
-        from biointelligence.delivery.whatsapp_renderer import should_send_nudge
+        import biointelligence.delivery.whatsapp_renderer as wr
+
+        fixed_now = datetime.datetime(2026, 3, 5, 12, 0, 0, tzinfo=datetime.timezone.utc)
+        seven_days_plus = (fixed_now - datetime.timedelta(days=7, seconds=1)).isoformat()
 
         mock_settings = MagicMock()
         mock_client = MagicMock()
         mock_response = MagicMock()
-        seven_days_plus = (datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(days=7, seconds=1)).isoformat()
         mock_response.data = [{"last_nudge_sent_at": seven_days_plus}]
         mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_response
 
-        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
-            assert should_send_nudge(mock_settings) is True
+        original_datetime = wr.datetime
+
+        class FrozenDatetime(original_datetime):
+            @classmethod
+            def now(cls, tz=None):
+                return fixed_now
+
+        with (
+            patch("biointelligence.storage.supabase.get_supabase_client", return_value=mock_client),
+            patch.object(wr, "datetime", FrozenDatetime),
+        ):
+            assert wr.should_send_nudge(mock_settings) is True
 
     def test_should_send_nudge_false_on_exception(self):
         """should_send_nudge returns False on Supabase query exception (safe default)."""
@@ -440,7 +464,7 @@ class TestNudgeRateLimiting:
 
         mock_settings = MagicMock()
 
-        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", side_effect=Exception("DB error")):
+        with patch("biointelligence.storage.supabase.get_supabase_client", side_effect=Exception("DB error")):
             assert should_send_nudge(mock_settings) is False
 
     def test_record_nudge_sent_updates_timestamp(self):
@@ -452,7 +476,7 @@ class TestNudgeRateLimiting:
         mock_settings = MagicMock()
         mock_client = MagicMock()
 
-        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
+        with patch("biointelligence.storage.supabase.get_supabase_client", return_value=mock_client):
             record_nudge_sent(mock_settings)
 
         mock_client.table.assert_called_once_with("onboarding_profiles")
@@ -470,7 +494,7 @@ class TestNudgeRateLimiting:
 
         mock_settings = MagicMock()
 
-        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", side_effect=Exception("DB error")):
+        with patch("biointelligence.storage.supabase.get_supabase_client", side_effect=Exception("DB error")):
             # Should not raise
             record_nudge_sent(mock_settings)
 

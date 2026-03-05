@@ -8,7 +8,7 @@ WhatsApp Cloud API body-only template (up to 32,768 chars).
 from __future__ import annotations
 
 import logging
-from datetime import date
+from datetime import date, datetime, timezone
 
 from biointelligence.anomaly.models import Alert, AlertSeverity
 from biointelligence.prompt.models import (
@@ -174,6 +174,52 @@ def _render_profile_nudge(incomplete_steps: list[int], app_url: str) -> str:
         f"*Complete your {step_name}* for more personalised insights\n"
         f"{app_url}/onboarding/step-{first_step}"
     )
+
+
+NUDGE_COOLDOWN_DAYS = 7
+
+
+def should_send_nudge(settings: "Settings") -> bool:
+    """Check if enough time has elapsed since the last nudge.
+
+    Returns True if last_nudge_sent_at is None or older than 7 days.
+    Returns False on any exception (safe default: suppress nudge).
+    """
+    try:
+        from biointelligence.storage.supabase import get_supabase_client
+
+        client = get_supabase_client(settings)
+        response = (
+            client.table("onboarding_profiles")
+            .select("last_nudge_sent_at")
+            .limit(1)
+            .execute()
+        )
+        if not response.data:
+            return True  # No profile row yet -- allow nudge
+        last_sent = response.data[0].get("last_nudge_sent_at")
+        if last_sent is None:
+            return True  # Never sent
+        last_dt = datetime.fromisoformat(last_sent.replace("Z", "+00:00"))
+        elapsed = datetime.now(tz=timezone.utc) - last_dt
+        return elapsed.total_seconds() > NUDGE_COOLDOWN_DAYS * 86400
+    except Exception:
+        logger.warning("nudge_cooldown_check_failed")
+        return False  # Safe default: don't nudge on error
+
+
+def record_nudge_sent(settings: "Settings") -> None:
+    """Persist the current timestamp as last_nudge_sent_at. Best-effort."""
+    try:
+        from biointelligence.storage.supabase import get_supabase_client
+
+        client = get_supabase_client(settings)
+        now_iso = datetime.now(tz=timezone.utc).isoformat()
+        client.table("onboarding_profiles").update(
+            {"last_nudge_sent_at": now_iso}
+        ).gte("created_at", "1970-01-01").execute()
+    except Exception:
+        logger.warning("nudge_timestamp_update_failed")
 
 
 def get_incomplete_steps(settings: "Settings") -> list[int]:

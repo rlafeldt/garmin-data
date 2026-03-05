@@ -101,3 +101,10 @@ CREATE TRIGGER trigger_update_onboarding_profiles_updated_at
 --     FOR ALL TO anon
 --     USING (bucket_id = 'lab-uploads')
 --     WITH CHECK (bucket_id = 'lab-uploads');
+
+-- =============================================================================
+-- Nudge rate-limiting (added by gap closure 08-06)
+-- =============================================================================
+
+ALTER TABLE onboarding_profiles
+  ADD COLUMN IF NOT EXISTS last_nudge_sent_at TIMESTAMPTZ DEFAULT NULL;
