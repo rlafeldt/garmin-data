@@ -350,6 +350,131 @@ class TestRenderProfileNudge:
         assert "step-" not in result
 
 
+class TestNudgeRateLimiting:
+    """Tests for should_send_nudge and record_nudge_sent rate-limiting functions."""
+
+    def test_should_send_nudge_true_when_never_sent(self):
+        """should_send_nudge returns True when last_nudge_sent_at is None (never sent)."""
+        from unittest.mock import MagicMock, patch
+
+        from biointelligence.delivery.whatsapp_renderer import should_send_nudge
+
+        mock_settings = MagicMock()
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        mock_response.data = [{"last_nudge_sent_at": None}]
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_response
+
+        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
+            assert should_send_nudge(mock_settings) is True
+
+    def test_should_send_nudge_true_when_cooldown_elapsed(self):
+        """should_send_nudge returns True when last_nudge_sent_at is 8 days ago."""
+        from unittest.mock import MagicMock, patch
+
+        from biointelligence.delivery.whatsapp_renderer import should_send_nudge
+
+        mock_settings = MagicMock()
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        eight_days_ago = (datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(days=8)).isoformat()
+        mock_response.data = [{"last_nudge_sent_at": eight_days_ago}]
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_response
+
+        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
+            assert should_send_nudge(mock_settings) is True
+
+    def test_should_send_nudge_false_within_cooldown(self):
+        """should_send_nudge returns False when last_nudge_sent_at is 3 days ago."""
+        from unittest.mock import MagicMock, patch
+
+        from biointelligence.delivery.whatsapp_renderer import should_send_nudge
+
+        mock_settings = MagicMock()
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        three_days_ago = (datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(days=3)).isoformat()
+        mock_response.data = [{"last_nudge_sent_at": three_days_ago}]
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_response
+
+        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
+            assert should_send_nudge(mock_settings) is False
+
+    def test_should_send_nudge_false_at_exactly_7_days(self):
+        """should_send_nudge returns False when last_nudge_sent_at is exactly 7 days ago (boundary)."""
+        from unittest.mock import MagicMock, patch
+
+        from biointelligence.delivery.whatsapp_renderer import should_send_nudge
+
+        mock_settings = MagicMock()
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        exactly_7_days = (datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(days=7)).isoformat()
+        mock_response.data = [{"last_nudge_sent_at": exactly_7_days}]
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_response
+
+        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
+            assert should_send_nudge(mock_settings) is False
+
+    def test_should_send_nudge_true_at_7_days_plus_1_second(self):
+        """should_send_nudge returns True when last_nudge_sent_at is 7 days + 1 second ago."""
+        from unittest.mock import MagicMock, patch
+
+        from biointelligence.delivery.whatsapp_renderer import should_send_nudge
+
+        mock_settings = MagicMock()
+        mock_client = MagicMock()
+        mock_response = MagicMock()
+        seven_days_plus = (datetime.datetime.now(tz=datetime.timezone.utc) - datetime.timedelta(days=7, seconds=1)).isoformat()
+        mock_response.data = [{"last_nudge_sent_at": seven_days_plus}]
+        mock_client.table.return_value.select.return_value.limit.return_value.execute.return_value = mock_response
+
+        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
+            assert should_send_nudge(mock_settings) is True
+
+    def test_should_send_nudge_false_on_exception(self):
+        """should_send_nudge returns False on Supabase query exception (safe default)."""
+        from unittest.mock import MagicMock, patch
+
+        from biointelligence.delivery.whatsapp_renderer import should_send_nudge
+
+        mock_settings = MagicMock()
+
+        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", side_effect=Exception("DB error")):
+            assert should_send_nudge(mock_settings) is False
+
+    def test_record_nudge_sent_updates_timestamp(self):
+        """record_nudge_sent updates last_nudge_sent_at on the onboarding_profiles row."""
+        from unittest.mock import MagicMock, patch
+
+        from biointelligence.delivery.whatsapp_renderer import record_nudge_sent
+
+        mock_settings = MagicMock()
+        mock_client = MagicMock()
+
+        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", return_value=mock_client):
+            record_nudge_sent(mock_settings)
+
+        mock_client.table.assert_called_once_with("onboarding_profiles")
+        mock_client.table.return_value.update.assert_called_once()
+        update_arg = mock_client.table.return_value.update.call_args[0][0]
+        assert "last_nudge_sent_at" in update_arg
+        mock_client.table.return_value.update.return_value.gte.assert_called_once()
+        mock_client.table.return_value.update.return_value.gte.return_value.execute.assert_called_once()
+
+    def test_record_nudge_sent_no_raise_on_exception(self):
+        """record_nudge_sent does not raise on Supabase write exception (best-effort)."""
+        from unittest.mock import MagicMock, patch
+
+        from biointelligence.delivery.whatsapp_renderer import record_nudge_sent
+
+        mock_settings = MagicMock()
+
+        with patch("biointelligence.delivery.whatsapp_renderer.get_supabase_client", side_effect=Exception("DB error")):
+            # Should not raise
+            record_nudge_sent(mock_settings)
+
+
 class TestRenderWhatsAppCharLimit:
     """Tests for the 32,768 character limit guard."""
 
