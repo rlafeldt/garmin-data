@@ -1732,3 +1732,288 @@ class TestMainCliDeliverUpdated:
 
         mock_ingestion.assert_called_once()
         assert exit_code == 0
+
+
+# ---------------------------------------------------------------------------
+# Task 2 (Plan 08-06): run_delivery nudge cooldown rate limiting
+# ---------------------------------------------------------------------------
+
+
+class TestRunDeliveryNudgeCooldown:
+    """Tests for nudge cooldown rate limiting in run_delivery."""
+
+    @pytest.fixture()
+    def mock_settings(self, monkeypatch):
+        """Create mock settings with WhatsApp configured."""
+        monkeypatch.setenv("GARMIN_EMAIL", "test@garmin.com")
+        monkeypatch.setenv("GARMIN_PASSWORD", "testpass")
+        monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
+        monkeypatch.setenv("SUPABASE_KEY", "testkey")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+        monkeypatch.setenv("RESEND_API_KEY", "re_test_key")
+        monkeypatch.setenv("SENDER_EMAIL", "protocol@example.com")
+        monkeypatch.setenv("RECIPIENT_EMAIL", "user@example.com")
+        monkeypatch.setenv("WHATSAPP_ACCESS_TOKEN", "wa_test_token")
+        monkeypatch.setenv("WHATSAPP_PHONE_NUMBER_ID", "123456789")
+        monkeypatch.setenv("WHATSAPP_RECIPIENT_PHONE", "4915123456789")
+
+        from biointelligence.config import Settings
+
+        return Settings(_env_file=None)
+
+    @patch("biointelligence.delivery.whatsapp_renderer.should_send_nudge", return_value=False)
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_passes_empty_incomplete_steps_when_cooldown_active(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_should_send,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_delivery passes incomplete_steps=[] when should_send_nudge returns False."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_whatsapp.return_value = "WhatsApp text"
+        mock_send_whatsapp.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="wamid.abc123",
+            success=True,
+        )
+
+        run_delivery(analysis_result, settings=mock_settings)
+
+        mock_render_whatsapp.assert_called_once_with(
+            fake_protocol, datetime.date(2026, 3, 2), incomplete_steps=[],
+        )
+
+    @patch("biointelligence.delivery.whatsapp_renderer.record_nudge_sent")
+    @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", return_value=[2, 5])
+    @patch("biointelligence.delivery.whatsapp_renderer.should_send_nudge", return_value=True)
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_passes_incomplete_steps_when_cooldown_elapsed(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_should_send,
+        mock_get_incomplete,
+        mock_record_nudge,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_delivery passes incomplete_steps=[2,5] when should_send_nudge returns True."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_whatsapp.return_value = "WhatsApp text"
+        mock_send_whatsapp.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="wamid.abc123",
+            success=True,
+        )
+
+        run_delivery(analysis_result, settings=mock_settings)
+
+        mock_render_whatsapp.assert_called_once_with(
+            fake_protocol, datetime.date(2026, 3, 2), incomplete_steps=[2, 5],
+        )
+
+    @patch("biointelligence.delivery.whatsapp_renderer.record_nudge_sent")
+    @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", return_value=[2, 5])
+    @patch("biointelligence.delivery.whatsapp_renderer.should_send_nudge", return_value=True)
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_calls_record_nudge_sent_after_whatsapp_success_with_nudge(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_should_send,
+        mock_get_incomplete,
+        mock_record_nudge,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_delivery calls record_nudge_sent after successful WhatsApp delivery with nudge."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_whatsapp.return_value = "WhatsApp text"
+        mock_send_whatsapp.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="wamid.abc123",
+            success=True,
+        )
+
+        run_delivery(analysis_result, settings=mock_settings)
+
+        mock_record_nudge.assert_called_once_with(mock_settings)
+
+    @patch("biointelligence.delivery.whatsapp_renderer.record_nudge_sent")
+    @patch("biointelligence.delivery.whatsapp_renderer.should_send_nudge", return_value=False)
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_does_not_call_record_nudge_sent_when_no_nudge(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_should_send,
+        mock_record_nudge,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_delivery does NOT call record_nudge_sent when incomplete_steps is empty."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_whatsapp.return_value = "WhatsApp text"
+        mock_send_whatsapp.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="wamid.abc123",
+            success=True,
+        )
+
+        run_delivery(analysis_result, settings=mock_settings)
+
+        mock_record_nudge.assert_not_called()
+
+    @patch("biointelligence.delivery.whatsapp_renderer.record_nudge_sent")
+    @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", return_value=[2, 5])
+    @patch("biointelligence.delivery.whatsapp_renderer.should_send_nudge", return_value=True)
+    @patch("biointelligence.pipeline.send_email")
+    @patch("biointelligence.pipeline.build_subject")
+    @patch("biointelligence.pipeline.render_text")
+    @patch("biointelligence.pipeline.render_html")
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_does_not_call_record_nudge_sent_on_email_fallback(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_render_html,
+        mock_render_text,
+        mock_build_subject,
+        mock_send_email,
+        mock_should_send,
+        mock_get_incomplete,
+        mock_record_nudge,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_delivery does NOT call record_nudge_sent on email fallback."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_whatsapp.return_value = "WhatsApp text"
+        # WhatsApp fails, falls back to email
+        mock_send_whatsapp.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            success=False,
+            error="WhatsApp API error",
+        )
+        mock_render_html.return_value = "<html>rendered</html>"
+        mock_render_text.return_value = "plain text"
+        mock_build_subject.return_value = "Daily Protocol -- Mar 2, 2026"
+        mock_send_email.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="email-fallback-123",
+            success=True,
+        )
+
+        result = run_delivery(analysis_result, settings=mock_settings)
+
+        assert result.success is True
+        # Nudge was included in WhatsApp but WA failed, fell back to email
+        # record_nudge_sent should NOT be called since nudge only in WhatsApp
+        mock_record_nudge.assert_not_called()
+
+    @patch("biointelligence.delivery.whatsapp_renderer.should_send_nudge", side_effect=Exception("DB error"))
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_should_send_nudge_failure_results_in_empty_steps(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_should_send,
+        mock_settings,
+        fake_protocol,
+    ):
+        """should_send_nudge failure (exception) results in incomplete_steps=[] (graceful degradation)."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_whatsapp.return_value = "WhatsApp text"
+        mock_send_whatsapp.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="wamid.abc123",
+            success=True,
+        )
+
+        result = run_delivery(analysis_result, settings=mock_settings)
+
+        assert result.success is True
+        mock_render_whatsapp.assert_called_once_with(
+            fake_protocol, datetime.date(2026, 3, 2), incomplete_steps=[],
+        )
