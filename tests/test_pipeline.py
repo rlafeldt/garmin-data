@@ -1184,12 +1184,14 @@ class TestRunDeliveryProfileNudges:
         return Settings(_env_file=None)
 
     @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", return_value=[2, 5])
+    @patch("biointelligence.delivery.whatsapp_renderer.should_send_nudge", return_value=True)
     @patch("biointelligence.pipeline.send_whatsapp")
     @patch("biointelligence.pipeline.render_whatsapp")
     def test_passes_incomplete_steps_to_render_whatsapp(
         self,
         mock_render_whatsapp,
         mock_send_whatsapp,
+        mock_should_send,
         mock_get_incomplete,
         mock_settings,
         fake_protocol,
@@ -1222,12 +1224,14 @@ class TestRunDeliveryProfileNudges:
         )
 
     @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", side_effect=Exception("DB error"))
+    @patch("biointelligence.delivery.whatsapp_renderer.should_send_nudge", return_value=True)
     @patch("biointelligence.pipeline.send_whatsapp")
     @patch("biointelligence.pipeline.render_whatsapp")
     def test_handles_get_incomplete_steps_failure_gracefully(
         self,
         mock_render_whatsapp,
         mock_send_whatsapp,
+        mock_should_send,
         mock_get_incomplete,
         mock_settings,
         fake_protocol,

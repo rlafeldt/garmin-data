@@ -212,12 +212,16 @@ def run_delivery(
     protocol = analysis_result.protocol
     target_date = analysis_result.date
 
-    # Query profile completeness for nudges (best-effort)
+    # Query profile completeness for nudges (rate-limited, best-effort)
     incomplete_steps: list[int] = []
     try:
-        from biointelligence.delivery.whatsapp_renderer import get_incomplete_steps
+        from biointelligence.delivery.whatsapp_renderer import (
+            get_incomplete_steps,
+            should_send_nudge,
+        )
 
-        incomplete_steps = get_incomplete_steps(settings)
+        if should_send_nudge(settings):
+            incomplete_steps = get_incomplete_steps(settings)
     except Exception:
         log.warning("profile_completeness_check_failed")
 
@@ -227,6 +231,14 @@ def run_delivery(
         result = send_whatsapp(whatsapp_text, target_date, settings)
 
         if result.success:
+            # Record nudge timestamp if nudge was included
+            if incomplete_steps:
+                try:
+                    from biointelligence.delivery.whatsapp_renderer import record_nudge_sent
+
+                    record_nudge_sent(settings)
+                except Exception:
+                    log.warning("nudge_timestamp_record_failed")
             log.info(
                 "delivery_pipeline_complete",
                 date=target_date.isoformat(),
