@@ -170,6 +170,207 @@ class TestProfileValidation:
         assert profile.lab_values == {}
 
 
+class TestExpandedTrainingPhases:
+    """Test that TrainingContext accepts all onboarding training phases."""
+
+    ONBOARDING_PHASES = (
+        "off_season",
+        "base_aerobic",
+        "build_race_specific",
+        "peak_competition",
+        "taper",
+        "recovery_deload",
+        "rehabilitation",
+        "no_structured_training",
+    )
+
+    def test_onboarding_phases_all_valid(self) -> None:
+        for phase in self.ONBOARDING_PHASES:
+            ctx = TrainingContext(phase=phase)
+            assert ctx.phase == phase
+
+    def test_original_phases_still_valid(self) -> None:
+        for phase in ("base", "build", "peak", "recovery"):
+            ctx = TrainingContext(phase=phase, weekly_volume_hours=8.0, preferred_types=["cycling"])
+            assert ctx.phase == phase
+
+    def test_weekly_volume_hours_optional(self) -> None:
+        ctx = TrainingContext(phase="base")
+        assert ctx.weekly_volume_hours is None
+
+    def test_preferred_types_defaults_empty(self) -> None:
+        ctx = TrainingContext(phase="base")
+        assert ctx.preferred_types == []
+
+
+class TestBiometricsOnboardingFields:
+    """Test Biometrics accepts new onboarding fields."""
+
+    def test_hormonal_context_fields(self) -> None:
+        bio = Biometrics(
+            age=28,
+            sex="female",
+            weight_kg=60.0,
+            height_cm=165.0,
+            hormonal_status="regular_tracking",
+            cycle_phase="follicular",
+        )
+        assert bio.hormonal_status == "regular_tracking"
+        assert bio.cycle_phase == "follicular"
+
+    def test_all_new_biometrics_fields(self) -> None:
+        bio = Biometrics(
+            age=32,
+            sex="male",
+            weight_kg=80.0,
+            height_cm=180.0,
+            primary_sport="cycling",
+            occupational_activity_level="moderate",
+            primary_goals=["performance", "recovery"],
+            perceived_stress_level=3,
+        )
+        assert bio.primary_sport == "cycling"
+        assert bio.occupational_activity_level == "moderate"
+        assert bio.primary_goals == ["performance", "recovery"]
+        assert bio.perceived_stress_level == 3
+
+    def test_new_biometrics_fields_default_none(self) -> None:
+        bio = Biometrics(age=30, sex="male", weight_kg=75.0, height_cm=178.0)
+        assert bio.primary_sport is None
+        assert bio.occupational_activity_level is None
+        assert bio.hormonal_status is None
+        assert bio.cycle_phase is None
+        assert bio.primary_goals == []
+        assert bio.perceived_stress_level is None
+
+
+class TestMetabolicProfileOnboardingFields:
+    """Test MetabolicProfile accepts new onboarding fields."""
+
+    def test_new_metabolic_fields(self) -> None:
+        mp = MetabolicProfile(
+            dietary_pattern="ketogenic",
+            pre_training_nutrition="fully_fasted",
+            metabolic_flexibility_signals={"energy_crash": "often", "fasted_training": "easily"},
+            eating_window="16:8",
+            caffeine_intake="moderate_100_200mg",
+            caffeine_cutoff="before_noon",
+            alcohol_consumption="occasional",
+            protein_emphasis="high_1.6_2",
+            food_sensitivities=["gluten", "dairy"],
+        )
+        assert mp.dietary_pattern == "ketogenic"
+        assert mp.pre_training_nutrition == "fully_fasted"
+        assert mp.metabolic_flexibility_signals == {"energy_crash": "often", "fasted_training": "easily"}
+        assert mp.eating_window == "16:8"
+        assert mp.caffeine_intake == "moderate_100_200mg"
+        assert mp.caffeine_cutoff == "before_noon"
+        assert mp.alcohol_consumption == "occasional"
+        assert mp.protein_emphasis == "high_1.6_2"
+        assert mp.food_sensitivities == ["gluten", "dairy"]
+
+    def test_new_metabolic_fields_default_none(self) -> None:
+        mp = MetabolicProfile()
+        assert mp.dietary_pattern is None
+        assert mp.pre_training_nutrition is None
+        assert mp.metabolic_flexibility_signals is None
+        assert mp.eating_window is None
+        assert mp.caffeine_intake is None
+        assert mp.caffeine_cutoff is None
+        assert mp.alcohol_consumption is None
+        assert mp.protein_emphasis is None
+        assert mp.food_sensitivities == []
+
+
+class TestSleepContextOnboardingFields:
+    """Test SleepContext accepts new onboarding fields."""
+
+    def test_new_sleep_fields(self) -> None:
+        sc = SleepContext(
+            chronotype="definite_morning",
+            sleep_schedule_consistency="mostly",
+            average_sleep_duration="7_8h",
+            subjective_recovery_waking=4,
+            perceived_cognitive_fatigue="occasional",
+            screen_blue_light="screens_stop_1h",
+            preferred_insight_delivery_time="morning",
+        )
+        assert sc.sleep_schedule_consistency == "mostly"
+        assert sc.average_sleep_duration == "7_8h"
+        assert sc.subjective_recovery_waking == 4
+        assert sc.perceived_cognitive_fatigue == "occasional"
+        assert sc.screen_blue_light == "screens_stop_1h"
+        assert sc.preferred_insight_delivery_time == "morning"
+
+    def test_new_sleep_fields_default_none(self) -> None:
+        sc = SleepContext()
+        assert sc.sleep_schedule_consistency is None
+        assert sc.average_sleep_duration is None
+        assert sc.subjective_recovery_waking is None
+        assert sc.perceived_cognitive_fatigue is None
+        assert sc.screen_blue_light is None
+        assert sc.preferred_insight_delivery_time is None
+
+
+class TestMedicalHistoryOnboardingFields:
+    """Test MedicalHistory accepts new onboarding fields."""
+
+    def test_new_medical_fields(self) -> None:
+        mh = MedicalHistory(
+            conditions=["hypertension"],
+            smoking_status="non_smoker",
+            recovery_modalities=["cold_exposure", "sauna"],
+            supplement_categories={"foundational": ["vitamin_d3_k2", "magnesium"]},
+            other_supplements_text="Custom blend XYZ",
+            no_supplements=False,
+        )
+        assert mh.smoking_status == "non_smoker"
+        assert mh.recovery_modalities == ["cold_exposure", "sauna"]
+        assert mh.supplement_categories == {"foundational": ["vitamin_d3_k2", "magnesium"]}
+        assert mh.other_supplements_text == "Custom blend XYZ"
+        assert mh.no_supplements is False
+
+    def test_new_medical_fields_default_none(self) -> None:
+        mh = MedicalHistory()
+        assert mh.smoking_status is None
+        assert mh.recovery_modalities == []
+        assert mh.supplement_categories == {}
+        assert mh.other_supplements_text is None
+        assert mh.no_supplements is False
+
+
+class TestExistingYamlBackwardsCompatibility:
+    """Test that the existing YAML fixture still loads without changes."""
+
+    def test_yaml_fixture_loads_unchanged(self) -> None:
+        profile = load_health_profile(FIXTURES_DIR / "health_profile.yaml")
+        assert isinstance(profile, HealthProfile)
+        assert profile.biometrics.age == 30
+        assert profile.training.phase == "build"
+        assert profile.training.weekly_volume_hours == 6.0
+        assert len(profile.supplements) == 1
+
+
+class TestHealthProfileAllNewFieldsNone:
+    """Test HealthProfile with all new optional fields set to None validates."""
+
+    def test_all_new_fields_none_still_valid(self) -> None:
+        profile = HealthProfile(
+            biometrics=Biometrics(age=30, sex="male", weight_kg=75.0, height_cm=178.0),
+            training=TrainingContext(phase="base"),
+            medical=MedicalHistory(),
+            metabolic=MetabolicProfile(),
+            diet=DietPreferences(preference="balanced"),
+            supplements=[],
+            sleep_context=SleepContext(),
+        )
+        assert profile.biometrics.hormonal_status is None
+        assert profile.biometrics.cycle_phase is None
+        assert profile.metabolic.dietary_pattern is None
+        assert profile.sleep_context.sleep_schedule_consistency is None
+        assert profile.medical.smoking_status is None
+
+
 class TestYamlTypeCoercion:
     """Test that YAML type coercion is handled correctly."""
 
