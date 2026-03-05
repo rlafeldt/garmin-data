@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 08-05-PLAN.md
-last_updated: "2026-03-05T16:35:22.993Z"
-last_activity: 2026-03-05 -- Plan 08-05 executed (Lab extraction module, extended prompt assembly, WhatsApp nudges, pipeline wiring)
+stopped_at: Completed 08-06-PLAN.md
+last_updated: "2026-03-05T20:54:02.000Z"
+last_activity: 2026-03-05 -- Plan 08-06 executed (WhatsApp nudge 7-day rate limiting gap closure)
 progress:
   total_phases: 8
   completed_phases: 8
-  total_plans: 21
-  completed_plans: 21
+  total_plans: 22
+  completed_plans: 22
   percent: 100
 ---
 
@@ -21,21 +21,21 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-03)
 
 **Core value:** Every morning, receive a single coherent Daily Protocol that tells you exactly what to do today based on your Garmin data, health profile, and recent trends.
-**Current focus:** Phase 8 complete (5/5 plans). User onboarding web app, Supabase persistence, lab extraction, WhatsApp nudges all integrated.
+**Current focus:** Phase 8 complete (6/6 plans). User onboarding web app, Supabase persistence, lab extraction, WhatsApp nudges with rate limiting all integrated.
 
 ## Current Position
 
 Phase: 8 of 8 (User Onboarding)
-Plan: 5 of 5 in current phase
-Status: Phase 8 complete (all 5 plans executed)
-Last activity: 2026-03-05 -- Plan 08-05 executed (Lab extraction module, extended prompt assembly, WhatsApp nudges, pipeline wiring)
+Plan: 6 of 6 in current phase
+Status: Phase 8 complete (all 6 plans executed)
+Last activity: 2026-03-05 -- Plan 08-06 executed (WhatsApp nudge 7-day rate limiting gap closure)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 17
+- Total plans completed: 18
 - Average duration: 7min
 - Total execution time: 1.7 hours
 
@@ -53,8 +53,8 @@ Progress: [██████████] 100%
 | 7 - WhatsApp Delivery | 3/3 | 8min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 07-01 (4min), 07-02 (3min), 07-03 (1min), 08-02 (5min), 08-04 (9min)
-- Trend: Consistent 3-5min execution on integration plans
+- Last 5 plans: 07-02 (3min), 07-03 (1min), 08-02 (5min), 08-04 (9min), 08-06 (5min)
+- Trend: Consistent 3-9min execution on integration/gap-closure plans
 
 *Updated after each plan completion*
 | Phase 03 P01 | 7min | 2 tasks | 9 files |
@@ -73,6 +73,7 @@ Progress: [██████████] 100%
 | Phase 08 P04 | 9min | 2 tasks | 9 files |
 | Phase 08 P03 | 11 | 2 tasks | 9 files |
 | Phase 08 P05 | 37min | 2 tasks | 11 files |
+| Phase 08 P06 | 5min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -163,6 +164,9 @@ Recent decisions affecting current work:
 - [Phase 08]: Lab extraction uses claude-haiku-4-5-20251001 for cost-effective 20-marker extraction
 - [Phase 08]: get_incomplete_steps uses lazy import with try/except for graceful degradation (never blocks delivery)
 - [Phase 08]: WhatsApp nudge shows only first incomplete step; render_whatsapp uses keyword-only incomplete_steps param for backwards compatibility
+- [Phase 08]: 7-day nudge cooldown uses strict > comparison (exactly 7 days still within cooldown)
+- [Phase 08]: Safe default on DB error: suppress nudge rather than risk spamming
+- [Phase 08]: record_nudge_sent uses .gte("created_at", "1970-01-01") universal filter for single-row update
 
 ### Roadmap Evolution
 
@@ -181,6 +185,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05T16:35:22.990Z
-Stopped at: Completed 08-05-PLAN.md
+Last session: 2026-03-05T20:54:02.000Z
+Stopped at: Completed 08-06-PLAN.md
 Resume file: None
