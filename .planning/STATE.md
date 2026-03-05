@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 08-01-PLAN.md
+stopped_at: Completed 08-04-PLAN.md
 last_updated: "2026-03-05T15:39:53.556Z"
-last_activity: "2026-03-05 -- Plan 08-02 executed (Python health profile integration: extended model, Supabase-first loader, onboarding mapper)"
+last_activity: "2026-03-05 -- Plan 08-04 executed (Steps 5-6, lab extraction API, completion page, profile edit page)"
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 21
-  completed_plans: 18
+  completed_plans: 19
   percent: 100
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-03)
 ## Current Position
 
 Phase: 8 of 8 (User Onboarding)
-Plan: 2 of 5 in current phase
-Status: Plan 08-02 complete, Plan 08-03 next
-Last activity: 2026-03-05 -- Plan 08-02 executed (Python health profile integration: extended model, Supabase-first loader, onboarding mapper)
+Plan: 4 of 5 in current phase
+Status: Plan 08-04 complete, Plan 08-05 next
+Last activity: 2026-03-05 -- Plan 08-04 executed (Steps 5-6, lab extraction API, completion page, profile edit page)
 
 Progress: [██████████] 100%
 
@@ -53,7 +53,7 @@ Progress: [██████████] 100%
 | 7 - WhatsApp Delivery | 3/3 | 8min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 06-02 (12min), 07-01 (4min), 07-02 (3min), 07-03 (1min), 08-02 (5min)
+- Last 5 plans: 07-01 (4min), 07-02 (3min), 07-03 (1min), 08-02 (5min), 08-04 (9min)
 - Trend: Consistent 3-5min execution on integration plans
 
 *Updated after each plan completion*
@@ -70,6 +70,7 @@ Progress: [██████████] 100%
 | Phase 07 P03 | 1min | 1 tasks | 2 files |
 | Phase 08 P02 | 5min | 2 tasks | 6 files |
 | Phase 08 P01 | 5 | 2 tasks | 35 files |
+| Phase 08 P04 | 9min | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -146,6 +147,9 @@ Recent decisions affecting current work:
 - 08-02: load_health_profile uses lazy import of get_settings() to avoid circular imports
 - 08-02: Supabase-first with YAML fallback pattern: try query, catch any exception, fall through to file loader
 - 08-02: Default training phase "base" when step 4 data missing; default diet "not_specified" when step 3 missing
+- 08-04: Server-side Supabase client in API route uses SUPABASE_SERVICE_ROLE_KEY for Storage access
+- 08-04: Lab extraction uses claude-haiku-4-5-20251001 for cost-effective extraction of 20 target markers
+- 08-04: Step 6 custom navigation (Complete button depends on consent state, not shared StepNavigation)
 - [Phase 08-01]: Supabase DDL uses JSONB per step for atomic step save/load
 - [Phase 08-01]: All Zod enum values use snake_case to match Python-side data contract
 - [Phase 08-01]: Step 6 schema covers only additional_context; consent handled separately in consent_records table
@@ -168,6 +172,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05T15:39:53.552Z
-Stopped at: Completed 08-01-PLAN.md
+Last session: 2026-03-05T15:51:14Z
+Stopped at: Completed 08-04-PLAN.md
 Resume file: None
