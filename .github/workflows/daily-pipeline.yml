@@ -39,6 +39,7 @@ jobs:
           WHATSAPP_ACCESS_TOKEN: ${{ secrets.WHATSAPP_ACCESS_TOKEN }}
           WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
           WHATSAPP_RECIPIENT_PHONE: ${{ secrets.WHATSAPP_RECIPIENT_PHONE }}
+          ONBOARDING_APP_URL: ${{ secrets.ONBOARDING_APP_URL }}
         run: |
           ARGS="--deliver --json-log"
           if [ -n "${{ github.event.inputs.date }}" ]; then

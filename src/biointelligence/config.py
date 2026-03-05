@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     whatsapp_phone_number_id: str = ""
     whatsapp_recipient_phone: str = ""
 
+    # Onboarding
+    onboarding_app_url: str = ""
+
 
 @lru_cache
 def get_settings() -> Settings:

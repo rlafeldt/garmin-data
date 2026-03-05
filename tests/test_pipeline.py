@@ -962,6 +962,7 @@ class TestRunDeliveryWhatsApp:
 
         return Settings(_env_file=None)
 
+    @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", return_value=[])
     @patch("biointelligence.pipeline.send_email")
     @patch("biointelligence.pipeline.build_subject")
     @patch("biointelligence.pipeline.render_text")
@@ -976,6 +977,7 @@ class TestRunDeliveryWhatsApp:
         mock_render_text,
         mock_build_subject,
         mock_send_email,
+        mock_get_incomplete,
         mock_settings,
         fake_protocol,
     ):
@@ -1003,7 +1005,7 @@ class TestRunDeliveryWhatsApp:
         result = run_delivery(analysis_result, settings=mock_settings)
 
         mock_render_whatsapp.assert_called_once_with(
-            fake_protocol, datetime.date(2026, 3, 2)
+            fake_protocol, datetime.date(2026, 3, 2), incomplete_steps=[],
         )
         mock_send_whatsapp.assert_called_once_with(
             "WhatsApp text", datetime.date(2026, 3, 2), mock_settings
@@ -1012,6 +1014,7 @@ class TestRunDeliveryWhatsApp:
         assert result.email_id == "wamid.abc123"
         mock_send_email.assert_not_called()
 
+    @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", return_value=[])
     @patch("biointelligence.pipeline.send_email")
     @patch("biointelligence.pipeline.build_subject")
     @patch("biointelligence.pipeline.render_text")
@@ -1026,6 +1029,7 @@ class TestRunDeliveryWhatsApp:
         mock_render_text,
         mock_build_subject,
         mock_send_email,
+        mock_get_incomplete,
         mock_settings,
         fake_protocol,
     ):
@@ -1071,6 +1075,7 @@ class TestRunDeliveryWhatsApp:
         assert result.success is True
         assert result.email_id == "email-fallback-123"
 
+    @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", return_value=[])
     @patch("biointelligence.pipeline.send_email")
     @patch("biointelligence.pipeline.build_subject")
     @patch("biointelligence.pipeline.render_text")
@@ -1085,6 +1090,7 @@ class TestRunDeliveryWhatsApp:
         mock_render_text,
         mock_build_subject,
         mock_send_email,
+        mock_get_incomplete,
         mock_settings_no_whatsapp,
         fake_protocol,
     ):
@@ -1122,6 +1128,7 @@ class TestRunDeliveryWhatsApp:
         assert result.success is True
         assert result.email_id == "email-only-123"
 
+    @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", return_value=[])
     @patch("biointelligence.pipeline.send_email")
     @patch("biointelligence.pipeline.send_whatsapp")
     @patch("biointelligence.pipeline.render_whatsapp")
@@ -1130,6 +1137,7 @@ class TestRunDeliveryWhatsApp:
         mock_render_whatsapp,
         mock_send_whatsapp,
         mock_send_email,
+        mock_get_incomplete,
         mock_settings,
     ):
         """Failed analysis returns failed DeliveryResult without attempting any delivery."""
@@ -1151,6 +1159,107 @@ class TestRunDeliveryWhatsApp:
         mock_render_whatsapp.assert_not_called()
         mock_send_whatsapp.assert_not_called()
         mock_send_email.assert_not_called()
+
+
+class TestRunDeliveryProfileNudges:
+    """Tests for profile completeness nudge integration in run_delivery."""
+
+    @pytest.fixture()
+    def mock_settings(self, monkeypatch):
+        """Create mock settings with WhatsApp configured."""
+        monkeypatch.setenv("GARMIN_EMAIL", "test@garmin.com")
+        monkeypatch.setenv("GARMIN_PASSWORD", "testpass")
+        monkeypatch.setenv("SUPABASE_URL", "https://test.supabase.co")
+        monkeypatch.setenv("SUPABASE_KEY", "testkey")
+        monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-test")
+        monkeypatch.setenv("RESEND_API_KEY", "re_test_key")
+        monkeypatch.setenv("SENDER_EMAIL", "protocol@example.com")
+        monkeypatch.setenv("RECIPIENT_EMAIL", "user@example.com")
+        monkeypatch.setenv("WHATSAPP_ACCESS_TOKEN", "wa_test_token")
+        monkeypatch.setenv("WHATSAPP_PHONE_NUMBER_ID", "123456789")
+        monkeypatch.setenv("WHATSAPP_RECIPIENT_PHONE", "4915123456789")
+
+        from biointelligence.config import Settings
+
+        return Settings(_env_file=None)
+
+    @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", return_value=[2, 5])
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_passes_incomplete_steps_to_render_whatsapp(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_get_incomplete,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_delivery passes incomplete_steps from get_incomplete_steps to render_whatsapp."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_whatsapp.return_value = "WhatsApp text"
+        mock_send_whatsapp.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="wamid.abc123",
+            success=True,
+        )
+
+        run_delivery(analysis_result, settings=mock_settings)
+
+        mock_render_whatsapp.assert_called_once_with(
+            fake_protocol, datetime.date(2026, 3, 2), incomplete_steps=[2, 5],
+        )
+
+    @patch("biointelligence.delivery.whatsapp_renderer.get_incomplete_steps", side_effect=Exception("DB error"))
+    @patch("biointelligence.pipeline.send_whatsapp")
+    @patch("biointelligence.pipeline.render_whatsapp")
+    def test_handles_get_incomplete_steps_failure_gracefully(
+        self,
+        mock_render_whatsapp,
+        mock_send_whatsapp,
+        mock_get_incomplete,
+        mock_settings,
+        fake_protocol,
+    ):
+        """run_delivery continues with empty incomplete_steps when get_incomplete_steps fails."""
+        from biointelligence.analysis.engine import AnalysisResult
+        from biointelligence.delivery.sender import DeliveryResult
+        from biointelligence.pipeline import run_delivery
+
+        analysis_result = AnalysisResult(
+            date=datetime.date(2026, 3, 2),
+            protocol=fake_protocol,
+            input_tokens=3200,
+            output_tokens=1800,
+            model="claude-haiku-4-5-20251001",
+            success=True,
+        )
+
+        mock_render_whatsapp.return_value = "WhatsApp text"
+        mock_send_whatsapp.return_value = DeliveryResult(
+            date=datetime.date(2026, 3, 2),
+            email_id="wamid.abc123",
+            success=True,
+        )
+
+        result = run_delivery(analysis_result, settings=mock_settings)
+
+        # Should still deliver successfully with empty incomplete_steps
+        assert result.success is True
+        mock_render_whatsapp.assert_called_once_with(
+            fake_protocol, datetime.date(2026, 3, 2), incomplete_steps=[],
+        )
 
 
 class TestRunDeliveryWhatsAppLazyImports:
