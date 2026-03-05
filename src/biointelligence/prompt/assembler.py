@@ -313,6 +313,17 @@ def _format_profile(profile: HealthProfile) -> str:
     lines.append(f"  Height: {bio['height_cm']} cm")
     if bio.get("body_fat_pct") is not None:
         lines.append(f"  Body fat: {bio['body_fat_pct']}%")
+    if bio.get("primary_sport") is not None:
+        lines.append(f"  Primary sport: {bio['primary_sport']}")
+    if bio.get("primary_goals"):
+        lines.append(f"  Goals: {', '.join(bio['primary_goals'])}")
+
+    # Hormonal Context (onboarding)
+    if bio.get("hormonal_status") is not None:
+        lines.append("Hormonal Context:")
+        lines.append(f"  Status: {bio['hormonal_status']}")
+        if bio.get("cycle_phase") is not None:
+            lines.append(f"  Cycle phase: {bio['cycle_phase']}")
 
     # Training
     training = data["training"]
@@ -341,6 +352,20 @@ def _format_profile(profile: HealthProfile) -> str:
         lines.append(f"Resting metabolic rate: {metabolic['resting_metabolic_rate']} kcal")
     if metabolic.get("glucose_response"):
         lines.append(f"Glucose response: {metabolic['glucose_response']}")
+    if metabolic.get("dietary_pattern") is not None:
+        lines.append(f"  Dietary pattern: {metabolic['dietary_pattern']}")
+    if metabolic.get("eating_window") is not None:
+        lines.append(f"  Eating window: {metabolic['eating_window']}")
+    if metabolic.get("caffeine_intake") is not None:
+        lines.append(f"  Caffeine intake: {metabolic['caffeine_intake']}")
+    if metabolic.get("caffeine_cutoff") is not None:
+        lines.append(f"  Caffeine cutoff: {metabolic['caffeine_cutoff']}")
+    if metabolic.get("alcohol_consumption") is not None:
+        lines.append(f"  Alcohol consumption: {metabolic['alcohol_consumption']}")
+    if metabolic.get("metabolic_flexibility_signals") is not None:
+        lines.append("  Metabolic Flexibility Signals:")
+        for signal_name, signal_value in metabolic["metabolic_flexibility_signals"].items():
+            lines.append(f"    {signal_name}: {signal_value}")
 
     # Diet
     diet = data["diet"]
@@ -372,6 +397,12 @@ def _format_profile(profile: HealthProfile) -> str:
         sleep_parts.append(f"environment: {sleep['environment_notes']}")
     if sleep_parts:
         lines.append("Sleep context: " + ", ".join(sleep_parts))
+    if sleep.get("sleep_schedule_consistency") is not None:
+        lines.append(f"  Sleep schedule consistency: {sleep['sleep_schedule_consistency']}")
+    if sleep.get("average_sleep_duration") is not None:
+        lines.append(f"  Average sleep duration: {sleep['average_sleep_duration']}")
+    if sleep.get("subjective_recovery_waking") is not None:
+        lines.append(f"  Recovery on waking: {sleep['subjective_recovery_waking']}/10")
 
     # Lab values
     if data.get("lab_values"):

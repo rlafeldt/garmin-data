@@ -24,6 +24,16 @@ logger = logging.getLogger(__name__)
 
 MAX_BODY_CHARS = 32768
 
+# Step number to human-readable name mapping for nudges
+_STEP_NAMES: dict[int, str] = {
+    1: "biological profile",
+    2: "health & medications",
+    3: "metabolic & nutrition",
+    4: "training & sleep",
+    5: "baseline biometrics",
+    6: "data upload & consent",
+}
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -136,21 +146,95 @@ def _render_supplementation(supp: SupplementationPlan) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
+# Profile nudge
+# ---------------------------------------------------------------------------
+
+
+def _render_profile_nudge(incomplete_steps: list[int], app_url: str) -> str:
+    """Render a profile completeness nudge for WhatsApp.
+
+    Shows a nudge for the first incomplete onboarding step only, with a
+    deep-link to that specific step in the onboarding app.
+
+    Args:
+        incomplete_steps: Step numbers where step_N_complete is False.
+        app_url: Base URL of the deployed onboarding app.
+
+    Returns:
+        Formatted nudge text, or empty string if all steps complete.
+    """
+    if not incomplete_steps:
+        return ""
+
+    first_step = incomplete_steps[0]
+    step_name = _STEP_NAMES.get(first_step, f"step {first_step}")
+
+    return (
+        f"---\n"
+        f"*Complete your {step_name}* for more personalised insights\n"
+        f"{app_url}/onboarding/step-{first_step}"
+    )
+
+
+def get_incomplete_steps(settings: "Settings") -> list[int]:
+    """Query Supabase for incomplete onboarding steps.
+
+    Args:
+        settings: Application settings with Supabase credentials.
+
+    Returns:
+        List of step numbers where step_N_complete is False.
+        Returns empty list on any exception (graceful degradation).
+    """
+    try:
+        from biointelligence.storage.supabase import get_supabase_client
+
+        client = get_supabase_client(settings)
+        response = (
+            client.table("onboarding_profiles")
+            .select("*")
+            .limit(1)
+            .execute()
+        )
+
+        if not response.data:
+            return []
+
+        profile = response.data[0]
+        incomplete: list[int] = []
+        for n in range(1, 7):
+            if not profile.get(f"step_{n}_complete", False):
+                incomplete.append(n)
+
+        return incomplete
+    except Exception:
+        logger.warning("Failed to query profile completeness")
+        return []
+
+
+# ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
 
 
-def render_whatsapp(protocol: DailyProtocol, target_date: date) -> str:
+def render_whatsapp(
+    protocol: DailyProtocol,
+    target_date: date,
+    *,
+    incomplete_steps: list[int] | None = None,
+) -> str:
     """Render DailyProtocol into WhatsApp-formatted text.
 
     Produces a message with emoji section headers, *bold* keys, condensed
     reasoning (1-2 sentences per domain), and a closing synthesis section.
+    Optionally appends a profile completeness nudge.
 
     Domain order: Sleep -> Recovery -> Training -> Nutrition -> Supplementation.
 
     Args:
         protocol: The DailyProtocol to render.
         target_date: Date the protocol is for.
+        incomplete_steps: Optional list of incomplete onboarding step numbers.
 
     Returns:
         WhatsApp-formatted text string.
@@ -179,6 +263,13 @@ def render_whatsapp(protocol: DailyProtocol, target_date: date) -> str:
     # Why This Matters
     lines.append("*Why This Matters*")
     lines.append(protocol.overall_summary)
+
+    # Profile completeness nudge (when incomplete steps provided)
+    if incomplete_steps:
+        nudge = _render_profile_nudge(incomplete_steps, "https://biointelligence.vercel.app")
+        if nudge:
+            lines.append("")
+            lines.append(nudge)
 
     result = "\n".join(lines)
 
