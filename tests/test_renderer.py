@@ -355,14 +355,13 @@ class TestRenderHtml:
         assert "<script>" not in html
         assert "&lt;script&gt;" in html
 
-    def test_contains_details_tags_for_expandable_sections(self, fake_protocol):
-        """render_html wraps domain details in <details> tags."""
+    def test_no_details_tags_in_email(self, fake_protocol):
+        """render_html does not use <details> tags (unsupported in email clients)."""
         from biointelligence.delivery.renderer import render_html
 
         html = render_html(fake_protocol, datetime.date(2026, 3, 2))
-        assert html.count("<details>") == 5
-        assert html.count("</details>") == 5
-        assert "Show details" in html
+        assert "<details>" not in html
+        assert "</details>" not in html
 
     def test_headlines_appear_in_html(self, fake_protocol):
         """render_html includes headline text for each domain."""

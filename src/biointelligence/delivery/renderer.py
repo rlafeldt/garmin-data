@@ -182,7 +182,7 @@ color: {_MUTED_COLOR}; font-family: {_FONT_STACK};">\
 
 
 def _render_domain_section(title: str, headline: str, content: str) -> str:
-    """Wrap a domain's content in a section with headline and expandable details."""
+    """Wrap a domain's content in a section with headline and details."""
     return f"""\
 <tr>
   <td style="padding: 0 24px;">
@@ -203,11 +203,7 @@ font-family: {_FONT_STACK};">{_e(headline)}</p>
       </tr>
       <tr>
         <td style="padding-bottom: 20px;">
-          <details>
-            <summary style="font-size: 13px; color: {_MUTED_COLOR}; \
-cursor: pointer; font-family: {_FONT_STACK}; padding: 4px 0;">Show details</summary>
 {content}
-          </details>
         </td>
       </tr>
     </table>
