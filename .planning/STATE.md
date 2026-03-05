@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Phase 8 context gathered
-last_updated: "2026-03-05T14:55:57.664Z"
-last_activity: "2026-03-04 -- Plan 07-03 executed (gap closure: WHTS-02/WHTS-04 requirement-documentation alignment)"
+stopped_at: Completed 08-02-PLAN.md
+last_updated: "2026-03-05T15:39:30.695Z"
+last_activity: "2026-03-05 -- Plan 08-02 executed (Python health profile integration: extended model, Supabase-first loader, onboarding mapper)"
 progress:
   total_phases: 8
   completed_phases: 7
-  total_plans: 16
-  completed_plans: 16
+  total_plans: 21
+  completed_plans: 18
   percent: 100
 ---
 
@@ -25,17 +25,17 @@ See: .planning/PROJECT.md (updated 2026-03-03)
 
 ## Current Position
 
-Phase: 7 of 8 (WhatsApp Delivery) -- COMPLETE
-Plan: 3 of 3 in current phase (all complete)
-Status: Phase 7 complete, Phase 8 next
-Last activity: 2026-03-04 -- Plan 07-03 executed (gap closure: WHTS-02/WHTS-04 requirement-documentation alignment)
+Phase: 8 of 8 (User Onboarding)
+Plan: 2 of 5 in current phase
+Status: Plan 08-02 complete, Plan 08-03 next
+Last activity: 2026-03-05 -- Plan 08-02 executed (Python health profile integration: extended model, Supabase-first loader, onboarding mapper)
 
 Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 16
+- Total plans completed: 17
 - Average duration: 7min
 - Total execution time: 1.7 hours
 
@@ -53,8 +53,8 @@ Progress: [██████████] 100%
 | 7 - WhatsApp Delivery | 3/3 | 8min | 3min |
 
 **Recent Trend:**
-- Last 5 plans: 06-01 (8min), 06-02 (12min), 07-01 (4min), 07-02 (3min), 07-03 (1min)
-- Trend: Fast execution on integration plans; WhatsApp phase completed in 8min total
+- Last 5 plans: 06-02 (12min), 07-01 (4min), 07-02 (3min), 07-03 (1min), 08-02 (5min)
+- Trend: Consistent 3-5min execution on integration plans
 
 *Updated after each plan completion*
 | Phase 03 P01 | 7min | 2 tasks | 9 files |
@@ -68,7 +68,7 @@ Progress: [██████████] 100%
 | Phase 07 P01 | 4min | 1 tasks | 5 files |
 | Phase 07 P02 | 3min | 2 tasks | 4 files |
 | Phase 07 P03 | 1min | 1 tasks | 2 files |
-| Phase 07 P03 | 1min | 1 tasks | 2 files |
+| Phase 08 P02 | 5min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -139,6 +139,12 @@ Recent decisions affecting current work:
 - [Phase 07]: Graceful degradation: empty whatsapp_access_token skips WhatsApp entirely, preserving email-only behavior
 - [Phase 07]: WHTS-02 revised scope: WhatsApp-first with auto email fallback (not user-selectable channel)
 - [Phase 07]: WHTS-04 deferred to Phase 8: pipeline uses fixed 7 AM CET schedule
+- 08-02: All new HealthProfile fields use X | None = None syntax for backwards compatibility
+- 08-02: TrainingContext.weekly_volume_hours made optional; preferred_types defaults to empty list
+- 08-02: Supplement categories flattened to Supplement objects with "per user" default dose/form/timing
+- 08-02: load_health_profile uses lazy import of get_settings() to avoid circular imports
+- 08-02: Supabase-first with YAML fallback pattern: try query, catch any exception, fall through to file loader
+- 08-02: Default training phase "base" when step 4 data missing; default diet "not_specified" when step 3 missing
 
 ### Roadmap Evolution
 
@@ -157,6 +163,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05T14:55:57.661Z
-Stopped at: Phase 8 context gathered
-Resume file: .planning/phases/08-user-onboarding/08-CONTEXT.md
+Last session: 2026-03-05T15:37:33Z
+Stopped at: Completed 08-02-PLAN.md
+Resume file: .planning/phases/08-user-onboarding/08-02-SUMMARY.md
