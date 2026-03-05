@@ -287,6 +287,69 @@ class TestRenderWhatsAppClosing:
 # ---------------------------------------------------------------------------
 
 
+class TestRenderProfileNudge:
+    """Tests for profile completeness nudge rendering."""
+
+    def test_returns_empty_string_when_all_complete(self):
+        """No nudge when there are no incomplete steps."""
+        from biointelligence.delivery.whatsapp_renderer import _render_profile_nudge
+
+        result = _render_profile_nudge([], "https://app.example.com")
+        assert result == ""
+
+    def test_returns_nudge_for_first_incomplete_step(self):
+        """Returns nudge text with deep-link for the first incomplete step."""
+        from biointelligence.delivery.whatsapp_renderer import _render_profile_nudge
+
+        result = _render_profile_nudge([3, 5], "https://app.example.com")
+        assert "metabolic & nutrition" in result.lower() or "metabolic" in result.lower()
+        assert "https://app.example.com/onboarding/step-3" in result
+        # Should NOT contain the second incomplete step
+        assert "step-5" not in result
+
+    def test_nudge_contains_separator(self):
+        """Nudge starts with separator for visual distinction."""
+        from biointelligence.delivery.whatsapp_renderer import _render_profile_nudge
+
+        result = _render_profile_nudge([1], "https://app.example.com")
+        assert "---" in result
+
+    def test_nudge_maps_step_numbers_correctly(self):
+        """Each step number maps to the correct human-readable name."""
+        from biointelligence.delivery.whatsapp_renderer import _render_profile_nudge
+
+        # Step 1: biological profile
+        result = _render_profile_nudge([1], "https://app.example.com")
+        assert "biological profile" in result.lower()
+
+        # Step 4: training & sleep
+        result = _render_profile_nudge([4], "https://app.example.com")
+        assert "training" in result.lower()
+
+    def test_render_whatsapp_includes_nudge_when_incomplete(self, fake_protocol):
+        """render_whatsapp appends nudge when incomplete_steps is provided."""
+        from biointelligence.delivery.whatsapp_renderer import render_whatsapp
+
+        result = render_whatsapp(fake_protocol, datetime.date(2026, 3, 2), incomplete_steps=[2])
+        assert "health" in result.lower()
+        assert "step-2" in result
+
+    def test_render_whatsapp_no_nudge_without_incomplete_steps(self, fake_protocol):
+        """render_whatsapp does not append nudge when incomplete_steps is empty."""
+        from biointelligence.delivery.whatsapp_renderer import render_whatsapp
+
+        result = render_whatsapp(fake_protocol, datetime.date(2026, 3, 2), incomplete_steps=[])
+        assert "step-" not in result
+
+    def test_render_whatsapp_backwards_compatible(self, fake_protocol):
+        """render_whatsapp works without incomplete_steps argument."""
+        from biointelligence.delivery.whatsapp_renderer import render_whatsapp
+
+        result = render_whatsapp(fake_protocol, datetime.date(2026, 3, 2))
+        assert "*Daily Protocol*" in result
+        assert "step-" not in result
+
+
 class TestRenderWhatsAppCharLimit:
     """Tests for the 32,768 character limit guard."""
 

@@ -884,6 +884,136 @@ class TestBudgetUpdates:
         assert "trends_28d" in SECTION_PRIORITY
 
 
+class TestFormatProfileOnboardingFields:
+    """Test _format_profile with new onboarding fields from Phase 8."""
+
+    def test_includes_hormonal_context_when_present(self) -> None:
+        from biointelligence.prompt.assembler import _format_profile
+
+        profile = HealthProfile(
+            biometrics=Biometrics(
+                age=30, sex="female", weight_kg=65.0, height_cm=170.0,
+                hormonal_status="pre_menopausal",
+                cycle_phase="follicular",
+            ),
+            training=TrainingContext(phase="build"),
+            medical=MedicalHistory(),
+            metabolic=MetabolicProfile(),
+            diet=DietPreferences(preference="balanced"),
+            supplements=[],
+            sleep_context=SleepContext(),
+        )
+        result = _format_profile(profile)
+        assert "Hormonal Context:" in result
+        assert "pre_menopausal" in result
+        assert "follicular" in result
+
+    def test_includes_metabolic_flexibility_signals_when_present(self) -> None:
+        from biointelligence.prompt.assembler import _format_profile
+
+        profile = HealthProfile(
+            biometrics=Biometrics(age=35, sex="male", weight_kg=82.0, height_cm=183.0),
+            training=TrainingContext(phase="build"),
+            medical=MedicalHistory(),
+            metabolic=MetabolicProfile(
+                metabolic_flexibility_signals={
+                    "energy_crashes": "occasional",
+                    "post_meal_fatigue": "rare",
+                },
+            ),
+            diet=DietPreferences(preference="balanced"),
+            supplements=[],
+            sleep_context=SleepContext(),
+        )
+        result = _format_profile(profile)
+        assert "Metabolic Flexibility Signals:" in result
+        assert "energy_crashes" in result
+        assert "occasional" in result
+
+    def test_includes_primary_sport_and_goals_when_present(self) -> None:
+        from biointelligence.prompt.assembler import _format_profile
+
+        profile = HealthProfile(
+            biometrics=Biometrics(
+                age=35, sex="male", weight_kg=82.0, height_cm=183.0,
+                primary_sport="cycling",
+                primary_goals=["endurance", "weight_management"],
+            ),
+            training=TrainingContext(phase="build"),
+            medical=MedicalHistory(),
+            metabolic=MetabolicProfile(),
+            diet=DietPreferences(preference="balanced"),
+            supplements=[],
+            sleep_context=SleepContext(),
+        )
+        result = _format_profile(profile)
+        assert "Primary sport: cycling" in result
+        assert "Goals: endurance, weight_management" in result
+
+    def test_omits_new_sections_when_fields_are_none(self) -> None:
+        """Backwards compatibility: no new sections when all new fields are None."""
+        from biointelligence.prompt.assembler import _format_profile
+
+        profile = HealthProfile(
+            biometrics=Biometrics(age=35, sex="male", weight_kg=82.0, height_cm=183.0),
+            training=TrainingContext(phase="build"),
+            medical=MedicalHistory(),
+            metabolic=MetabolicProfile(),
+            diet=DietPreferences(preference="balanced"),
+            supplements=[],
+            sleep_context=SleepContext(),
+        )
+        result = _format_profile(profile)
+        assert "Hormonal Context:" not in result
+        assert "Metabolic Flexibility Signals:" not in result
+        assert "Primary sport:" not in result
+        assert "Goals:" not in result
+
+    def test_includes_sleep_onboarding_fields_when_present(self) -> None:
+        from biointelligence.prompt.assembler import _format_profile
+
+        profile = HealthProfile(
+            biometrics=Biometrics(age=35, sex="male", weight_kg=82.0, height_cm=183.0),
+            training=TrainingContext(phase="build"),
+            medical=MedicalHistory(),
+            metabolic=MetabolicProfile(),
+            diet=DietPreferences(preference="balanced"),
+            supplements=[],
+            sleep_context=SleepContext(
+                chronotype="intermediate",
+                sleep_schedule_consistency="consistent",
+                average_sleep_duration="7-8h",
+                subjective_recovery_waking=7,
+            ),
+        )
+        result = _format_profile(profile)
+        assert "consistent" in result
+        assert "7-8h" in result
+
+    def test_includes_metabolic_onboarding_fields_when_present(self) -> None:
+        from biointelligence.prompt.assembler import _format_profile
+
+        profile = HealthProfile(
+            biometrics=Biometrics(age=35, sex="male", weight_kg=82.0, height_cm=183.0),
+            training=TrainingContext(phase="build"),
+            medical=MedicalHistory(),
+            metabolic=MetabolicProfile(
+                dietary_pattern="balanced",
+                eating_window="8h",
+                caffeine_intake="moderate",
+                alcohol_consumption="social",
+            ),
+            diet=DietPreferences(preference="balanced"),
+            supplements=[],
+            sleep_context=SleepContext(),
+        )
+        result = _format_profile(profile)
+        assert "Dietary pattern: balanced" in result
+        assert "Eating window: 8h" in result
+        assert "Caffeine intake: moderate" in result
+        assert "Alcohol consumption: social" in result
+
+
 class TestAnomalyDirectives:
     """Test anomaly interpretation directives in templates."""
 
