@@ -122,8 +122,8 @@ def analyze_daily(target_date: date, settings: Settings | None = None) -> Analys
     log.info("analysis_start", date=target_date.isoformat())
 
     try:
-        # Step 1: Load health profile
-        profile = load_health_profile(Path(settings.health_profile_path))
+        # Step 1: Load health profile (Supabase-first, YAML fallback)
+        profile = load_health_profile(Path(settings.health_profile_path), settings=settings)
 
         # Step 2: Fetch data from Supabase
         supabase_client = get_supabase_client(settings)
