@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 08-04-PLAN.md
-last_updated: "2026-03-05T15:39:53.556Z"
-last_activity: "2026-03-05 -- Plan 08-04 executed (Steps 5-6, lab extraction API, completion page, profile edit page)"
+stopped_at: Completed 08-03-PLAN.md
+last_updated: "2026-03-05T15:55:10.333Z"
+last_activity: 2026-03-05 -- Plan 08-03 executed (Wizard steps 1-4 with useStepForm hook, supplement picker, metabolic signals, training phases)
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 21
-  completed_plans: 19
+  completed_plans: 20
   percent: 100
 ---
 
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-03)
 ## Current Position
 
 Phase: 8 of 8 (User Onboarding)
-Plan: 4 of 5 in current phase
-Status: Plan 08-04 complete, Plan 08-05 next
-Last activity: 2026-03-05 -- Plan 08-04 executed (Steps 5-6, lab extraction API, completion page, profile edit page)
+Plan: 3 of 5 in current phase
+Status: Plan 08-03 complete, Plan 08-04 next
+Last activity: 2026-03-05 -- Plan 08-03 executed (Wizard steps 1-4 with useStepForm hook, supplement picker, metabolic signals, training phases)
 
 Progress: [██████████] 100%
 
@@ -71,6 +71,7 @@ Progress: [██████████] 100%
 | Phase 08 P02 | 5min | 2 tasks | 6 files |
 | Phase 08 P01 | 5 | 2 tasks | 35 files |
 | Phase 08 P04 | 9min | 2 tasks | 9 files |
+| Phase 08 P03 | 11 | 2 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -154,6 +155,10 @@ Recent decisions affecting current work:
 - [Phase 08-01]: All Zod enum values use snake_case to match Python-side data contract
 - [Phase 08-01]: Step 6 schema covers only additional_context; consent handled separately in consent_records table
 - [Phase 08-01]: Supplement categories stored as object with 8 named arrays (not flat list)
+- [Phase 08]: zodResolver uses 'as any' cast for zod v4 compatibility with @hookform/resolvers type declarations
+- [Phase 08]: Supabase client uses placeholder URL during build to avoid SSR prerender failure
+- [Phase 08]: Supplement picker categories collapsed by default with expand-on-tap for mobile UX
+- [Phase 08]: Health conditions None option auto-clears other selections via watched value toggle
 
 ### Roadmap Evolution
 
@@ -172,6 +177,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05T15:51:14Z
-Stopped at: Completed 08-04-PLAN.md
+Last session: 2026-03-05T15:55:10.330Z
+Stopped at: Completed 08-03-PLAN.md
 Resume file: None
