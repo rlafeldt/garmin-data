@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: completed
-stopped_at: Completed 08-02-PLAN.md
-last_updated: "2026-03-05T15:39:30.695Z"
+stopped_at: Completed 08-01-PLAN.md
+last_updated: "2026-03-05T15:39:53.556Z"
 last_activity: "2026-03-05 -- Plan 08-02 executed (Python health profile integration: extended model, Supabase-first loader, onboarding mapper)"
 progress:
   total_phases: 8
@@ -69,6 +69,7 @@ Progress: [██████████] 100%
 | Phase 07 P02 | 3min | 2 tasks | 4 files |
 | Phase 07 P03 | 1min | 1 tasks | 2 files |
 | Phase 08 P02 | 5min | 2 tasks | 6 files |
+| Phase 08 P01 | 5 | 2 tasks | 35 files |
 
 ## Accumulated Context
 
@@ -145,6 +146,10 @@ Recent decisions affecting current work:
 - 08-02: load_health_profile uses lazy import of get_settings() to avoid circular imports
 - 08-02: Supabase-first with YAML fallback pattern: try query, catch any exception, fall through to file loader
 - 08-02: Default training phase "base" when step 4 data missing; default diet "not_specified" when step 3 missing
+- [Phase 08-01]: Supabase DDL uses JSONB per step for atomic step save/load
+- [Phase 08-01]: All Zod enum values use snake_case to match Python-side data contract
+- [Phase 08-01]: Step 6 schema covers only additional_context; consent handled separately in consent_records table
+- [Phase 08-01]: Supplement categories stored as object with 8 named arrays (not flat list)
 
 ### Roadmap Evolution
 
@@ -163,6 +168,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-05T15:37:33Z
-Stopped at: Completed 08-02-PLAN.md
-Resume file: .planning/phases/08-user-onboarding/08-02-SUMMARY.md
+Last session: 2026-03-05T15:39:53.552Z
+Stopped at: Completed 08-01-PLAN.md
+Resume file: None

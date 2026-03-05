@@ -178,9 +178,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | WHTS-02 | Phase 7: WhatsApp Delivery | Complete (revised scope) |
 | WHTS-03 | Phase 7: WhatsApp Delivery | Complete (simplified scope) |
 | WHTS-04 | Phase 7: WhatsApp Delivery | Deferred to Phase 8 |
-| ONBD-01 | Phase 8: User Onboarding | Not started |
+| ONBD-01 | Phase 8: User Onboarding | In progress |
 | ONBD-02 | Phase 8: User Onboarding | Not started |
-| ONBD-03 | Phase 8: User Onboarding | Not started |
+| ONBD-03 | Phase 8: User Onboarding | In progress |
 | ONBD-04 | Phase 8: User Onboarding | Not started |
 | ONBD-05 | Phase 8: User Onboarding | Not started |
 | ONBD-06 | Phase 8: User Onboarding | Not started |
