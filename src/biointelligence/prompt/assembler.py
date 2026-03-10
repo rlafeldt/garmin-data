@@ -449,14 +449,8 @@ def assemble_prompt(
     Returns:
         AssembledPrompt with the full text, token estimate, and section metadata.
     """
-    # Build analysis directives, appending anomaly interpretation when anomalies exist
-    has_anomalies = (
-        context.anomaly_result is not None
-        and len(context.anomaly_result.alerts) > 0
-    )
-    directives = ANALYSIS_DIRECTIVES
-    if has_anomalies:
-        directives = ANALYSIS_DIRECTIVES + "\n\n" + ANOMALY_INTERPRETATION_DIRECTIVES
+    # Build analysis directives (always include anomaly interpretation)
+    directives = ANALYSIS_DIRECTIVES + "\n\n" + ANOMALY_INTERPRETATION_DIRECTIVES
 
     # Build sections dict
     sections: dict[str, str] = {

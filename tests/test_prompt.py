@@ -1014,3 +1014,22 @@ class TestAnomalyDirectives:
         lower = ANOMALY_INTERPRETATION_DIRECTIVES.lower()
         assert "anomal" in lower
         assert "alert" in lower
+
+
+# ---------------------------------------------------------------------------
+# Task 3: Narrative schema and unconditional anomaly directives
+# ---------------------------------------------------------------------------
+
+
+class TestAssemblePromptNarrative:
+    """Test assemble_prompt produces narrative-compatible output."""
+
+    def test_output_format_contains_insight_field(self, mock_context: PromptContext) -> None:
+        result = assemble_prompt(mock_context)
+        assert "insight" in result.text
+        assert "insight_html" in result.text
+
+    def test_directives_always_include_anomaly_section(self, mock_context: PromptContext) -> None:
+        """Anomaly directives are always included, not conditional on alerts."""
+        result = assemble_prompt(mock_context)
+        assert "anomal" in result.text.lower()
