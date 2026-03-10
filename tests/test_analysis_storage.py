@@ -8,14 +8,7 @@ from unittest.mock import MagicMock, call, patch
 import pytest
 import structlog
 
-from biointelligence.prompt.models import (
-    DailyProtocol,
-    NutritionGuidance,
-    RecoveryAssessment,
-    SleepAnalysis,
-    SupplementationPlan,
-    TrainingRecommendation,
-)
+from biointelligence.prompt.models import DailyProtocol
 
 
 @pytest.fixture(autouse=True)
@@ -30,47 +23,9 @@ def fake_protocol() -> DailyProtocol:
     """A fully-populated DailyProtocol instance for testing storage."""
     return DailyProtocol(
         date="2026-03-02",
-        training=TrainingRecommendation(
-            headline="Zone 2 ride day",
-            readiness_score=7,
-            readiness_summary="Good recovery overnight.",
-            recommended_intensity="Zone 2",
-            recommended_type="Cycling",
-            recommended_duration_minutes=75,
-            training_load_assessment="Acute load within optimal range.",
-            reasoning="HRV above baseline, body battery 72.",
-        ),
-        recovery=RecoveryAssessment(
-            headline="Well recovered",
-            recovery_status="Well recovered",
-            hrv_interpretation="HRV 48ms above 7-day average.",
-            body_battery_assessment="Morning body battery 72.",
-            stress_impact="Average stress 32 within normal range.",
-            recommendations=["Light mobility work"],
-            reasoning="Solid recovery from yesterday.",
-        ),
-        sleep=SleepAnalysis(
-            headline="Good sleep quality",
-            quality_assessment="Good sleep quality.",
-            architecture_notes="Deep sleep 1h42m, REM 1h28m.",
-            optimization_tips=["Maintain consistent bedtime"],
-            reasoning="Sleep score 82 supports training.",
-        ),
-        nutrition=NutritionGuidance(
-            headline="Moderate fueling for ride",
-            caloric_target="2,800 kcal",
-            macro_focus="Higher carb pre-ride.",
-            hydration_target="3.2L",
-            meal_timing_notes="Pre-ride meal 2h before.",
-            reasoning="Zone 2 cycling requires moderate fueling.",
-        ),
-        supplementation=SupplementationPlan(
-            headline="Standard stack",
-            adjustments=["Creatine 5g with breakfast"],
-            timing_notes="Magnesium 400mg before bed.",
-            reasoning="Standard stack, no adjustments.",
-        ),
-        overall_summary="Good day for a Zone 2 ride.",
+        readiness_score=7,
+        insight="Your recovery is solid. HRV at 48ms sits above baseline.",
+        insight_html="Your recovery is solid. HRV at 48ms sits [above baseline](https://example.com).",
         data_quality_notes=None,
     )
 
@@ -138,13 +93,10 @@ class TestUpsertDailyProtocol:
         record = upsert_call.call_args[0][0]
         protocol_json = record["protocol"]
 
-        # Verify all 5 domains are present in the JSON
-        assert "training" in protocol_json
-        assert "recovery" in protocol_json
-        assert "sleep" in protocol_json
-        assert "nutrition" in protocol_json
-        assert "supplementation" in protocol_json
-        assert "overall_summary" in protocol_json
+        # Verify narrative fields are present in the JSON
+        assert "insight" in protocol_json
+        assert "insight_html" in protocol_json
+        assert "readiness_score" in protocol_json
 
     def test_has_tenacity_retry_decorator(self):
         """upsert_daily_protocol has tenacity retry matching existing pattern (3 attempts, exponential backoff)."""
