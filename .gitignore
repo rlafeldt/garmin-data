@@ -29,5 +29,8 @@ ENV/
 .DS_Store
 Thumbs.db
 
+# Worktrees
+.worktrees/
+
 # uv
 uv.lock
