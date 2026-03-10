@@ -3,17 +3,10 @@
 from __future__ import annotations
 
 import html
+import re
 from datetime import date
 
-from biointelligence.anomaly.models import Alert, AlertSeverity
-from biointelligence.prompt.models import (
-    DailyProtocol,
-    NutritionGuidance,
-    RecoveryAssessment,
-    SleepAnalysis,
-    SupplementationPlan,
-    TrainingRecommendation,
-)
+from biointelligence.prompt.models import DailyProtocol
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -76,6 +69,50 @@ def _readiness_label(score: int) -> str:
 def _format_date(d: date) -> str:
     """Format date as 'Mar 2, 2026' (without leading zero on day)."""
     return d.strftime("%b %-d, %Y")
+
+
+def _markdown_to_html(text: str) -> str:
+    """Convert narrative markdown to email-safe HTML.
+
+    Handles: *bold* -> <strong>, [text](url) -> <a href>, escaping,
+    and paragraph/line-break formatting. Processes in correct order
+    to avoid double-escaping.
+    """
+    # Split into paragraphs on double newlines
+    paragraphs = text.split("\n\n")
+    html_parts: list[str] = []
+
+    for para in paragraphs:
+        # HTML-escape first (before adding our own HTML)
+        escaped = html.escape(para)
+
+        # Convert markdown links: [text](url)
+        escaped = re.sub(
+            r'\[([^\]]+)\]\(([^)]+)\)',
+            lambda m: (
+                f'<a href="{m.group(2)}" style="color: #2563eb; '
+                f'text-decoration: underline;">{m.group(1)}</a>'
+            ),
+            escaped,
+        )
+
+        # Convert *bold* to <strong> (WhatsApp-style asterisks)
+        escaped = re.sub(
+            r'\*([^*]+)\*',
+            r'<strong>\1</strong>',
+            escaped,
+        )
+
+        # Convert single newlines to <br>
+        escaped = escaped.replace("\n", "<br>\n")
+
+        html_parts.append(
+            f'<p style="margin: 0 0 16px 0; font-size: 15px; '
+            f'line-height: 1.6; color: {_TEXT_COLOR}; '
+            f'font-family: {_FONT_STACK};">{escaped}</p>'
+        )
+
+    return "\n".join(html_parts)
 
 
 # ---------------------------------------------------------------------------

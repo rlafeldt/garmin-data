@@ -6,63 +6,38 @@ import datetime
 
 import pytest
 
-from biointelligence.anomaly.models import Alert, AlertSeverity
-from biointelligence.prompt.models import (
-    DailyProtocol,
-    NutritionGuidance,
-    RecoveryAssessment,
-    SleepAnalysis,
-    SupplementationPlan,
-    TrainingRecommendation,
-)
+from biointelligence.prompt.models import DailyProtocol
 
 
 @pytest.fixture()
 def fake_protocol() -> DailyProtocol:
-    """A populated DailyProtocol for renderer tests."""
+    """A populated DailyProtocol with narrative insight for renderer tests."""
     return DailyProtocol(
         date="2026-03-02",
-        training=TrainingRecommendation(
-            headline="Zone 2 ride, 75 min — readiness is solid",
-            readiness_score=7,
-            readiness_summary="Good recovery overnight with HRV trending up.",
-            recommended_intensity="Zone 2",
-            recommended_type="Cycling",
-            recommended_duration_minutes=75,
-            training_load_assessment="Acute load within optimal range.",
-            reasoning="HRV 48ms above baseline, body battery 72. Training load balanced.",
+        readiness_score=7,
+        insight=(
+            "BIOINTELLIGENCE — Mar 2, 2026\n\n"
+            "Your recovery is tracking well after yesterday's Zone 2 ride. "
+            "HRV at 48ms sits above your 7-day baseline of 44ms.\n\n"
+            "1. Deep sleep hit 1h42m — above the 1.5h target\n"
+            "2. Body Battery recharged to 72 overnight\n"
+            "3. RHR stable at 54 bpm\n\n"
+            "All signals point to readiness for moderate training.\n\n"
+            "*Recommendation:* Zone 2 cycling, 75 min, HR cap 150. "
+            "Magnesium bisglycinate 400mg before bed."
         ),
-        recovery=RecoveryAssessment(
-            headline="Well recovered, HRV above baseline",
-            recovery_status="Well recovered",
-            hrv_interpretation="HRV 48ms is above your 7-day average of 44ms.",
-            body_battery_assessment="Morning body battery 72 indicates good energy reserves.",
-            stress_impact="Average stress 32 is within normal range.",
-            recommendations=["Light mobility work", "Cold exposure post-training"],
-            reasoning="Multi-metric convergence shows solid recovery.",
+        insight_html=(
+            "BIOINTELLIGENCE — Mar 2, 2026\n\n"
+            "Your recovery is tracking well after yesterday's Zone 2 ride. "
+            "HRV at 48ms sits [above your 7-day baseline](https://pubmed.example.com/hrv) of 44ms.\n\n"
+            "1. Deep sleep hit 1h42m — above the [1.5h target](https://pubmed.example.com/sleep)\n"
+            "2. Body Battery recharged to 72 overnight\n"
+            "3. RHR stable at 54 bpm\n\n"
+            "All signals point to readiness for moderate training.\n\n"
+            "*Recommendation:* Zone 2 cycling, 75 min, HR cap 150. "
+            "[Magnesium bisglycinate](https://biointelligence.store/magnesium-bisglycinate) "
+            "400mg before bed."
         ),
-        sleep=SleepAnalysis(
-            headline="Good sleep, strong deep sleep phase",
-            quality_assessment="Good sleep quality with adequate deep sleep.",
-            architecture_notes="Deep sleep 1h42m (22%), REM 1h28m (19%).",
-            optimization_tips=["Maintain consistent 22:30 bedtime", "Limit blue light after 21:00"],
-            reasoning="Sleep score 82 with strong deep sleep phase supports training today.",
-        ),
-        nutrition=NutritionGuidance(
-            headline="2,800 kcal, carb-heavy for ride day",
-            caloric_target="2,800 kcal",
-            macro_focus="Higher carb pre-ride, moderate protein throughout.",
-            hydration_target="3.2L including 500ml electrolyte during ride",
-            meal_timing_notes="Pre-ride meal 2h before. Post-ride protein within 30min.",
-            reasoning="Zone 2 cycling for 75min requires moderate fueling strategy.",
-        ),
-        supplementation=SupplementationPlan(
-            headline="Standard stack, no changes needed",
-            adjustments=["Creatine 5g with breakfast", "Vitamin D 4000IU with lunch"],
-            timing_notes="Take magnesium glycinate 400mg 1h before bed.",
-            reasoning="Maintaining standard supplementation stack.",
-        ),
-        overall_summary="Good day for a moderate Zone 2 ride. Recovery metrics look solid.",
         data_quality_notes=None,
     )
 
@@ -181,7 +156,51 @@ class TestDeliveryLazyImports:
 
 
 # ---------------------------------------------------------------------------
-# Task 2: HTML and plain-text renderer tests
+# Task 5a: _markdown_to_html helper tests
+# ---------------------------------------------------------------------------
+
+
+class TestMarkdownToHtml:
+    """Tests for _markdown_to_html helper."""
+
+    def test_converts_bold_asterisks(self):
+        from biointelligence.delivery.renderer import _markdown_to_html
+
+        result = _markdown_to_html("This is *bold* text")
+        assert "<strong>bold</strong>" in result
+        assert "*bold*" not in result
+
+    def test_converts_markdown_links(self):
+        from biointelligence.delivery.renderer import _markdown_to_html
+
+        result = _markdown_to_html("See [this study](https://example.com)")
+        assert '<a href="https://example.com"' in result
+        assert ">this study</a>" in result
+        assert "[this study]" not in result
+
+    def test_escapes_html_in_text(self):
+        from biointelligence.delivery.renderer import _markdown_to_html
+
+        result = _markdown_to_html("Test <script>alert('xss')</script>")
+        assert "<script>" not in result
+        assert "&lt;script&gt;" in result
+
+    def test_preserves_line_breaks(self):
+        from biointelligence.delivery.renderer import _markdown_to_html
+
+        result = _markdown_to_html("Line one\nLine two")
+        assert "<br" in result or "</p>" in result
+
+    def test_converts_numbered_lists(self):
+        from biointelligence.delivery.renderer import _markdown_to_html
+
+        result = _markdown_to_html("1. First point\n2. Second point")
+        assert "1." in result
+        assert "2." in result
+
+
+# ---------------------------------------------------------------------------
+# Task 2: HTML and plain-text renderer tests (rewritten for narrative)
 # ---------------------------------------------------------------------------
 
 
