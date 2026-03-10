@@ -206,27 +206,28 @@ class TestSportsScienceGrounding:
 
 
 class TestAnalysisDirectives:
-    """Test that analysis directives cover all 5 domains."""
+    """Test that analysis directives instruct narrative output."""
 
-    def test_contains_training_section(self) -> None:
+    def test_contains_narrative_instruction(self) -> None:
         lower = ANALYSIS_DIRECTIVES.lower()
-        assert "training" in lower
+        assert "narrative" in lower or "insight" in lower
 
-    def test_contains_recovery_section(self) -> None:
+    def test_contains_whatsapp_constraints(self) -> None:
         lower = ANALYSIS_DIRECTIVES.lower()
-        assert "recovery" in lower
+        assert "whatsapp" in lower
 
-    def test_contains_sleep_section(self) -> None:
+    def test_contains_linking_rules(self) -> None:
+        """Directives include rules for insight_html links."""
         lower = ANALYSIS_DIRECTIVES.lower()
-        assert "sleep" in lower
+        assert "link" in lower
 
-    def test_contains_nutrition_section(self) -> None:
+    def test_contains_compression_rules(self) -> None:
         lower = ANALYSIS_DIRECTIVES.lower()
-        assert "nutrition" in lower
+        assert "compress" in lower or "compression" in lower
 
-    def test_contains_supplementation_section(self) -> None:
+    def test_contains_recommendation_threshold_guidance(self) -> None:
         lower = ANALYSIS_DIRECTIVES.lower()
-        assert "supplementation" in lower or "supplement" in lower
+        assert "threshold" in lower or "specific number" in lower
 
 
 # ---------------------------------------------------------------------------
