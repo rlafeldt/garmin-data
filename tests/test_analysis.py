@@ -12,11 +12,6 @@ from pydantic import ValidationError
 from biointelligence.prompt.models import (
     AssembledPrompt,
     DailyProtocol,
-    NutritionGuidance,
-    RecoveryAssessment,
-    SleepAnalysis,
-    SupplementationPlan,
-    TrainingRecommendation,
 )
 
 
@@ -29,50 +24,18 @@ def _reset_structlog():
 
 @pytest.fixture()
 def fake_protocol() -> DailyProtocol:
-    """A fully-populated DailyProtocol instance with realistic data."""
+    """A fully-populated DailyProtocol instance with narrative insight."""
     return DailyProtocol(
         date="2026-03-02",
-        training=TrainingRecommendation(
-            headline="Moderate Zone 2 day",
-            readiness_score=7,
-            readiness_summary="Good recovery overnight with HRV trending up.",
-            recommended_intensity="Zone 2",
-            recommended_type="Cycling",
-            recommended_duration_minutes=75,
-            training_load_assessment="Acute load within optimal range (ACWR 1.1).",
-            reasoning="HRV 48ms above baseline, body battery 72. Training load balanced.",
+        readiness_score=7,
+        insight=(
+            "BIOINTELLIGENCE — Mar 2, 2026\n\n"
+            "Your recovery is solid. HRV at 48ms sits above baseline."
         ),
-        recovery=RecoveryAssessment(
-            headline="Well recovered from yesterday",
-            recovery_status="Well recovered",
-            hrv_interpretation="HRV 48ms is above your 7-day average of 44ms.",
-            body_battery_assessment="Morning body battery 72 indicates good energy reserves.",
-            stress_impact="Average stress 32 is within normal range for a rest day.",
-            recommendations=["Light mobility work", "Cold exposure post-training"],
-            reasoning="Multi-metric convergence shows solid recovery from yesterday's effort.",
+        insight_html=(
+            "BIOINTELLIGENCE — Mar 2, 2026\n\n"
+            "Your recovery is solid. HRV at 48ms sits [above baseline](https://example.com)."
         ),
-        sleep=SleepAnalysis(
-            headline="Solid sleep supports training",
-            quality_assessment="Good sleep quality with adequate deep sleep.",
-            architecture_notes="Deep sleep 1h42m (22%), REM 1h28m (19%), 6 awakenings.",
-            optimization_tips=["Maintain consistent 22:30 bedtime", "Limit blue light after 21:00"],
-            reasoning="Sleep score 82 with strong deep sleep phase supports training today.",
-        ),
-        nutrition=NutritionGuidance(
-            headline="Fuel for moderate endurance",
-            caloric_target="2,800 kcal",
-            macro_focus="Higher carb pre-ride, moderate protein throughout the day.",
-            hydration_target="3.2L including 500ml electrolyte during ride",
-            meal_timing_notes="Pre-ride meal 2h before. Post-ride protein within 30min.",
-            reasoning="Zone 2 cycling for 75min requires moderate fueling strategy.",
-        ),
-        supplementation=SupplementationPlan(
-            headline="Standard stack, no changes",
-            adjustments=["Creatine 5g with breakfast", "Vitamin D 4000IU with lunch"],
-            timing_notes="Take magnesium glycinate 400mg 1h before bed.",
-            reasoning="Maintaining standard supplementation stack. No adjustments needed today.",
-        ),
-        overall_summary="Good day for a moderate Zone 2 ride. Recovery metrics look solid.",
         data_quality_notes=None,
     )
 
@@ -624,113 +587,6 @@ class TestAnalyzeDaily:
         assert "analysis_daily_complete" in caplog.text
 
 
-class TestProtocolDomains:
-    """Tests verifying all 12 requirement IDs via DailyProtocol domain fields."""
-
-    def test_trng01_readiness_score(self, fake_protocol):
-        """TRNG-01: DailyProtocol has training.readiness_score between 1-10."""
-        assert 1 <= fake_protocol.training.readiness_score <= 10
-        assert fake_protocol.training.readiness_summary != ""
-
-    def test_trng02_training_load_assessment(self, fake_protocol):
-        """TRNG-02: DailyProtocol has training.training_load_assessment non-empty."""
-        assert fake_protocol.training.training_load_assessment != ""
-
-    def test_trng03_training_recommendations(self, fake_protocol):
-        """TRNG-03: DailyProtocol has recommended_intensity, type, duration."""
-        assert fake_protocol.training.recommended_intensity != ""
-        assert fake_protocol.training.recommended_type != ""
-        assert fake_protocol.training.recommended_duration_minutes > 0
-
-    def test_trng04_stress_impact(self, fake_protocol):
-        """TRNG-04: DailyProtocol has recovery.stress_impact non-empty."""
-        assert fake_protocol.recovery.stress_impact != ""
-
-    def test_slep01_sleep_architecture(self, fake_protocol):
-        """SLEP-01: DailyProtocol has sleep.architecture_notes and quality_assessment."""
-        assert fake_protocol.sleep.architecture_notes != ""
-        assert fake_protocol.sleep.quality_assessment != ""
-
-    def test_slep02_sleep_optimization(self, fake_protocol):
-        """SLEP-02: DailyProtocol has sleep.optimization_tips non-empty list."""
-        assert len(fake_protocol.sleep.optimization_tips) > 0
-
-    def test_nutr01_nutrition_guidance(self, fake_protocol):
-        """NUTR-01: DailyProtocol has caloric_target, macro_focus, meal_timing_notes."""
-        assert fake_protocol.nutrition.caloric_target != ""
-        assert fake_protocol.nutrition.macro_focus != ""
-        assert fake_protocol.nutrition.meal_timing_notes != ""
-
-    def test_nutr02_hydration_target(self, fake_protocol):
-        """NUTR-02: DailyProtocol has nutrition.hydration_target non-empty."""
-        assert fake_protocol.nutrition.hydration_target != ""
-
-    def test_supp01_supplement_adjustments(self, fake_protocol):
-        """SUPP-01: DailyProtocol has supplementation.adjustments non-empty list."""
-        assert len(fake_protocol.supplementation.adjustments) > 0
-
-    def test_supp02_supplement_reasoning(self, fake_protocol):
-        """SUPP-02: DailyProtocol has supplementation.reasoning non-empty."""
-        assert fake_protocol.supplementation.reasoning != ""
-
-    def test_safe02_data_quality_notes(self):
-        """SAFE-02/SAFE-03: DailyProtocol has data_quality_notes when data is partial."""
-        protocol_with_notes = DailyProtocol(
-            date="2026-03-02",
-            training=TrainingRecommendation(
-                headline="Conservative approach today",
-                readiness_score=5,
-                readiness_summary="Limited data available.",
-                recommended_intensity="Low",
-                recommended_type="Walking",
-                recommended_duration_minutes=30,
-                training_load_assessment="Unable to fully assess -- missing HRV data.",
-                reasoning="Data incomplete. Recommending conservative approach.",
-            ),
-            recovery=RecoveryAssessment(
-                headline="Insufficient data for assessment",
-                recovery_status="Unknown",
-                hrv_interpretation="HRV data not available.",
-                body_battery_assessment="Body battery data missing.",
-                stress_impact="Stress data unavailable.",
-                recommendations=["Monitor how you feel"],
-                reasoning="Insufficient data for full assessment.",
-            ),
-            sleep=SleepAnalysis(
-                headline="Limited sleep data available",
-                quality_assessment="Sleep data limited.",
-                architecture_notes="No sleep stage breakdown available.",
-                optimization_tips=["Ensure consistent sleep schedule"],
-                reasoning="Limited sleep data available.",
-            ),
-            nutrition=NutritionGuidance(
-                headline="Default nutrition guidance",
-                caloric_target="2,200 kcal (estimated)",
-                macro_focus="Balanced macros recommended.",
-                hydration_target="2.5L minimum",
-                meal_timing_notes="Standard meal timing.",
-                reasoning="Using profile defaults due to limited activity data.",
-            ),
-            supplementation=SupplementationPlan(
-                headline="Maintain current stack",
-                adjustments=["Maintain current stack"],
-                timing_notes="Standard timing.",
-                reasoning="No data-driven adjustments possible today.",
-            ),
-            overall_summary="Conservative recommendations due to incomplete data.",
-            data_quality_notes="Missing HRV, body battery, and sleep stage data. "
-            "Recommendations based on 7-day trends and health profile.",
-        )
-        assert protocol_with_notes.data_quality_notes is not None
-        assert "Missing" in protocol_with_notes.data_quality_notes
-
-    def test_all_5_domains_have_reasoning(self, fake_protocol):
-        """All 5 domains have non-empty reasoning fields (verifying TRNG-01 through SUPP-02)."""
-        assert fake_protocol.training.reasoning != ""
-        assert fake_protocol.recovery.reasoning != ""
-        assert fake_protocol.sleep.reasoning != ""
-        assert fake_protocol.nutrition.reasoning != ""
-        assert fake_protocol.supplementation.reasoning != ""
 
 
 # ---------------------------------------------------------------------------
