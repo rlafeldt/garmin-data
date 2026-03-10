@@ -31,12 +31,7 @@ from biointelligence.prompt.budget import (
 from biointelligence.prompt.models import (
     AssembledPrompt,
     DailyProtocol,
-    NutritionGuidance,
     PromptContext,
-    RecoveryAssessment,
-    SleepAnalysis,
-    SupplementationPlan,
-    TrainingRecommendation,
 )
 from biointelligence.prompt.templates import (
     ANALYSIS_DIRECTIVES,
@@ -125,69 +120,63 @@ class TestTrimToBudget:
 
 
 class TestDailyProtocol:
-    """Test the DailyProtocol output schema model."""
+    """Test the new narrative DailyProtocol output schema."""
 
-    def test_validates_with_all_domains(self) -> None:
+    def test_validates_with_narrative_fields(self) -> None:
         protocol = DailyProtocol(
             date="2026-03-03",
-            training=TrainingRecommendation(
-                headline="Moderate training day",
-                readiness_score=8,
-                readiness_summary="Well recovered",
-                recommended_intensity="moderate",
-                recommended_type="cycling",
-                recommended_duration_minutes=60,
-                training_load_assessment="Balanced",
-                reasoning="Good HRV and sleep",
-            ),
-            recovery=RecoveryAssessment(
-                headline="Full recovery indicated",
-                recovery_status="good",
-                hrv_interpretation="Above baseline",
-                body_battery_assessment="High morning charge",
-                stress_impact="Low",
-                recommendations=["Light stretching"],
-                reasoning="Metrics indicate full recovery",
-            ),
-            sleep=SleepAnalysis(
-                headline="Good sleep quality",
-                quality_assessment="Good",
-                architecture_notes="Adequate deep sleep",
-                optimization_tips=["Maintain consistent bedtime"],
-                reasoning="Sleep score above target",
-            ),
-            nutrition=NutritionGuidance(
-                headline="Balanced nutrition day",
-                caloric_target="2400 kcal",
-                macro_focus="Balanced",
-                hydration_target="3L",
-                meal_timing_notes="Pre-workout carbs",
-                reasoning="Moderate training day",
-            ),
-            supplementation=SupplementationPlan(
-                headline="Standard dosing",
-                adjustments=["Standard dosing"],
-                timing_notes="Evening magnesium",
-                reasoning="No special adjustments needed",
-            ),
-            overall_summary="Good day for moderate training",
+            readiness_score=7,
+            insight="Your body is recovering well. HRV at 63ms is 7% above baseline.",
+            insight_html="Your body is recovering well. HRV at 63ms is [7% above baseline](https://...).",
+            data_quality_notes=None,
         )
-        assert protocol.training.readiness_score == 8
+        assert protocol.readiness_score == 7
         assert protocol.date == "2026-03-03"
+        assert "HRV" in protocol.insight
+        assert "[" in protocol.insight_html
+        assert protocol.data_quality_notes is None
+
+    def test_readiness_score_validation(self) -> None:
+        """readiness_score must be 1-10."""
+        import pytest
+        from pydantic import ValidationError
+
+        with pytest.raises(ValidationError):
+            DailyProtocol(
+                date="2026-03-03",
+                readiness_score=0,
+                insight="test",
+                insight_html="test",
+            )
+
+        with pytest.raises(ValidationError):
+            DailyProtocol(
+                date="2026-03-03",
+                readiness_score=11,
+                insight="test",
+                insight_html="test",
+            )
+
+    def test_data_quality_notes_defaults_to_none(self) -> None:
+        protocol = DailyProtocol(
+            date="2026-03-03",
+            readiness_score=8,
+            insight="test",
+            insight_html="test",
+        )
         assert protocol.data_quality_notes is None
 
     def test_model_json_schema_produces_valid_json(self) -> None:
         schema = DailyProtocol.model_json_schema()
         assert isinstance(schema, dict)
-        # Should be serializable to JSON string
         schema_str = json.dumps(schema)
-        assert len(schema_str) > 0
-        # Should contain key fields
-        assert "training" in schema_str
-        assert "recovery" in schema_str
-        assert "sleep" in schema_str
-        assert "nutrition" in schema_str
-        assert "supplementation" in schema_str
+        assert "insight" in schema_str
+        assert "insight_html" in schema_str
+        assert "readiness_score" in schema_str
+        # Old domain fields should NOT be present
+        assert "training" not in schema_str
+        assert "recovery" not in schema_str
+        assert "supplementation" not in schema_str
 
 
 # ---------------------------------------------------------------------------

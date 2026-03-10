@@ -6,7 +6,7 @@ from datetime import date
 
 from pydantic import BaseModel, Field
 
-from biointelligence.anomaly.models import Alert, AnomalyResult
+from biointelligence.anomaly.models import AnomalyResult
 from biointelligence.garmin.models import Activity, DailyMetrics
 from biointelligence.profile.models import HealthProfile
 from biointelligence.trends.models import TrendResult
@@ -33,81 +33,30 @@ class AssembledPrompt(BaseModel):
     sections_trimmed: list[str]
 
 
-# ---------------------------------------------------------------------------
-# DailyProtocol output schema -- defines what Claude should return.
-# Preliminary schema; Phase 3 may refine field names and add fields.
-# ---------------------------------------------------------------------------
-
-
-class TrainingRecommendation(BaseModel):
-    """Training guidance based on readiness and load."""
-
-    headline: str
-    readiness_score: int = Field(..., ge=1, le=10, description="Overall readiness 1-10")
-    readiness_summary: str
-    recommended_intensity: str
-    recommended_type: str
-    recommended_duration_minutes: int
-    training_load_assessment: str
-    reasoning: str
-
-
-class RecoveryAssessment(BaseModel):
-    """Recovery status derived from HRV, body battery, and stress."""
-
-    headline: str
-    recovery_status: str
-    hrv_interpretation: str
-    body_battery_assessment: str
-    stress_impact: str
-    recommendations: list[str]
-    reasoning: str
-
-
-class SleepAnalysis(BaseModel):
-    """Sleep quality and optimization analysis."""
-
-    headline: str
-    quality_assessment: str
-    architecture_notes: str
-    optimization_tips: list[str]
-    reasoning: str
-
-
-class NutritionGuidance(BaseModel):
-    """Daily nutrition recommendations."""
-
-    headline: str
-    caloric_target: str
-    macro_focus: str
-    hydration_target: str
-    meal_timing_notes: str
-    reasoning: str
-
-
-class SupplementationPlan(BaseModel):
-    """Supplement adjustments for the day."""
-
-    headline: str
-    adjustments: list[str]
-    timing_notes: str
-    reasoning: str
-
-
 class DailyProtocol(BaseModel):
-    """Complete daily protocol output schema for Claude.
+    """Daily insight output schema for Claude.
 
-    Defines the 5-domain structured response: training, recovery, sleep,
-    nutrition, and supplementation. Each domain includes a reasoning field
-    to capture Claude's analytical chain.
+    Claude produces a single integrated narrative that weaves metrics,
+    cross-domain synthesis, and recommendations into cohesive prose.
+    Two variants: plain text (WhatsApp) and markdown with links (email).
     """
 
     date: str
-    training: TrainingRecommendation
-    recovery: RecoveryAssessment
-    sleep: SleepAnalysis
-    nutrition: NutritionGuidance
-    supplementation: SupplementationPlan
-    overall_summary: str
+    readiness_score: int = Field(
+        ..., ge=1, le=10, description="Overall readiness 1-10"
+    )
+    insight: str = Field(
+        ...,
+        description=(
+            "Complete narrative insight for WhatsApp. Plain text, no markdown "
+            "links. Uses *bold* for WhatsApp formatting. 150-250 words."
+        ),
+    )
+    insight_html: str = Field(
+        ...,
+        description=(
+            "Same narrative with markdown links on study claims and supplement "
+            "names. Links use [descriptive text](url) format."
+        ),
+    )
     data_quality_notes: str | None = None
-    alerts: list[Alert] = Field(default_factory=list)
