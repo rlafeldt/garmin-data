@@ -11,14 +11,7 @@ from biointelligence.garmin.models import (
     CompletenessResult,
     DailyMetrics,
 )
-from biointelligence.prompt.models import (
-    DailyProtocol,
-    NutritionGuidance,
-    RecoveryAssessment,
-    SleepAnalysis,
-    SupplementationPlan,
-    TrainingRecommendation,
-)
+from biointelligence.prompt.models import DailyProtocol
 
 
 @pytest.fixture(autouse=True)
@@ -427,50 +420,12 @@ class TestMainCli:
 
 @pytest.fixture()
 def fake_protocol() -> DailyProtocol:
-    """A populated DailyProtocol for run_analysis tests."""
+    """A populated DailyProtocol for pipeline tests."""
     return DailyProtocol(
         date="2026-03-02",
-        training=TrainingRecommendation(
-            headline="Zone 2 ride day",
-            readiness_score=7,
-            readiness_summary="Good recovery.",
-            recommended_intensity="Zone 2",
-            recommended_type="Cycling",
-            recommended_duration_minutes=75,
-            training_load_assessment="Optimal.",
-            reasoning="HRV above baseline.",
-        ),
-        recovery=RecoveryAssessment(
-            headline="Well recovered",
-            recovery_status="Well recovered",
-            hrv_interpretation="HRV 48ms above average.",
-            body_battery_assessment="Body battery 72.",
-            stress_impact="Stress 32 normal.",
-            recommendations=["Light mobility"],
-            reasoning="Solid recovery.",
-        ),
-        sleep=SleepAnalysis(
-            headline="Good quality sleep",
-            quality_assessment="Good quality.",
-            architecture_notes="Deep 1h42m.",
-            optimization_tips=["Consistent bedtime"],
-            reasoning="Score 82.",
-        ),
-        nutrition=NutritionGuidance(
-            headline="Moderate fueling",
-            caloric_target="2,800 kcal",
-            macro_focus="Higher carb.",
-            hydration_target="3.2L",
-            meal_timing_notes="Pre-ride 2h.",
-            reasoning="Moderate fueling.",
-        ),
-        supplementation=SupplementationPlan(
-            headline="Standard stack",
-            adjustments=["Creatine 5g"],
-            timing_notes="Magnesium before bed.",
-            reasoning="Standard stack.",
-        ),
-        overall_summary="Good day for Zone 2.",
+        readiness_score=7,
+        insight="Your recovery is solid.",
+        insight_html="Your recovery is [solid](https://example.com).",
         data_quality_notes=None,
     )
 
