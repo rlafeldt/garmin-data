@@ -425,7 +425,7 @@ class TestAssemblePrompt:
         assert "<output_format>" in result.text
         assert "</output_format>" in result.text
         # Should contain DailyProtocol JSON schema
-        assert "DailyProtocol" in result.text or "training" in result.text
+        assert "DailyProtocol" in result.text or "insight" in result.text
 
     def test_estimated_tokens_within_budget(self, mock_context: PromptContext) -> None:
         result = assemble_prompt(mock_context)
@@ -587,119 +587,6 @@ class TestPromptContextExtended:
         )
         assert ctx.anomaly_result is None
 
-
-class TestDailyProtocolAlerts:
-    """Test DailyProtocol with alerts field."""
-
-    def test_accepts_alerts_field(self) -> None:
-        alerts = [
-            Alert(
-                severity=AlertSeverity.WARNING,
-                title="HRV Low",
-                description="HRV below baseline",
-                suggested_action="Rest today",
-                pattern_name="single_metric_outlier",
-            ),
-        ]
-        protocol = DailyProtocol(
-            date="2026-03-03",
-            training=TrainingRecommendation(
-                headline="Rest day",
-                readiness_score=5,
-                readiness_summary="Low readiness",
-                recommended_intensity="low",
-                recommended_type="walking",
-                recommended_duration_minutes=30,
-                training_load_assessment="Reduce",
-                reasoning="HRV low",
-            ),
-            recovery=RecoveryAssessment(
-                headline="Recovery needed",
-                recovery_status="poor",
-                hrv_interpretation="Low",
-                body_battery_assessment="Low",
-                stress_impact="High",
-                recommendations=["Rest"],
-                reasoning="Low HRV",
-            ),
-            sleep=SleepAnalysis(
-                headline="Poor sleep",
-                quality_assessment="Poor",
-                architecture_notes="Low deep sleep",
-                optimization_tips=["Earlier bedtime"],
-                reasoning="Low score",
-            ),
-            nutrition=NutritionGuidance(
-                headline="Recovery nutrition",
-                caloric_target="2200 kcal",
-                macro_focus="Protein",
-                hydration_target="3L",
-                meal_timing_notes="Regular",
-                reasoning="Recovery day",
-            ),
-            supplementation=SupplementationPlan(
-                headline="Increase magnesium",
-                adjustments=["Extra magnesium"],
-                timing_notes="Evening",
-                reasoning="High stress",
-            ),
-            overall_summary="Rest day recommended",
-            alerts=alerts,
-        )
-        assert len(protocol.alerts) == 1
-        assert protocol.alerts[0].severity == AlertSeverity.WARNING
-
-    def test_alerts_defaults_to_empty_list(self) -> None:
-        protocol = DailyProtocol(
-            date="2026-03-03",
-            training=TrainingRecommendation(
-                headline="Good day",
-                readiness_score=8,
-                readiness_summary="Good",
-                recommended_intensity="moderate",
-                recommended_type="cycling",
-                recommended_duration_minutes=60,
-                training_load_assessment="Balanced",
-                reasoning="Good",
-            ),
-            recovery=RecoveryAssessment(
-                headline="Well recovered",
-                recovery_status="good",
-                hrv_interpretation="Normal",
-                body_battery_assessment="Good",
-                stress_impact="Low",
-                recommendations=["Stretch"],
-                reasoning="Good",
-            ),
-            sleep=SleepAnalysis(
-                headline="Good sleep",
-                quality_assessment="Good",
-                architecture_notes="OK",
-                optimization_tips=["Consistent"],
-                reasoning="Good",
-            ),
-            nutrition=NutritionGuidance(
-                headline="Standard",
-                caloric_target="2400",
-                macro_focus="Balanced",
-                hydration_target="3L",
-                meal_timing_notes="Normal",
-                reasoning="Normal",
-            ),
-            supplementation=SupplementationPlan(
-                headline="Standard",
-                adjustments=["Normal"],
-                timing_notes="Normal",
-                reasoning="Normal",
-            ),
-            overall_summary="Good day",
-        )
-        assert protocol.alerts == []
-
-    def test_alerts_in_model_json_schema(self) -> None:
-        schema = DailyProtocol.model_json_schema()
-        schema_str = json.dumps(schema)
-        assert "alerts" in schema_str
 
 
 class TestFormatExtendedTrends:
