@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     supabase_key: str
 
     # Pipeline
-    target_timezone: str = "Europe/Berlin"
+    target_timezone: str = "America/Sao_Paulo"
     log_json: bool = False
 
     # Health Profile
