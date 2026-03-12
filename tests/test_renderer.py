@@ -307,5 +307,5 @@ class TestBuildSubject:
     def test_subject_contains_date(self, fake_protocol):
         from biointelligence.delivery.renderer import build_subject
         subject = build_subject(fake_protocol, datetime.date(2026, 3, 2))
-        assert "Mar" in subject
+        assert "março" in subject
         assert "2026" in subject

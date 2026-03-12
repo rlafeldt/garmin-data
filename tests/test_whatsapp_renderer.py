@@ -95,7 +95,7 @@ class TestRenderProfileNudge:
         from biointelligence.delivery.whatsapp_renderer import _render_profile_nudge
 
         result = _render_profile_nudge([3, 5], "https://app.example.com")
-        assert "metabolic & nutrition" in result.lower() or "metabolic" in result.lower()
+        assert "metabolismo" in result.lower()
         assert "https://app.example.com/onboarding/step-3" in result
         # Should NOT contain the second incomplete step
         assert "step-5" not in result
@@ -111,20 +111,20 @@ class TestRenderProfileNudge:
         """Each step number maps to the correct human-readable name."""
         from biointelligence.delivery.whatsapp_renderer import _render_profile_nudge
 
-        # Step 1: biological profile
+        # Step 1: perfil biológico
         result = _render_profile_nudge([1], "https://app.example.com")
-        assert "biological profile" in result.lower()
+        assert "perfil biológico" in result.lower()
 
-        # Step 4: training & sleep
+        # Step 4: treino e sono
         result = _render_profile_nudge([4], "https://app.example.com")
-        assert "training" in result.lower()
+        assert "treino" in result.lower()
 
     def test_render_whatsapp_includes_nudge_when_incomplete(self, fake_protocol):
         """render_whatsapp appends nudge when incomplete_steps is provided."""
         from biointelligence.delivery.whatsapp_renderer import render_whatsapp
 
         result = render_whatsapp(fake_protocol, datetime.date(2026, 3, 2), incomplete_steps=[2])
-        assert "health" in result.lower()
+        assert "saúde" in result.lower()
         assert "step-2" in result
 
     def test_render_whatsapp_no_nudge_without_incomplete_steps(self, fake_protocol):

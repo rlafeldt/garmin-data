@@ -18,12 +18,12 @@ MAX_BODY_CHARS = 32768
 
 # Step number to human-readable name mapping for nudges
 _STEP_NAMES: dict[int, str] = {
-    1: "biological profile",
-    2: "health & medications",
-    3: "metabolic & nutrition",
-    4: "training & sleep",
-    5: "baseline biometrics",
-    6: "data upload & consent",
+    1: "perfil biológico",
+    2: "saúde e medicamentos",
+    3: "metabolismo e nutrição",
+    4: "treino e sono",
+    5: "biometria base",
+    6: "envio de dados e consentimento",
 }
 
 
@@ -53,7 +53,7 @@ def _render_profile_nudge(incomplete_steps: list[int], app_url: str) -> str:
 
     return (
         f"---\n"
-        f"*Complete your {step_name}* for more personalised insights\n"
+        f"*Complete seu {step_name}* para insights mais personalizados\n"
         f"{app_url}/onboarding/step-{first_step}"
     )
 

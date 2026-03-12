@@ -1,7 +1,7 @@
-"""Hardcoded convergence pattern definitions for multi-metric anomaly detection.
+"""Definições de padrões de convergência para detecção de anomalias multi-métricas.
 
-Five patterns detect simultaneous deviations across multiple health metrics
-over 3+ consecutive days, using personal baselines (28-day mean + stddev).
+Cinco padrões detectam desvios simultâneos em múltiplas métricas de saúde
+por 3+ dias consecutivos, usando linhas de base pessoais (média de 28 dias + desvio-padrão).
 """
 
 from __future__ import annotations
@@ -9,16 +9,16 @@ from __future__ import annotations
 from biointelligence.anomaly.models import AlertSeverity, ConvergencePattern, MetricCheck
 
 CONVERGENCE_PATTERNS: list[ConvergencePattern] = [
-    # Pattern 1: HRV + HR + Sleep convergence
+    # Padrão 1: Convergência HRV + FC + Sono
     ConvergencePattern(
         name="hrv_hr_sleep",
         description=(
-            "HRV declining, resting heart rate elevated, and sleep quality poor "
-            "for 3+ consecutive days -- indicates systemic stress or early illness."
+            "HRV em queda, frequência cardíaca de repouso elevada e qualidade de sono "
+            "comprometida por 3+ dias consecutivos — indica estresse sistêmico ou início de doença."
         ),
         suggested_action=(
-            "Prioritize recovery: extend sleep by 30-60 min, avoid high-intensity training, "
-            "and monitor for illness symptoms."
+            "Priorize a recuperação: estenda o sono em 30-60 min, evite treino de alta intensidade "
+            "e monitore sintomas de doença."
         ),
         metrics=[
             MetricCheck(metric_name="hrv_overnight_avg", direction="below", threshold_stddev=1.0),
@@ -27,16 +27,16 @@ CONVERGENCE_PATTERNS: list[ConvergencePattern] = [
         ],
         severity=AlertSeverity.CRITICAL,
     ),
-    # Pattern 2: Overtraining signals
+    # Padrão 2: Sinais de overtraining
     ConvergencePattern(
         name="overtraining",
         description=(
-            "Training load elevated while HRV declining and Body Battery not recovering "
-            "for 3+ consecutive days -- classic overtraining pattern."
+            "Carga de treino elevada enquanto HRV cai e Body Battery não recupera "
+            "por 3+ dias consecutivos — padrão clássico de overtraining."
         ),
         suggested_action=(
-            "Consider a rest day or light zone 1 session. Reduce training volume "
-            "by 30-50% for the next 2-3 days."
+            "Considere um dia de descanso ou sessão leve em zona 1. Reduza o volume de "
+            "treino em 30-50% nos próximos 2-3 dias."
         ),
         metrics=[
             MetricCheck(metric_name="training_load_7d", direction="above", threshold_stddev=1.0),
@@ -47,16 +47,16 @@ CONVERGENCE_PATTERNS: list[ConvergencePattern] = [
         ],
         severity=AlertSeverity.CRITICAL,
     ),
-    # Pattern 3: Sleep debt accumulation
+    # Padrão 3: Acúmulo de débito de sono
     ConvergencePattern(
         name="sleep_debt",
         description=(
-            "Sleep score, total sleep duration, and deep sleep all declining "
-            "for 3+ consecutive days -- sleep debt is accumulating."
+            "Score de sono, duração total e sono profundo em queda "
+            "por 3+ dias consecutivos — débito de sono se acumulando."
         ),
         suggested_action=(
-            "Set an earlier bedtime tonight. Avoid caffeine after 2 PM and screens "
-            "30 min before bed. Consider a short nap if possible."
+            "Antecipe o horário de dormir hoje. Evite cafeína após 14h e telas "
+            "30 min antes de deitar. Considere um cochilo curto se possível."
         ),
         metrics=[
             MetricCheck(metric_name="sleep_score", direction="below", threshold_stddev=1.0),
@@ -65,18 +65,18 @@ CONVERGENCE_PATTERNS: list[ConvergencePattern] = [
         ],
         severity=AlertSeverity.WARNING,
     ),
-    # Pattern 4: Stress escalation
-    # NOTE: body_battery_drain is a derived metric (body_battery_max - body_battery_min),
-    # handled as a special case in the detector.
+    # Padrão 4: Escalada de estresse
+    # NOTA: body_battery_drain é uma métrica derivada (body_battery_max - body_battery_min),
+    # tratada como caso especial no detector.
     ConvergencePattern(
         name="stress_escalation",
         description=(
-            "Average stress level rising, relaxation time dropping, and Body Battery drain "
-            "accelerating for 3+ consecutive days -- stress response escalating."
+            "Nível médio de estresse subindo, tempo de relaxamento caindo e drenagem de "
+            "Body Battery acelerando por 3+ dias consecutivos — resposta ao estresse escalando."
         ),
         suggested_action=(
-            "Schedule deliberate recovery: breathing exercises, walk in nature, or "
-            "meditation. Reduce commitments where possible."
+            "Inclua recuperação intencional: exercícios respiratórios, caminhada na natureza ou "
+            "meditação. Reduza compromissos quando possível."
         ),
         metrics=[
             MetricCheck(metric_name="avg_stress_level", direction="above", threshold_stddev=1.0),
@@ -85,16 +85,16 @@ CONVERGENCE_PATTERNS: list[ConvergencePattern] = [
         ],
         severity=AlertSeverity.WARNING,
     ),
-    # Pattern 5: Recovery stall
+    # Padrão 5: Estagnação da recuperação
     ConvergencePattern(
         name="recovery_stall",
         description=(
-            "Body Battery morning charge low, resting heart rate creeping up, and HRV "
-            "flat or declining for 3+ consecutive days -- recovery is stalling."
+            "Carga matinal do Body Battery baixa, frequência cardíaca de repouso subindo e "
+            "HRV estagnado ou em queda por 3+ dias consecutivos — recuperação estagnada."
         ),
         suggested_action=(
-            "Focus on sleep hygiene and nutrition. Consider magnesium supplementation "
-            "and ensure adequate protein intake for recovery."
+            "Foque em higiene do sono e nutrição. Considere suplementação de magnésio "
+            "e garanta ingestão adequada de proteína para recuperação."
         ),
         metrics=[
             MetricCheck(

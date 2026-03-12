@@ -192,17 +192,17 @@ class TestSportsScienceGrounding:
 
     def test_contains_sleep_architecture(self) -> None:
         lower = SPORTS_SCIENCE_GROUNDING.lower()
-        assert "sleep" in lower
-        assert "deep sleep" in lower or "rem" in lower
+        assert "sono" in lower
+        assert "sono profundo" in lower or "rem" in lower
 
     def test_contains_acwr(self) -> None:
         lower = SPORTS_SCIENCE_GROUNDING.lower()
-        assert "acute" in lower or "acwr" in lower
-        assert "0.8" in SPORTS_SCIENCE_GROUNDING or "1.3" in SPORTS_SCIENCE_GROUNDING
+        assert "acwr" in lower or "carga aguda" in lower
+        assert "0,8" in SPORTS_SCIENCE_GROUNDING or "1,3" in SPORTS_SCIENCE_GROUNDING
 
     def test_contains_periodization(self) -> None:
         lower = SPORTS_SCIENCE_GROUNDING.lower()
-        assert "periodization" in lower or "base" in lower
+        assert "periodização" in lower or "base" in lower
 
 
 class TestAnalysisDirectives:
@@ -210,7 +210,7 @@ class TestAnalysisDirectives:
 
     def test_contains_narrative_instruction(self) -> None:
         lower = ANALYSIS_DIRECTIVES.lower()
-        assert "narrative" in lower or "insight" in lower
+        assert "narrativa" in lower or "insight" in lower
 
     def test_contains_whatsapp_constraints(self) -> None:
         lower = ANALYSIS_DIRECTIVES.lower()
@@ -223,11 +223,11 @@ class TestAnalysisDirectives:
 
     def test_contains_compression_rules(self) -> None:
         lower = ANALYSIS_DIRECTIVES.lower()
-        assert "compress" in lower or "compression" in lower
+        assert "compressão" in lower
 
     def test_contains_recommendation_threshold_guidance(self) -> None:
         lower = ANALYSIS_DIRECTIVES.lower()
-        assert "threshold" in lower or "specific number" in lower
+        assert "limiar" in lower or "números específicos" in lower
 
 
 # ---------------------------------------------------------------------------
@@ -453,7 +453,7 @@ class TestAssemblePrompt:
         )
         result = assemble_prompt(ctx)
         assert "<yesterday_activities>" in result.text
-        assert "No activities recorded" in result.text
+        assert "Nenhuma atividade registrada" in result.text
 
     def test_insufficient_trends_produces_valid_prompt(
         self,
@@ -471,7 +471,7 @@ class TestAssemblePrompt:
         )
         result = assemble_prompt(ctx)
         assert "<trends_7d>" in result.text
-        assert "insufficient" in result.text.lower()
+        assert "insuficientes" in result.text.lower()
 
     def test_lab_values_appear_in_prompt(self, mock_context: PromptContext) -> None:
         result = assemble_prompt(mock_context)
@@ -619,7 +619,7 @@ class TestFormatExtendedTrends:
         from biointelligence.prompt.assembler import _format_extended_trends
 
         result = _format_extended_trends(None)
-        assert "insufficient" in result.lower() or "Insufficient" in result
+        assert "insuficientes" in result.lower()
 
 
 class TestFormatAnomalies:
@@ -648,7 +648,7 @@ class TestFormatAnomalies:
             metrics_checked=7,
         )
         result = _format_anomalies(anomaly)
-        assert "DETECTED ANOMALIES" in result or "detected" in result.lower()
+        assert "ANOMALIAS DETECTADAS" in result or "detectada" in result.lower()
         assert "WARNING" in result or "warning" in result.lower()
         assert "CRITICAL" in result or "critical" in result.lower()
         assert "HRV Extreme Outlier" in result
@@ -658,13 +658,13 @@ class TestFormatAnomalies:
 
         anomaly = AnomalyResult(alerts=[], metrics_checked=7)
         result = _format_anomalies(anomaly)
-        assert "no anomalies" in result.lower() or "No anomalies" in result
+        assert "nenhuma anomalia" in result.lower()
 
     def test_returns_no_anomalies_when_none(self) -> None:
         from biointelligence.prompt.assembler import _format_anomalies
 
         result = _format_anomalies(None)
-        assert "no anomalies" in result.lower() or "No anomalies" in result
+        assert "nenhuma anomalia" in result.lower()
 
 
 class TestAssemblePromptExtended:
@@ -781,7 +781,7 @@ class TestFormatProfileOnboardingFields:
             sleep_context=SleepContext(),
         )
         result = _format_profile(profile)
-        assert "Hormonal Context:" in result
+        assert "Contexto Hormonal:" in result
         assert "pre_menopausal" in result
         assert "follicular" in result
 
@@ -803,7 +803,7 @@ class TestFormatProfileOnboardingFields:
             sleep_context=SleepContext(),
         )
         result = _format_profile(profile)
-        assert "Metabolic Flexibility Signals:" in result
+        assert "Sinais de Flexibilidade Metabólica:" in result
         assert "energy_crashes" in result
         assert "occasional" in result
 
@@ -824,8 +824,8 @@ class TestFormatProfileOnboardingFields:
             sleep_context=SleepContext(),
         )
         result = _format_profile(profile)
-        assert "Primary sport: cycling" in result
-        assert "Goals: endurance, weight_management" in result
+        assert "Esporte principal: cycling" in result
+        assert "Objetivos: endurance, weight_management" in result
 
     def test_omits_new_sections_when_fields_are_none(self) -> None:
         """Backwards compatibility: no new sections when all new fields are None."""
@@ -841,10 +841,10 @@ class TestFormatProfileOnboardingFields:
             sleep_context=SleepContext(),
         )
         result = _format_profile(profile)
-        assert "Hormonal Context:" not in result
-        assert "Metabolic Flexibility Signals:" not in result
-        assert "Primary sport:" not in result
-        assert "Goals:" not in result
+        assert "Contexto Hormonal:" not in result
+        assert "Sinais de Flexibilidade Metabólica:" not in result
+        assert "Esporte principal:" not in result
+        assert "Objetivos:" not in result
 
     def test_includes_sleep_onboarding_fields_when_present(self) -> None:
         from biointelligence.prompt.assembler import _format_profile
@@ -885,10 +885,10 @@ class TestFormatProfileOnboardingFields:
             sleep_context=SleepContext(),
         )
         result = _format_profile(profile)
-        assert "Dietary pattern: balanced" in result
-        assert "Eating window: 8h" in result
-        assert "Caffeine intake: moderate" in result
-        assert "Alcohol consumption: social" in result
+        assert "Padrão alimentar: balanced" in result
+        assert "Janela alimentar: 8h" in result
+        assert "Consumo de cafeína: moderate" in result
+        assert "Consumo de álcool: social" in result
 
 
 class TestAnomalyDirectives:
@@ -900,7 +900,7 @@ class TestAnomalyDirectives:
         assert len(ANOMALY_INTERPRETATION_DIRECTIVES) > 0
         lower = ANOMALY_INTERPRETATION_DIRECTIVES.lower()
         assert "anomal" in lower
-        assert "alert" in lower
+        assert "alerta" in lower
 
 
 # ---------------------------------------------------------------------------

@@ -1,8 +1,9 @@
-"""Main prompt assembly function.
+"""Função principal de montagem do prompt.
 
-Wires together health profile, today's metrics, 7-day trends,
-yesterday's activities, sports science grounding, analysis directives,
-and the DailyProtocol output schema into a single XML-tagged prompt.
+Conecta o perfil de saúde, métricas do dia, tendências de 7 dias,
+atividades do dia anterior, fundamentação em ciência do esporte,
+diretivas de análise e o schema de saída DailyProtocol em um único
+prompt com tags XML.
 """
 
 from __future__ import annotations
@@ -45,39 +46,39 @@ def _format_metrics(metrics: DailyMetrics) -> str:
     Groups metrics by category and skips None values. Converts
     total_sleep_seconds to hours:minutes for readability.
     """
-    lines: list[str] = [f"Date: {metrics.date.isoformat()}"]
+    lines: list[str] = [f"Data: {metrics.date.isoformat()}"]
 
-    # Sleep
+    # Sono
     sleep_lines: list[str] = []
     if metrics.total_sleep_seconds is not None:
         hours = metrics.total_sleep_seconds // 3600
         minutes = (metrics.total_sleep_seconds % 3600) // 60
-        sleep_lines.append(f"  Total sleep: {hours}h {minutes}min")
+        sleep_lines.append(f"  Sono total: {hours}h {minutes}min")
     if metrics.deep_sleep_seconds is not None:
         h, m = divmod(metrics.deep_sleep_seconds, 3600)
-        sleep_lines.append(f"  Deep sleep: {h}h {(m % 3600) // 60}min")
+        sleep_lines.append(f"  Sono profundo: {h}h {(m % 3600) // 60}min")
     if metrics.light_sleep_seconds is not None:
         h = metrics.light_sleep_seconds // 3600
         m = (metrics.light_sleep_seconds % 3600) // 60
-        sleep_lines.append(f"  Light sleep: {h}h {m}min")
+        sleep_lines.append(f"  Sono leve: {h}h {m}min")
     if metrics.rem_sleep_seconds is not None:
         h = metrics.rem_sleep_seconds // 3600
         m = (metrics.rem_sleep_seconds % 3600) // 60
-        sleep_lines.append(f"  REM sleep: {h}h {m}min")
+        sleep_lines.append(f"  Sono REM: {h}h {m}min")
     if metrics.awake_seconds is not None:
-        sleep_lines.append(f"  Awake time: {metrics.awake_seconds // 60}min")
+        sleep_lines.append(f"  Tempo acordado: {metrics.awake_seconds // 60}min")
     if metrics.sleep_score is not None:
-        sleep_lines.append(f"  Sleep score: {metrics.sleep_score}")
+        sleep_lines.append(f"  Score de sono: {metrics.sleep_score}")
     if sleep_lines:
-        lines.append("Sleep:")
+        lines.append("Sono:")
         lines.extend(sleep_lines)
 
     # HRV
     hrv_lines: list[str] = []
     if metrics.hrv_overnight_avg is not None:
-        hrv_lines.append(f"  Overnight avg: {metrics.hrv_overnight_avg}")
+        hrv_lines.append(f"  Média noturna: {metrics.hrv_overnight_avg}")
     if metrics.hrv_overnight_max is not None:
-        hrv_lines.append(f"  Overnight max: {metrics.hrv_overnight_max}")
+        hrv_lines.append(f"  Máximo noturno: {metrics.hrv_overnight_max}")
     if metrics.hrv_status is not None:
         hrv_lines.append(f"  Status: {metrics.hrv_status}")
     if hrv_lines:
@@ -87,67 +88,67 @@ def _format_metrics(metrics: DailyMetrics) -> str:
     # Body Battery
     bb_lines: list[str] = []
     if metrics.body_battery_morning is not None:
-        bb_lines.append(f"  Morning: {metrics.body_battery_morning}")
+        bb_lines.append(f"  Manhã: {metrics.body_battery_morning}")
     if metrics.body_battery_max is not None:
-        bb_lines.append(f"  Max: {metrics.body_battery_max}")
+        bb_lines.append(f"  Máx: {metrics.body_battery_max}")
     if metrics.body_battery_min is not None:
-        bb_lines.append(f"  Min: {metrics.body_battery_min}")
+        bb_lines.append(f"  Mín: {metrics.body_battery_min}")
     if bb_lines:
         lines.append("Body Battery:")
         lines.extend(bb_lines)
 
-    # Heart Rate
+    # Frequência Cardíaca
     hr_lines: list[str] = []
     if metrics.resting_hr is not None:
-        hr_lines.append(f"  Resting: {metrics.resting_hr} bpm")
+        hr_lines.append(f"  Repouso: {metrics.resting_hr} bpm")
     if metrics.avg_hr is not None:
-        hr_lines.append(f"  Average: {metrics.avg_hr} bpm")
+        hr_lines.append(f"  Média: {metrics.avg_hr} bpm")
     if metrics.max_hr is not None:
-        hr_lines.append(f"  Max: {metrics.max_hr} bpm")
+        hr_lines.append(f"  Máx: {metrics.max_hr} bpm")
     if hr_lines:
-        lines.append("Heart Rate:")
+        lines.append("Frequência Cardíaca:")
         lines.extend(hr_lines)
 
-    # Stress
+    # Estresse
     stress_lines: list[str] = []
     if metrics.avg_stress_level is not None:
-        stress_lines.append(f"  Average level: {metrics.avg_stress_level}")
+        stress_lines.append(f"  Nível médio: {metrics.avg_stress_level}")
     if metrics.high_stress_minutes is not None:
-        stress_lines.append(f"  High stress: {metrics.high_stress_minutes}min")
+        stress_lines.append(f"  Estresse alto: {metrics.high_stress_minutes}min")
     if metrics.rest_stress_minutes is not None:
-        stress_lines.append(f"  Rest stress: {metrics.rest_stress_minutes}min")
+        stress_lines.append(f"  Estresse em repouso: {metrics.rest_stress_minutes}min")
     if stress_lines:
-        lines.append("Stress:")
+        lines.append("Estresse:")
         lines.extend(stress_lines)
 
-    # Training
+    # Treino
     training_lines: list[str] = []
     if metrics.training_load_7d is not None:
-        training_lines.append(f"  7-day load: {metrics.training_load_7d}")
+        training_lines.append(f"  Carga 7 dias: {metrics.training_load_7d}")
     if metrics.training_status is not None:
         training_lines.append(f"  Status: {metrics.training_status}")
     if metrics.vo2_max is not None:
         training_lines.append(f"  VO2 Max: {metrics.vo2_max}")
     if training_lines:
-        lines.append("Training:")
+        lines.append("Treino:")
         lines.extend(training_lines)
 
-    # General
+    # Geral
     general_lines: list[str] = []
     if metrics.steps is not None:
-        general_lines.append(f"  Steps: {metrics.steps}")
+        general_lines.append(f"  Passos: {metrics.steps}")
     if metrics.calories_total is not None:
-        general_lines.append(f"  Total calories: {metrics.calories_total}")
+        general_lines.append(f"  Calorias totais: {metrics.calories_total}")
     if metrics.calories_active is not None:
-        general_lines.append(f"  Active calories: {metrics.calories_active}")
+        general_lines.append(f"  Calorias ativas: {metrics.calories_active}")
     if metrics.intensity_minutes is not None:
-        general_lines.append(f"  Intensity minutes: {metrics.intensity_minutes}")
+        general_lines.append(f"  Minutos de intensidade: {metrics.intensity_minutes}")
     if metrics.spo2_avg is not None:
-        general_lines.append(f"  SpO2 avg: {metrics.spo2_avg}%")
+        general_lines.append(f"  SpO2 média: {metrics.spo2_avg}%")
     if metrics.respiration_rate_avg is not None:
-        general_lines.append(f"  Respiration rate: {metrics.respiration_rate_avg}")
+        general_lines.append(f"  Taxa respiratória: {metrics.respiration_rate_avg}")
     if general_lines:
-        lines.append("General:")
+        lines.append("Geral:")
         lines.extend(general_lines)
 
     return "\n".join(lines)
@@ -164,14 +165,14 @@ def _format_trends(trends: TrendResult) -> str:
     )
     if all_insufficient:
         return (
-            "Insufficient data for trend analysis "
-            f"(fewer than 4 days of data available). "
-            f"Data points: {trends.data_points}."
+            "Dados insuficientes para análise de tendências "
+            f"(menos de 4 dias de dados disponíveis). "
+            f"Pontos de dados: {trends.data_points}."
         )
 
     lines: list[str] = [
-        f"Window: {trends.window_start.isoformat()} to {trends.window_end.isoformat()}",
-        f"Data points: {trends.data_points}",
+        f"Janela: {trends.window_start.isoformat()} a {trends.window_end.isoformat()}",
+        f"Pontos de dados: {trends.data_points}",
         "",
     ]
 
@@ -197,8 +198,8 @@ def _format_extended_trends(trends: TrendResult | None) -> str:
     """
     if trends is None:
         return (
-            "28-day trends: Insufficient data "
-            "(fewer than 14 days available)."
+            "Tendências de 28 dias: dados insuficientes "
+            "(menos de 14 dias disponíveis)."
         )
 
     all_insufficient = all(
@@ -206,14 +207,14 @@ def _format_extended_trends(trends: TrendResult | None) -> str:
     )
     if all_insufficient:
         return (
-            "28-day trends: Insufficient data "
-            f"(fewer than 14 days available). "
-            f"Data points: {trends.data_points}."
+            "Tendências de 28 dias: dados insuficientes "
+            f"(menos de 14 dias disponíveis). "
+            f"Pontos de dados: {trends.data_points}."
         )
 
     lines: list[str] = [
-        f"Window: {trends.window_start.isoformat()} to {trends.window_end.isoformat()}",
-        f"Data points: {trends.data_points}",
+        f"Janela: {trends.window_start.isoformat()} a {trends.window_end.isoformat()}",
+        f"Pontos de dados: {trends.data_points}",
         "",
     ]
 
@@ -243,12 +244,12 @@ def _format_anomalies(anomaly_result: AnomalyResult | None) -> str:
     """
     if anomaly_result is None or not anomaly_result.alerts:
         return (
-            "No anomalies detected. "
-            "All metrics within normal personal baselines."
+            "Nenhuma anomalia detectada. "
+            "Todas as métricas dentro das linhas de base pessoais normais."
         )
 
     lines: list[str] = [
-        f"DETECTED ANOMALIES ({len(anomaly_result.alerts)} alerts):",
+        f"ANOMALIAS DETECTADAS ({len(anomaly_result.alerts)} alertas):",
         "",
     ]
     for alert in anomaly_result.alerts:
@@ -258,8 +259,8 @@ def _format_anomalies(anomaly_result: AnomalyResult | None) -> str:
 
     lines.append("")
     lines.append(
-        "Interpret each anomaly in clinical context. "
-        "Populate the alerts field in your response accordingly."
+        "Interprete cada anomalia no contexto clínico. "
+        "Preencha o campo de alertas na resposta conforme necessário."
     )
 
     return "\n".join(lines)
@@ -271,7 +272,7 @@ def _format_activities(activities: list[Activity]) -> str:
     If no activities, outputs a note about no recorded activities.
     """
     if not activities:
-        return "No activities recorded yesterday."
+        return "Nenhuma atividade registrada ontem."
 
     lines: list[str] = []
     for act in activities:
@@ -279,17 +280,17 @@ def _format_activities(activities: list[Activity]) -> str:
         if act.name:
             parts[0] += f": {act.name}"
         if act.duration_seconds is not None:
-            parts.append(f"duration: {act.duration_seconds // 60}min")
+            parts.append(f"duração: {act.duration_seconds // 60}min")
         if act.avg_hr is not None:
-            parts.append(f"avg_hr: {act.avg_hr}")
+            parts.append(f"fc_média: {act.avg_hr}")
         if act.max_hr is not None:
-            parts.append(f"max_hr: {act.max_hr}")
+            parts.append(f"fc_máx: {act.max_hr}")
         if act.calories is not None:
-            parts.append(f"calories: {act.calories}")
+            parts.append(f"calorias: {act.calories}")
         if act.training_effect_aerobic is not None:
-            parts.append(f"aerobic_effect: {act.training_effect_aerobic}")
+            parts.append(f"efeito_aeróbico: {act.training_effect_aerobic}")
         if act.training_effect_anaerobic is not None:
-            parts.append(f"anaerobic_effect: {act.training_effect_anaerobic}")
+            parts.append(f"efeito_anaeróbico: {act.training_effect_anaerobic}")
         lines.append(" | ".join(parts))
 
     return "\n".join(lines)
@@ -304,113 +305,113 @@ def _format_profile(profile: HealthProfile) -> str:
     data = profile.model_dump(mode="json")
     lines: list[str] = []
 
-    # Biometrics
+    # Biometria
     bio = data["biometrics"]
-    lines.append("Biometrics:")
-    lines.append(f"  Age: {bio['age']}")
-    lines.append(f"  Sex: {bio['sex']}")
-    lines.append(f"  Weight: {bio['weight_kg']} kg")
-    lines.append(f"  Height: {bio['height_cm']} cm")
+    lines.append("Biometria:")
+    lines.append(f"  Idade: {bio['age']}")
+    lines.append(f"  Sexo: {bio['sex']}")
+    lines.append(f"  Peso: {bio['weight_kg']} kg")
+    lines.append(f"  Altura: {bio['height_cm']} cm")
     if bio.get("body_fat_pct") is not None:
-        lines.append(f"  Body fat: {bio['body_fat_pct']}%")
+        lines.append(f"  Gordura corporal: {bio['body_fat_pct']}%")
     if bio.get("primary_sport") is not None:
-        lines.append(f"  Primary sport: {bio['primary_sport']}")
+        lines.append(f"  Esporte principal: {bio['primary_sport']}")
     if bio.get("primary_goals"):
-        lines.append(f"  Goals: {', '.join(bio['primary_goals'])}")
+        lines.append(f"  Objetivos: {', '.join(bio['primary_goals'])}")
 
-    # Hormonal Context (onboarding)
+    # Contexto Hormonal (onboarding)
     if bio.get("hormonal_status") is not None:
-        lines.append("Hormonal Context:")
+        lines.append("Contexto Hormonal:")
         lines.append(f"  Status: {bio['hormonal_status']}")
         if bio.get("cycle_phase") is not None:
-            lines.append(f"  Cycle phase: {bio['cycle_phase']}")
+            lines.append(f"  Fase do ciclo: {bio['cycle_phase']}")
 
-    # Training
+    # Treino
     training = data["training"]
-    lines.append("Training Context:")
-    lines.append(f"  Phase: {training['phase']}")
-    lines.append(f"  Weekly volume: {training['weekly_volume_hours']} hours")
-    lines.append(f"  Preferred types: {', '.join(training['preferred_types'])}")
+    lines.append("Contexto de Treino:")
+    lines.append(f"  Fase: {training['phase']}")
+    lines.append(f"  Volume semanal: {training['weekly_volume_hours']} horas")
+    lines.append(f"  Modalidades preferidas: {', '.join(training['preferred_types'])}")
     for goal in training.get("race_goals", []):
-        lines.append(f"  Race goal: {goal['event']} ({goal['date']}, priority {goal['priority']})")
+        lines.append(f"  Meta de competição: {goal['event']} ({goal['date']}, prioridade {goal['priority']})")
     for inj in training.get("injury_history", []):
         note = f" - {inj['notes']}" if inj.get("notes") else ""
-        lines.append(f"  Injury: {inj['area']} ({inj['status']}{note})")
+        lines.append(f"  Lesão: {inj['area']} ({inj['status']}{note})")
 
-    # Medical
+    # Médico
     medical = data["medical"]
     if medical.get("conditions"):
-        lines.append(f"Medical conditions: {', '.join(medical['conditions'])}")
+        lines.append(f"Condições médicas: {', '.join(medical['conditions'])}")
     if medical.get("medications"):
-        lines.append(f"Medications: {', '.join(medical['medications'])}")
+        lines.append(f"Medicamentos: {', '.join(medical['medications'])}")
     if medical.get("allergies"):
-        lines.append(f"Allergies: {', '.join(medical['allergies'])}")
+        lines.append(f"Alergias: {', '.join(medical['allergies'])}")
 
-    # Metabolic
+    # Metabólico
     metabolic = data["metabolic"]
     if metabolic.get("resting_metabolic_rate") is not None:
-        lines.append(f"Resting metabolic rate: {metabolic['resting_metabolic_rate']} kcal")
+        lines.append(f"Taxa metabólica de repouso: {metabolic['resting_metabolic_rate']} kcal")
     if metabolic.get("glucose_response"):
-        lines.append(f"Glucose response: {metabolic['glucose_response']}")
+        lines.append(f"Resposta glicêmica: {metabolic['glucose_response']}")
     if metabolic.get("dietary_pattern") is not None:
-        lines.append(f"  Dietary pattern: {metabolic['dietary_pattern']}")
+        lines.append(f"  Padrão alimentar: {metabolic['dietary_pattern']}")
     if metabolic.get("eating_window") is not None:
-        lines.append(f"  Eating window: {metabolic['eating_window']}")
+        lines.append(f"  Janela alimentar: {metabolic['eating_window']}")
     if metabolic.get("caffeine_intake") is not None:
-        lines.append(f"  Caffeine intake: {metabolic['caffeine_intake']}")
+        lines.append(f"  Consumo de cafeína: {metabolic['caffeine_intake']}")
     if metabolic.get("caffeine_cutoff") is not None:
-        lines.append(f"  Caffeine cutoff: {metabolic['caffeine_cutoff']}")
+        lines.append(f"  Corte de cafeína: {metabolic['caffeine_cutoff']}")
     if metabolic.get("alcohol_consumption") is not None:
-        lines.append(f"  Alcohol consumption: {metabolic['alcohol_consumption']}")
+        lines.append(f"  Consumo de álcool: {metabolic['alcohol_consumption']}")
     if metabolic.get("metabolic_flexibility_signals") is not None:
-        lines.append("  Metabolic Flexibility Signals:")
+        lines.append("  Sinais de Flexibilidade Metabólica:")
         for signal_name, signal_value in metabolic["metabolic_flexibility_signals"].items():
             lines.append(f"    {signal_name}: {signal_value}")
 
-    # Diet
+    # Dieta
     diet = data["diet"]
-    lines.append(f"Diet preference: {diet['preference']}")
+    lines.append(f"Preferência alimentar: {diet['preference']}")
     if diet.get("restrictions"):
-        lines.append(f"  Restrictions: {', '.join(diet['restrictions'])}")
+        lines.append(f"  Restrições: {', '.join(diet['restrictions'])}")
     if diet.get("meal_timing"):
-        lines.append(f"  Meal timing: {diet['meal_timing']}")
+        lines.append(f"  Horário das refeições: {diet['meal_timing']}")
 
-    # Supplements
+    # Suplementos
     if data.get("supplements"):
-        lines.append("Supplements:")
+        lines.append("Suplementos:")
         for supp in data["supplements"]:
             line = f"  {supp['name']}: {supp['dose']} ({supp['form']}) - {supp['timing']}"
             if supp.get("condition"):
-                line += f" [Condition: {supp['condition']}]"
+                line += f" [Condição: {supp['condition']}]"
             lines.append(line)
 
-    # Sleep context
+    # Contexto de sono
     sleep = data.get("sleep_context", {})
     sleep_parts: list[str] = []
     if sleep.get("chronotype"):
-        sleep_parts.append(f"chronotype: {sleep['chronotype']}")
+        sleep_parts.append(f"cronotipo: {sleep['chronotype']}")
     if sleep.get("target_bedtime"):
-        sleep_parts.append(f"target bedtime: {sleep['target_bedtime']}")
+        sleep_parts.append(f"horário-alvo para dormir: {sleep['target_bedtime']}")
     if sleep.get("target_wake"):
-        sleep_parts.append(f"target wake: {sleep['target_wake']}")
+        sleep_parts.append(f"horário-alvo para acordar: {sleep['target_wake']}")
     if sleep.get("environment_notes"):
-        sleep_parts.append(f"environment: {sleep['environment_notes']}")
+        sleep_parts.append(f"ambiente: {sleep['environment_notes']}")
     if sleep_parts:
-        lines.append("Sleep context: " + ", ".join(sleep_parts))
+        lines.append("Contexto de sono: " + ", ".join(sleep_parts))
     if sleep.get("sleep_schedule_consistency") is not None:
-        lines.append(f"  Sleep schedule consistency: {sleep['sleep_schedule_consistency']}")
+        lines.append(f"  Consistência do horário de sono: {sleep['sleep_schedule_consistency']}")
     if sleep.get("average_sleep_duration") is not None:
-        lines.append(f"  Average sleep duration: {sleep['average_sleep_duration']}")
+        lines.append(f"  Duração média de sono: {sleep['average_sleep_duration']}")
     if sleep.get("subjective_recovery_waking") is not None:
-        lines.append(f"  Recovery on waking: {sleep['subjective_recovery_waking']}/10")
+        lines.append(f"  Recuperação ao acordar: {sleep['subjective_recovery_waking']}/10")
 
-    # Lab values
+    # Exames laboratoriais
     if data.get("lab_values"):
-        lines.append("Lab Values:")
+        lines.append("Exames Laboratoriais:")
         for name, lab in data["lab_values"].items():
             lines.append(
                 f"  {name}: {lab['value']} {lab['unit']} "
-                f"(tested: {lab['date']}, range: {lab['range']})"
+                f"(data: {lab['date']}, faixa: {lab['range']})"
             )
 
     return "\n".join(lines)
@@ -425,8 +426,8 @@ def _format_output_schema() -> str:
     schema_str = json.dumps(schema, indent=2)
 
     return (
-        "Return your analysis as valid JSON matching the following schema. "
-        "Do not include any text outside the JSON object.\n\n"
+        "Retorne sua análise como JSON válido seguindo o esquema abaixo. "
+        "Não inclua nenhum texto fora do objeto JSON.\n\n"
         f"Schema: DailyProtocol\n{schema_str}"
     )
 

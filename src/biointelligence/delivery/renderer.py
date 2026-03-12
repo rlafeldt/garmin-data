@@ -1,4 +1,4 @@
-"""HTML and plain-text email rendering from DailyProtocol."""
+"""Renderização HTML e texto puro de e-mail a partir do DailyProtocol."""
 
 from __future__ import annotations
 
@@ -31,6 +31,13 @@ _RED = "#ef4444"
 _BANNER_BG = "#fef3c7"
 _BANNER_TEXT = "#92400e"
 
+# Brazilian Portuguese month names
+_MONTHS_PT_BR = {
+    1: "janeiro", 2: "fevereiro", 3: "março", 4: "abril",
+    5: "maio", 6: "junho", 7: "julho", 8: "agosto",
+    9: "setembro", 10: "outubro", 11: "novembro", 12: "dezembro",
+}
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -54,15 +61,16 @@ def _readiness_color(score: int) -> str:
 def _readiness_label(score: int) -> str:
     """Return text label for readiness score."""
     if score >= 8:
-        return "High Readiness"
+        return "Prontidão Alta"
     if score >= 5:
-        return "Moderate Readiness"
-    return "Low Readiness"
+        return "Prontidão Moderada"
+    return "Prontidão Baixa"
 
 
 def _format_date(d: date) -> str:
-    """Format date as 'Mar 2, 2026' (without leading zero on day)."""
-    return d.strftime("%b %-d, %Y")
+    """Format date as '2 de março de 2026' (Brazilian Portuguese format)."""
+    month_name = _MONTHS_PT_BR[d.month]
+    return f"{d.day} de {month_name} de {d.year}"
 
 
 def _markdown_to_html(text: str) -> str:
@@ -155,7 +163,7 @@ style="background-color: {_BANNER_BG}; border-radius: 6px;">
         <td style="padding: 12px 16px;">
           <p style="margin: 0; font-size: 13px; line-height: 1.5; \
 color: {_BANNER_TEXT}; font-family: {_FONT_STACK};">\
-<strong>Data Quality:</strong> {_e(notes)}</p>
+<strong>Qualidade dos Dados:</strong> {_e(notes)}</p>
         </td>
       </tr>
     </table>
@@ -183,7 +191,7 @@ def _render_footer(target_date: date) -> str:
 border-top: 1px solid {_BORDER_COLOR};">
     <p style="margin: 0; font-size: 12px; color: {_MUTED_COLOR}; \
 text-align: center; font-family: {_FONT_STACK};">\
-Data from: {formatted}</p>
+Dados de: {formatted}</p>
   </td>
 </tr>"""
 
@@ -192,7 +200,7 @@ def _wrap_html(body_content: str) -> str:
     """Wrap email body in standard HTML email structure."""
     return f"""\
 <!DOCTYPE html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<html lang="pt-BR" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -253,4 +261,4 @@ def build_subject(protocol: DailyProtocol, target_date: date) -> str:
     """Build email subject line."""
     formatted = _format_date(target_date)
     score = protocol.readiness_score
-    return f"Biointelligence \u2014 {formatted} \u2014 Readiness: {score}/10"
+    return f"Biointelligence \u2014 {formatted} \u2014 Prontidão: {score}/10"

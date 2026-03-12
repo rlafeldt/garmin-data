@@ -43,20 +43,20 @@ class DailyProtocol(BaseModel):
 
     date: str
     readiness_score: int = Field(
-        ..., ge=1, le=10, description="Overall readiness 1-10"
+        ..., ge=1, le=10, description="Prontidão geral 1-10"
     )
     insight: str = Field(
         ...,
         description=(
-            "Complete narrative insight for WhatsApp. Plain text, no markdown "
-            "links. Uses *bold* for WhatsApp formatting. 150-250 words."
+            "Insight narrativo completo para WhatsApp. Texto puro, sem links "
+            "em markdown. Usa *negrito* no formato WhatsApp. 150-250 palavras."
         ),
     )
     insight_html: str = Field(
         ...,
         description=(
-            "Same narrative with markdown links on study claims and supplement "
-            "names. Links use [descriptive text](url) format."
+            "Mesma narrativa com links em markdown para estudos citados e "
+            "nomes de suplementos. Links no formato [texto descritivo](url)."
         ),
     )
     data_quality_notes: str | None = None
