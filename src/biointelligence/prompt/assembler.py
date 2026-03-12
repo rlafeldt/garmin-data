@@ -405,15 +405,6 @@ def _format_profile(profile: HealthProfile) -> str:
     if sleep.get("subjective_recovery_waking") is not None:
         lines.append(f"  Recuperação ao acordar: {sleep['subjective_recovery_waking']}/10")
 
-    # Exames laboratoriais
-    if data.get("lab_values"):
-        lines.append("Exames Laboratoriais:")
-        for name, lab in data["lab_values"].items():
-            lines.append(
-                f"  {name}: {lab['value']} {lab['unit']} "
-                f"(data: {lab['date']}, faixa: {lab['range']})"
-            )
-
     return "\n".join(lines)
 
 

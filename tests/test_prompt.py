@@ -473,13 +473,11 @@ class TestAssemblePrompt:
         assert "<trends_7d>" in result.text
         assert "insuficientes" in result.text.lower()
 
-    def test_lab_values_appear_in_prompt(self, mock_context: PromptContext) -> None:
+    def test_lab_values_excluded_from_prompt(self, mock_context: PromptContext) -> None:
         result = assemble_prompt(mock_context)
-        # Lab values from the health profile should appear
-        assert "vitamin_d" in result.text or "Vitamin D" in result.text.title()
-        assert "42" in result.text  # vitamin D value
-        assert "ng/mL" in result.text
-        assert "2025-11" in result.text
+        # Lab values should NOT appear in the prompt
+        assert "ng/mL" not in result.text
+        assert "Exames Laboratoriais" not in result.text
 
     def test_supplement_conditions_appear_in_prompt(self, mock_context: PromptContext) -> None:
         result = assemble_prompt(mock_context)

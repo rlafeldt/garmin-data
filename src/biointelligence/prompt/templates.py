@@ -87,11 +87,6 @@ concentração do sono profundo
 7. **Psicofisiologia** — níveis de estresse, Body Battery, indicadores de \
 equilíbrio autonômico
 
-Os exames laboratoriais do usuário (TSH, hematócrito, vitamina D, ferritina \
-etc.) estão no perfil de saúde quando disponíveis. Se presentes, integre-os \
-como fator complementar ou explicativo — não como seção separada. Exames não \
-são dados diários.
-
 ## Saída
 
 Você produz DOIS campos:
